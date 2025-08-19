@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+	--background: oklch(0.8527 0.074 305.92);
+	--foreground: oklch(0.194 0.0355 305.92);
+	--card: oklch(0.7879 0.1332 305.92);
+	--card-foreground: oklch(0.9026 0.037 305.92);
+	--primary: oklch(0.3526 0.1455 305.92);
+	--primary-foreground: oklch(0.6526 0.2097 305.92);
+	--secondary: oklch(0.5738 0.1497 250.81);
+	--secondary-foreground: oklch(0.8408 0.0715 250.81);
+	--accent: oklch(0.5738 0.1497 250.81);
+	--accent-foreground: oklch(0.8408 0.0715 250.81);
+	--error: oklch(0.6933 0.1801 0.93);
+	--error-foreground: oklch(0.8673 0.0345 0.93);
+}
+.dark {
+	--foreground: oklch(0.8527 0.074 305.92);
+	--background: oklch(0.194 0.0355 305.92);
+	--card: oklch(0.4148 0.0509 291.04);
+	--card-foreground: oklch(0.9026 0.037 305.92);
+	--primary: oklch(0.5467 0.2393 305.92);
+	--primary-foreground: oklch(0.6526 0.2097 305.92);
+	--secondary: oklch(0.5738 0.1497 250.81);
+	--secondary-foreground: oklch(0.8408 0.0715 250.81);
+	--accent: oklch(0.5738 0.1497 250.81);
+	--accent-foreground: oklch(0.8408 0.0715 250.81);
+	--error: oklch(0.6933 0.1801 0.93);
+	--error-foreground: oklch(0.8673 0.0345 0.93);
+}
+
+@theme inline {
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-error: var(--error);
+	--color-error-foreground: var(--error-foreground);
+}
+
+@layer base {
+	body {
+		@apply bg-background text-foreground;
+	}
+}
