@@ -44,7 +44,7 @@ func jwtFromUser(user *repository.User) *CustomJwt {
 	ProfilePicUrl := "NULL"
 	if user.ProfilePicUrl != nil { ProfilePicUrl = *user.ProfilePicUrl }
 	return &CustomJwt{
-		UserId: user.ID,
+		UserId: *user.ID,
 		ProfilePic: ProfilePicUrl,
 		User: user.Username,
 		IsAdmin: user.Admin,

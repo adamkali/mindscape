@@ -169,7 +169,7 @@ func (UserService *UserService) Remove(user_id uuid.UUID) error {
 	}
 	defer tx.Rollback(UserService.ctx)
 	repo := repository.New(tx)
-	if err := repo.DeleteUserByID(UserService.ctx, user_id); err != nil {
+	if err := repo.DeleteUserByID(UserService.ctx, &user_id); err != nil {
 		return err
 	}
 	tx.Commit(UserService.ctx)
@@ -191,7 +191,7 @@ func (UserService *UserService) Get(user_id uuid.UUID) (*repository.User, error)
 	defer tx.Rollback(UserService.ctx)
 	var user repository.User
 	repo := repository.New(tx)
-	if user, err = repo.FindUserByID(UserService.ctx, user_id); err != nil {
+	if user, err = repo.FindUserByID(UserService.ctx, &user_id); err != nil {
 		return nil, err
 	}
 	tx.Commit(UserService.ctx)
@@ -244,12 +244,12 @@ func (UserService *UserService) Update(user_id uuid.UUID, profile_name string) (
 		UserService.ctx,
 		repository.UpdateUserProfileParams{
 			ProfilePicUrl: &profile_name,
-			ID:            user_id,
+			ID:            &user_id,
 		},
 	); err != nil {
 		return nil, err
 	}
-	user, err = repo.FindUserByID(UserService.ctx, user_id)
+	user, err = repo.FindUserByID(UserService.ctx, &user_id)
 	if err != nil {
 		return nil, err
 	}

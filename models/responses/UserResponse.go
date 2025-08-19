@@ -32,7 +32,7 @@ func UserDataFromRepository(repository *repository.User) *UserData {
 		return nil
 	}
 	return &UserData{
-		ID:              repository.ID,
+		ID:              *repository.ID,
 		Email:           repository.Email,
 		Username:        repository.Username,
 		CreatedDatetime: repository.CreatedDatetime,

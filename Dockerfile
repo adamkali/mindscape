@@ -2,11 +2,11 @@
 ## Build the Frontend with Node.js
 ## If you are not using React you can comment out this section
 FROM node:22-alpine as node_builder
-WORKDIR /usr/src/frontend
-COPY frontend/package.json ./
+WORKDIR /usr/src/web
+COPY web/package.json ./
 ## use pnpm
 RUN npm install -g pnpm && pnpm install
-COPY frontend/ ./
+COPY web/ ./
 RUN pnpm run build
 
 FROM golang:1.24-alpine as go_builder
@@ -23,7 +23,7 @@ FROM alpine:latest as app
 WORKDIR /app
 
 ## If you are not using React you can comment out this section
-COPY --from=node_builder /usr/src/frontend/dist /app/web/dist
+COPY --from=node_builder /usr/src/web/dist /app/web/dist
 
 COPY --from=go_builder /usr/src/mindscape /app/
 CMD ["/app/mindscape", "-e", "production"]
