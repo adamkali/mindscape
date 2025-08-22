@@ -12,9 +12,9 @@ import (
 )
 
 type Bookmark struct {
-	ID              *uuid.UUID `json:"id"`
-	UserID          *uuid.UUID `json:"user_id"`
-	FolderID        *uuid.UUID `json:"folder_id"`
+	ID              uuid.UUID  `json:"id"`
+	UserID          uuid.UUID  `json:"user_id"`
+	FolderID        uuid.UUID  `json:"folder_id"`
 	Name            string     `json:"name"`
 	Link            string     `json:"link"`
 	Icon            *string    `json:"icon"`
@@ -24,9 +24,9 @@ type Bookmark struct {
 }
 
 type Folder struct {
-	ID              *uuid.UUID  `json:"id"`
+	ID              uuid.UUID   `json:"id"`
 	ParentID        pgtype.UUID `json:"parent_id"`
-	UserID          *uuid.UUID  `json:"user_id"`
+	UserID          uuid.UUID   `json:"user_id"`
 	Name            string      `json:"name"`
 	Description     *string     `json:"description"`
 	CreatedDatetime *time.Time  `json:"created_datetime"`
@@ -34,9 +34,9 @@ type Folder struct {
 }
 
 type Note struct {
-	ID              *uuid.UUID `json:"id"`
-	UserID          *uuid.UUID `json:"user_id"`
-	FolderID        *uuid.UUID `json:"folder_id"`
+	ID              uuid.UUID  `json:"id"`
+	UserID          uuid.UUID  `json:"user_id"`
+	FolderID        uuid.UUID  `json:"folder_id"`
 	Name            string     `json:"name"`
 	Description     *string    `json:"description"`
 	Content         string     `json:"content"`
@@ -45,14 +45,14 @@ type Note struct {
 }
 
 type Token struct {
-	ID                 *uuid.UUID `json:"id"`
-	UserID             *uuid.UUID `json:"user_id"`
+	ID                 uuid.UUID  `json:"id"`
+	UserID             uuid.UUID  `json:"user_id"`
 	ExpirationDatetime *time.Time `json:"expiration_datetime"`
 	Token              *string    `json:"token"`
 }
 
 type User struct {
-	ID              *uuid.UUID `json:"id"`
+	ID              uuid.UUID  `json:"id"`
 	Email           string     `json:"email"`
 	Username        string     `json:"username"`
 	CreatedDatetime *time.Time `json:"created_datetime"`

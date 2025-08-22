@@ -32,9 +32,8 @@ var swagCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := swag(); err != nil {
 			fmt.Println(err.Error())
-			os.Exit(1)
+			return
 		}
-		os.Exit(0)
 	},
 }
 

@@ -9,21 +9,25 @@ import (
 	"github.com/adamkali/mindscape/middlewares/configs"
 	"github.com/adamkali/mindscape/services"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/labstack/echo/v4"
 	echojwt "github.com/labstack/echo-jwt/v4"
+	"github.com/labstack/echo/v4"
 )
 
 type Registrar struct {
 	Config           *configuration.Configuration
-	ValidatorService *services.ValidatorService
-	UserService      services.IUserService
 	AuthService      services.IAuthService
+	BookmarkService  services.IBookmarkService
+	FolderService    services.IFolderService
 	MinioService     services.IMinioService
+	NoteService      services.INoteService
 	RedisService     services.IRedisService
+	UserService      services.IUserService
+	ValidatorService *services.ValidatorService
 }
 
 type IController interface {
 	Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc)
+	ControllerName() string
 }
 
 func createControllerParams(config *configuration.Configuration) (*Registrar, error) {
@@ -35,11 +39,14 @@ func createControllerParams(config *configuration.Configuration) (*Registrar, er
 
 	return &Registrar{
 		Config:           config,
-		ValidatorService: &services.ValidatorService{},
 		AuthService:      services.CreateAuthService(ctx, db, config),
-		UserService:      services.CreateUserService(ctx, db),
+		BookmarkService:  services.CreateBookmarkService(ctx, db),
+		FolderService:    services.CreateFolderService(ctx, db),
 		MinioService:     services.CreateMinioService(ctx, config),
+		NoteService:      services.CreateNoteService(ctx, db),
 		RedisService:     services.CreateRedisService(ctx, config),
+		UserService:      services.CreateUserService(ctx, db),
+		ValidatorService: &services.ValidatorService{},
 	}, nil
 }
 

@@ -18,7 +18,8 @@ func StaticMiddlewareConfig(config *configuration.Configuration) middleware.Stat
 		IgnoreBase: false,
 		Filesystem: nil,
 		Skipper: func(c echo.Context) bool {
-			if strings.Contains(c.Path(), "swagger") {
+			if strings.Contains(c.Path(), "swagger") ||
+			   strings.Contains(c.Path(), "api") {
 				return true
 			} else {
 				return false

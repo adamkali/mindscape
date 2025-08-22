@@ -33,7 +33,7 @@ func (service *MockUserService) Create(params *requests.NewUserRequest) (*reposi
 
 	userID := uuid.New()
 	user := repository.User{
-		ID:       &userID,
+		ID:       userID,
 		Username: params.Username,
 		Email:    params.Email,
 		BCryptHash: BCryptHash,
@@ -43,7 +43,7 @@ func (service *MockUserService) Create(params *requests.NewUserRequest) (*reposi
 }
 func (service *MockUserService) Get(id uuid.UUID) (*repository.User, error) {
 	user := repository.User{
-		ID:       &id,
+		ID:       id,
 		Username: "testuser",
 		Email:    "@example.com",
 		BCryptHash: "----------------",
@@ -53,7 +53,7 @@ func (service *MockUserService) Get(id uuid.UUID) (*repository.User, error) {
 }
 func (servic *MockUserService) Login(params *requests.LoginRequest) (*repository.User, error) {
 	user := &repository.User{
-		ID:       &EmptyUUID,
+		ID:       EmptyUUID,
 		Username: params.Username,
 		Email: params.Email,
 		BCryptHash: "----------------",
@@ -65,14 +65,14 @@ func (service *MockUserService) GetAll() ([]repository.User, error) {
 	var users []repository.User = make([]repository.User, 2)
 	
 	user := repository.User{
-		ID:       &EmptyUUID,
+		ID:       EmptyUUID,
 		Username: "testuser",
 		Email:    "@example.com",
 		BCryptHash: "----------------",
 		Admin:  true,
 	}
 	users = append(users, user)
-	user.ID = &EmptyUUID
+	user.ID = EmptyUUID
 	users = append(users, user)
 	
 	return users, nil
@@ -80,7 +80,7 @@ func (service *MockUserService) GetAll() ([]repository.User, error) {
 
 func (service *MockUserService) Update(user_id uuid.UUID, profile_name string) (*repository.User, error) {
 	user := repository.User{
-		ID:       &user_id,
+		ID:       user_id,
 		Username: profile_name,
 		Email:    "@example.com",
 		BCryptHash: "----------------",

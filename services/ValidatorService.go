@@ -12,6 +12,7 @@ import (
 	"unicode"
 
 	"github.com/adamkali/mindscape/cmd/configuration"
+	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/requests"
 	"github.com/labstack/echo/v4"
 )
@@ -60,7 +61,7 @@ func validatePassword(s string) (sevenOrMore, number, upper, special bool) {
 }
 
 // ValidateNewUserRequest
-// 
+//
 // ValidateNewUserRequest validates the Body by using the echo.Context.Bind(requsts.NewUserRequest)
 // and the returns the marshalled object
 func (ValidatorService ValidatorService) ValidateNewUserRequest(e echo.Context) (*requests.NewUserRequest, error) {
@@ -101,22 +102,69 @@ func (ValidatorService ValidatorService) ValidateLoginRequest(e echo.Context) (*
 	return validRequest, nil
 }
 
-
 // Validate LoginFormRequest ()
-func (vs  ValidatorService ) ValidateLoginFormRequest(e echo.Context) (*requests.LoginRequest, error) {
-    req := &requests.LoginRequest {
+func (vs ValidatorService) ValidateLoginFormRequest(e echo.Context) (*requests.LoginRequest, error) {
+	req := &requests.LoginRequest{
 		Username: e.FormValue("username"),
-		Email: e.FormValue("email"),
+		Email:    e.FormValue("email"),
 		Password: e.FormValue("password"),
-	};
+	}
 
-	if (req.Email == "" && req.Username == "") {
+	if req.Email == "" && req.Username == "" {
 		err := errors.New("Email and Username cannot be null")
 		return nil, err
-	} 
+	}
 	if req.Password == "" {
 		err := errors.New("You must send a password")
 		return nil, err
 	}
 	return req, nil
+}
+
+func (vs ValidatorService) ValidateUpdateUserCredentialRequest(e echo.Context) (*requests.UpdateCredentialsRequest, error) {
+	validRequest := new(requests.UpdateCredentialsRequest)
+	if err := e.Bind(&validRequest); err != nil {
+		return nil, err
+	}
+	
+	if !validateUsername(validRequest.Username) {
+		return nil, fmt.Errorf("Validation failed (%s) is not a valid username", validRequest.Username)
+	}
+
+	_, err := mail.ParseAddress(validRequest.Email)
+	if err != nil {
+		return nil, err
+	}
+	if validRequest.OldPassword == "" {
+		// we do not want to change the password
+		return validRequest, nil
+	} else if validRequest.Password == "" && validRequest.OldPassword != "" {
+		return nil, errors.New("You must send a password to change the password")
+	} else {
+		sevenOrMore, number, upper, special := validatePassword(validRequest.Password)
+		if !(sevenOrMore && number && upper && special) {
+			return nil, fmt.Errorf(
+				"Validation failed. Seven Or More (%t), Number (%t), Upper (%t), Special (%t)",
+				sevenOrMore,
+				number,
+				upper,
+				special)
+		}
+	}
+	return validRequest, nil
+
+}
+
+func (vs ValidatorService) ValidateCreateFolderRequest(e echo.Context) (*repository.CreateFolderParams, error) {
+	validRequest := new(repository.CreateFolderParams)
+	if err := e.Bind(&validRequest); err != nil {
+		return nil, err
+	}
+	if validRequest.Name == "" {
+		return nil, errors.New("Folder name cannot be empty")
+	}
+	if strings.ContainsAny(validRequest.Name, "/\\:*?\"<>|") {
+		return nil, errors.New("Folder name cannot contain any special characters")
+	}
+	return validRequest, nil
 }

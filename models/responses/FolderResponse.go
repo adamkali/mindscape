@@ -40,9 +40,9 @@ func NewFolderData(entity repository.Folder) FolderData {
 	}
 
 	return FolderData{
-		ID:              entity.ID,
+		ID:              &entity.ID,
 		ParentID:        &parentIDUUID,
-		UserID:          entity.UserID,
+		UserID:          &entity.UserID,
 		Name:            entity.Name,
 		Description:     entity.Description,
 		CreatedDatetime: entity.CreatedDatetime,

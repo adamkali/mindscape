@@ -39,6 +39,21 @@ func (folderService FolderService) GetAll() ([]repository.Folder, error) {
 	return folders, nil
 }
 
+func (folderService FolderService) GetRoot() ([]repository.Folder, error) {
+	tx, err := folderService.pool.Begin(folderService.ctx)
+	if err != nil {
+		return []repository.Folder{}, err
+	}
+	defer tx.Rollback(folderService.ctx)
+	repo := repository.New(tx)
+	folders, err := repo.FindFoldersRoot(folderService.ctx)
+	if err != nil {
+		return []repository.Folder{}, err
+	}
+	tx.Commit(folderService.ctx)
+	return folders, nil
+}
+
 func (folderService FolderService) Get(id uuid.UUID) (*repository.Folder, error) {
 	tx, err := folderService.pool.Begin(folderService.ctx)
 	if err != nil {
@@ -46,7 +61,7 @@ func (folderService FolderService) Get(id uuid.UUID) (*repository.Folder, error)
 	}
 	defer tx.Rollback(folderService.ctx)
 	repo := repository.New(tx)
-	folder, err := repo.FindFolderById(folderService.ctx, &id)
+	folder, err := repo.FindFolderById(folderService.ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +79,7 @@ func (folderService FolderService) GetByUser(user_id uuid.UUID) ([]repository.Fo
 	}
 	defer tx.Rollback(folderService.ctx)
 	repo := repository.New(tx)
-	folders, err := repo.FindFoldersByUserId(folderService.ctx, &user_id)
+	folders, err := repo.FindFoldersByUserId(folderService.ctx, user_id)
 	if err != nil {
 		return []repository.Folder{}, err
 	}
@@ -148,7 +163,7 @@ func (folderService FolderService) Remove(id uuid.UUID) error {
 	}
 	defer tx.Rollback(folderService.ctx)
 	repo := repository.New(tx)
-	if err := repo.DeleteFolder(folderService.ctx, &id); err != nil {
+	if err := repo.DeleteFolder(folderService.ctx, id); err != nil {
 		return err
 	}
 	tx.Commit(folderService.ctx)
@@ -176,7 +191,7 @@ func (folderService FolderService) Move(id uuid.UUID, parent_id *uuid.UUID) erro
 	}
 	if err := repo.MoveFolder(folderService.ctx, 
 		repository.MoveFolderParams{
-			ID: &id,
+			ID: id,
 			ParentID: *parent_id_type,
 		}); err != nil {
 		return err
@@ -192,7 +207,7 @@ func (folderService FolderService) Delete(id uuid.UUID) error {
 	}
 	defer tx.Rollback(folderService.ctx)
 	repo := repository.New(tx)
-	if err := repo.DeleteFolder(folderService.ctx, &id); err != nil {
+	if err := repo.DeleteFolder(folderService.ctx, id); err != nil {
 		return err
 	}
 	tx.Commit(folderService.ctx)

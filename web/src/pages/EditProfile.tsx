@@ -1,7 +1,9 @@
 import { useNavigate } from '@solidjs/router';
 import { createEffect, createSignal } from 'solid-js';
-import { UsersApi } from '@/api';
+import { UsersApi, type UpdateCredentialsRequest } from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { EmptyGuid } from '@/utils';
+import { Header } from '@/components/Header';
 
 const EditProfile = () => {
 	const auth = useAuth();
@@ -10,7 +12,16 @@ const EditProfile = () => {
 
 	const user = auth.user();
 
-	const [username, setUsername] = createSignal('');
+	const [updateCredentialsRequest, setUpdateCredentialsRequest] = createSignal({
+		username: '',
+		email: '',
+		password: '',
+		oldPassword: '',
+		id: EmptyGuid, // Default to an empty string
+	} as UpdateCredentialsRequest);
+	const [confirmPassword, setConfirmPassword] = createSignal('');
+	const [passwordMatch, setPasswordMatch] = createSignal(true);
+
 	const [profilePicture, setProfilePicture] = createSignal<string>('');
 	const [selectedFile, setSelectedFile] = createSignal<File | null>(null);
 	const [isLoading, setIsLoading] = createSignal(false);
@@ -20,7 +31,13 @@ const EditProfile = () => {
 
 	createEffect(() => {
 		if (user) {
-			setUsername(user.username || '');
+			setUpdateCredentialsRequest({
+				username: user.username,
+				email: user.email,
+				password: '',
+				oldPassword: '',
+				id: user.id,
+			});
 		}
 		if (auth.isAuthenticated() && auth.token()) {
 			fetchProfilePicture();
@@ -54,6 +71,79 @@ const EditProfile = () => {
 		}
 	};
 
+	const handleCredentialsSubmit = async (e: Event) => {
+		e.preventDefault();
+		if (!auth.token() || !user) return;
+
+		setError('');
+		setSuccess('');
+		setIsLoading(true);
+
+		if (passwordMatch()) {
+			try {
+				const response = await api.updateUser({
+					authorization: `Bearer ${auth.token()}`,
+					updateCredentialsRequest: updateCredentialsRequest(),
+				});
+				if (!response.success) {
+					setError(response.message || 'Failed to update credentials');
+				}
+				if (response.success && response.jwt && response.data) {
+					auth.update(response.data, response.jwt);
+				} else {
+					setError(response.message || 'Failed to update credentials');
+				}
+				setSuccess('Credentials updated successfully!');
+			} catch (error: any) {
+				setError(error.message || 'Failed to update credentials');
+			} finally {
+				setIsLoading(false);
+			}
+		}
+	};
+
+	const handleUsernameChange = (e: Event) => {
+		const target = e.currentTarget as HTMLInputElement;
+		setUpdateCredentialsRequest({
+			...updateCredentialsRequest(),
+			username: target.value,
+		});
+	};
+
+	const handleEmailChange = (e: Event) => {
+		const target = e.currentTarget as HTMLInputElement;
+		setUpdateCredentialsRequest({
+			...updateCredentialsRequest(),
+			email: target.value,
+		});
+	};
+
+	const handlePasswordChange = (e: Event) => {
+		const target = e.currentTarget as HTMLInputElement;
+		setUpdateCredentialsRequest({
+			...updateCredentialsRequest(),
+			password: target.value,
+		});
+	};
+
+	const handleOldPasswordChange = (e: Event) => {
+		const target = e.currentTarget as HTMLInputElement;
+		setUpdateCredentialsRequest({
+			...updateCredentialsRequest(),
+			oldPassword: target.value,
+		});
+	};
+
+	const handleConfirmPasswordChange = (e: Event) => {
+		const target = e.currentTarget as HTMLInputElement;
+		setConfirmPassword(target.value);
+		if (target.value === updateCredentialsRequest().password) {
+			setPasswordMatch(true);
+		} else {
+			setPasswordMatch(false);
+		}
+	};
+
 	const handleSubmit = async (e: Event) => {
 		e.preventDefault();
 		if (!auth.token() || !user) return;
@@ -70,17 +160,10 @@ const EditProfile = () => {
 				});
 				setSuccess('Profile updated successfully!');
 				await fetchProfilePicture();
-			} else if (username() !== user.username) {
-				setSuccess('Username updated successfully!');
 			} else {
 				setError('No changes to save');
 				setIsLoading(false);
 				return;
-			}
-
-			if (username() !== user.username) {
-				const updatedUser = { ...user, username: username() };
-				auth.updateUser(updatedUser);
 			}
 		} catch (error: any) {
 			setError(error.message || 'Failed to update profile');
@@ -99,9 +182,10 @@ const EditProfile = () => {
 	}
 
 	return (
-		<div class="min-h-screen p-8">
-			<div class="max-w-2xl mx-auto">
-				<div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
+		<div class="min-h-screen bg-background">
+			<Header />
+			<div class="max-w-2xl mx-auto mt-4">
+				<div class="bg-card text-card-foreground rounded-lg shadow-lg p-8 space-y-2">
 					<div class="mb-8">
 						<h1 class="text-3xl font-bold text-gray-900 dark:text-white">
 							Edit Profile
@@ -112,7 +196,7 @@ const EditProfile = () => {
 					</div>
 
 					<form class="space-y-6" onSubmit={handleSubmit}>
-						<div class="flex flex-col items-center space-y-4">
+						<div class="flex flex-row items-center justify-evenly space-y-4">
 							<div class="w-32 h-32 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
 								{isLoadingPicture() ? (
 									<div class="text-gray-500 dark:text-gray-400">Loading...</div>
@@ -129,7 +213,8 @@ const EditProfile = () => {
 								)}
 							</div>
 
-							<div>
+							<div class="flex flex-col space-y-2">
+								<div >
 								<label
 									for="profilePicture"
 									class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
@@ -141,51 +226,115 @@ const EditProfile = () => {
 									name="profilePicture"
 									type="file"
 									accept="image/*"
-									class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:text-gray-400 dark:file:bg-blue-900 dark:file:text-blue-300"
+									class="block w-full text-sm text-secondary-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-secondary file:text-secondary-foreground hover:file:bg-secondary/80"
 									onChange={handleFileSelect}
+								/>
+								</div>
+								<button
+									type="submit"
+									class="bg-secondary hover:bg-secondary/80 text-secondary-foreground font-bold py-2 px-4 rounded"
+									disabled={isLoading()}
+								>
+									Save
+								</button>
+							</div>
+						</div>
+					</form>
+					<form class="space-y-6" onSubmit={handleCredentialsSubmit}>
+						<div class="space-x-4 flex flex-row">
+							<div class="flex-1">
+								<label
+									for="username"
+									class="block text-sm font-medium bg-primary text-foreground dark:text-slate-100 rounded-t-md pl-4"
+								>
+									Username
+								</label>
+								<input
+									id="username"
+									name="username"
+									type="text"
+									required
+									class="appearance-none relative block w-full px-3 py-2 border border-primary text-primary background-card rounded-b-md sm:text-sm"
+									placeholder="Enter your username"
+									value={updateCredentialsRequest().username}
+									onInput={(e) => handleUsernameChange(e)}
+								/>
+							</div>
+
+							<div class="flex-1">
+								<label
+									for="email"
+									class="block text-sm font-medium bg-primary text-foreground dark:text-slate-100 rounded-t-md pl-4"
+								>
+									Email
+								</label>
+								<input
+									id="email"
+									name="email"
+									type="email"
+									required
+									class="appearance-none relative block w-full px-3 py-2 border border-primary text-primary background-card rounded-b-md sm:text-sm"
+									placeholder="Enter your email"
+									value={updateCredentialsRequest().email}
+									onInput={(e) => handleEmailChange(e)}
 								/>
 							</div>
 						</div>
 
 						<div>
 							<label
-								for="username"
-								class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+								for="password"
+								class="block text-sm font-medium bg-primary text-slate-100"
 							>
-								Username
+								Current Password
 							</label>
 							<input
-								id="username"
-								name="username"
-								type="text"
-								required
-								class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-700 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-								placeholder="Enter your username"
-								value={username()}
-								onInput={(e) => setUsername(e.currentTarget.value)}
+								id="password"
+								name="password"
+								type="password"
+								class="mt-1 appearance-none relative block w-full px-3 py-2 border border-primary text-primary background-card rounded-md sm:text-sm"
+								placeholder="Enter your Current Password"
+								value={updateCredentialsRequest().oldPassword}
+								onInput={(e) => handleOldPasswordChange(e)}
 							/>
 						</div>
 
 						<div>
-							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-								Email
+							<label
+								for="newPassword"
+								class="block text-sm font-medium bg-primary text-slate-100"
+							>
+								New Password
 							</label>
 							<input
-								type="email"
-								disabled
-								class="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 rounded-md sm:text-sm"
-								value={user.email || ''}
+								id="newPassword"
+								name="newPassword"
+								type="password"
+								class="mt-1 appearance-none relative block w-full px-3 py-2 border border-primary text-primary background-card rounded-md sm:text-sm"
+								placeholder="Enter your New Password"
+								value={updateCredentialsRequest().password}
+								onInput={(e) => handlePasswordChange(e)}
 							/>
-							<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-								Email cannot be changed
-							</p>
 						</div>
 
-						{error() && <div class="text-red-600 text-sm">{error()}</div>}
-
-						{success() && <div class="text-green-600 text-sm">{success()}</div>}
-
-						<div class="flex space-x-4">
+						<div>
+							<label
+								for="confirmPassword"
+								class="block text-sm font-medium bg-primary text-slate-100"
+							>
+								Confirm Password
+							</label>
+							<input
+								id="confirmPassword"
+								name="confirmPassword"
+								type="password"
+								class="mt-1 appearance-none relative block w-full px-3 py-2 border border-primary text-primary background-card rounded-md sm:text-sm"
+								placeholder="Confirm your New Password"
+								value={confirmPassword()}
+								onInput={(e) => handleConfirmPasswordChange(e)}
+							/>
+						</div>
+						<div>
 							<button
 								type="submit"
 								disabled={isLoading()}
@@ -193,7 +342,14 @@ const EditProfile = () => {
 							>
 								{isLoading() ? 'Updating...' : 'Update Profile'}
 							</button>
+						</div>
+					</form>
+					<div class="mt-8 flex justify-between">
+						{error() && <div class="text-red-600 text-sm">{error()}</div>}
 
+						{success() && <div class="text-green-600 text-sm">{success()}</div>}
+
+						<div class="flex space-x-4">
 							<button
 								type="button"
 								onClick={handleCancel}
@@ -202,7 +358,7 @@ const EditProfile = () => {
 								Cancel
 							</button>
 						</div>
-					</form>
+					</div>
 				</div>
 			</div>
 		</div>

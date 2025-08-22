@@ -45,3 +45,8 @@ DELETE FROM users WHERE id = $1;
 UPDATE users
 SET profile_pic_url = $1
 WHERE id = $2;
+
+-- name: UpdateUserCredentials :exec
+UPDATE users
+SET b_crypt_hash = $1, username = $2, email = $3, updated_datetime = now()
+WHERE id = $4 AND b_crypt_hash = $5;

@@ -20,11 +20,11 @@ RETURNING id, user_id, folder_id, name, description, content, created_datetime, 
 `
 
 type CreateNoteParams struct {
-	UserID      *uuid.UUID `json:"user_id"`
-	FolderID    *uuid.UUID `json:"folder_id"`
-	Name        string     `json:"name"`
-	Description *string    `json:"description"`
-	Content     string     `json:"content"`
+	UserID      uuid.UUID `json:"user_id"`
+	FolderID    uuid.UUID `json:"folder_id"`
+	Name        string    `json:"name"`
+	Description *string   `json:"description"`
+	Content     string    `json:"content"`
 }
 
 // POST queries
@@ -55,7 +55,7 @@ DELETE FROM notes WHERE id = $1
 `
 
 // DELETE queries
-func (q *Queries) DeleteNote(ctx context.Context, id *uuid.UUID) error {
+func (q *Queries) DeleteNote(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteNote, id)
 	return err
 }
@@ -67,7 +67,7 @@ WHERE id = $1
 `
 
 // GET queries
-func (q *Queries) FindNoteById(ctx context.Context, id *uuid.UUID) (Note, error) {
+func (q *Queries) FindNoteById(ctx context.Context, id uuid.UUID) (Note, error) {
 	row := q.db.QueryRow(ctx, findNoteById, id)
 	var i Note
 	err := row.Scan(
@@ -91,7 +91,7 @@ ORDER BY updated_datetime DESC
 LIMIT 1
 `
 
-func (q *Queries) FindNoteByUserIdMostRecent(ctx context.Context, userID *uuid.UUID) (Note, error) {
+func (q *Queries) FindNoteByUserIdMostRecent(ctx context.Context, userID uuid.UUID) (Note, error) {
 	row := q.db.QueryRow(ctx, findNoteByUserIdMostRecent, userID)
 	var i Note
 	err := row.Scan(
@@ -147,7 +147,7 @@ FROM notes
 WHERE folder_id = $1
 `
 
-func (q *Queries) FindNotesByFolderId(ctx context.Context, folderID *uuid.UUID) ([]Note, error) {
+func (q *Queries) FindNotesByFolderId(ctx context.Context, folderID uuid.UUID) ([]Note, error) {
 	rows, err := q.db.Query(ctx, findNotesByFolderId, folderID)
 	if err != nil {
 		return nil, err
@@ -185,7 +185,7 @@ AND created_datetime <= $3
 `
 
 type FindNotesByUserIDDateTimeRangeParams struct {
-	UserID            *uuid.UUID `json:"user_id"`
+	UserID            uuid.UUID  `json:"user_id"`
 	CreatedDatetime   *time.Time `json:"created_datetime"`
 	CreatedDatetime_2 *time.Time `json:"created_datetime_2"`
 }
@@ -228,7 +228,7 @@ AND updated_datetime <= $3
 `
 
 type FindNotesByUserIDDateTimeRangeUpdatedParams struct {
-	UserID            *uuid.UUID `json:"user_id"`
+	UserID            uuid.UUID  `json:"user_id"`
 	UpdatedDatetime   *time.Time `json:"updated_datetime"`
 	UpdatedDatetime_2 *time.Time `json:"updated_datetime_2"`
 }
@@ -268,7 +268,7 @@ FROM notes
 WHERE user_id = $1
 `
 
-func (q *Queries) FindNotesByUserId(ctx context.Context, userID *uuid.UUID) ([]Note, error) {
+func (q *Queries) FindNotesByUserId(ctx context.Context, userID uuid.UUID) ([]Note, error) {
 	rows, err := q.db.Query(ctx, findNotesByUserId, userID)
 	if err != nil {
 		return nil, err
@@ -304,7 +304,7 @@ WHERE user_id = $1
 ORDER BY updated_datetime DESC
 `
 
-func (q *Queries) FindNotesByUserIdMostRecent(ctx context.Context, userID *uuid.UUID) ([]Note, error) {
+func (q *Queries) FindNotesByUserIdMostRecent(ctx context.Context, userID uuid.UUID) ([]Note, error) {
 	rows, err := q.db.Query(ctx, findNotesByUserIdMostRecent, userID)
 	if err != nil {
 		return nil, err
@@ -340,8 +340,8 @@ WHERE id = $1
 `
 
 type MoveNoteParams struct {
-	ID       *uuid.UUID `json:"id"`
-	FolderID *uuid.UUID `json:"folder_id"`
+	ID       uuid.UUID `json:"id"`
+	FolderID uuid.UUID `json:"folder_id"`
 }
 
 // also update updated_datetime for previous folder
@@ -357,10 +357,10 @@ WHERE id = $4
 `
 
 type UpdateNoteParams struct {
-	Name        string     `json:"name"`
-	Description *string    `json:"description"`
-	Content     string     `json:"content"`
-	ID          *uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	Description *string   `json:"description"`
+	Content     string    `json:"content"`
+	ID          uuid.UUID `json:"id"`
 }
 
 // PATCH queries

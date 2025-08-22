@@ -12,6 +12,7 @@ import (
 )
 
 // @Title mindscape 
+// @Schemes http
 // @Version 0.0.1
 // @Description This is the swagger page for the Project mindscape generated with Egg-go. use this to test your database connection
 // @Contact.name Adam Kalinowski 

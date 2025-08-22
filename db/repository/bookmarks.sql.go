@@ -20,10 +20,10 @@ RETURNING id, user_id, folder_id, name, link, icon, description, created_datetim
 `
 
 type CreateBookmarkParams struct {
-	UserID   *uuid.UUID `json:"user_id"`
-	FolderID *uuid.UUID `json:"folder_id"`
-	Name     string     `json:"name"`
-	Link     string     `json:"link"`
+	UserID   uuid.UUID `json:"user_id"`
+	FolderID uuid.UUID `json:"folder_id"`
+	Name     string    `json:"name"`
+	Link     string    `json:"link"`
 }
 
 func (q *Queries) CreateBookmark(ctx context.Context, arg CreateBookmarkParams) (Bookmark, error) {
@@ -52,7 +52,7 @@ const deleteBookmark = `-- name: DeleteBookmark :exec
 DELETE FROM bookmarks WHERE id = $1
 `
 
-func (q *Queries) DeleteBookmark(ctx context.Context, id *uuid.UUID) error {
+func (q *Queries) DeleteBookmark(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteBookmark, id)
 	return err
 }
@@ -63,7 +63,7 @@ FROM bookmarks
 WHERE id = $1
 `
 
-func (q *Queries) FindBookmarkById(ctx context.Context, id *uuid.UUID) (Bookmark, error) {
+func (q *Queries) FindBookmarkById(ctx context.Context, id uuid.UUID) (Bookmark, error) {
 	row := q.db.QueryRow(ctx, findBookmarkById, id)
 	var i Bookmark
 	err := row.Scan(
@@ -88,7 +88,7 @@ ORDER BY updated_datetime DESC
 LIMIT 1
 `
 
-func (q *Queries) FindBookmarkByUserIdMostRecent(ctx context.Context, userID *uuid.UUID) (Bookmark, error) {
+func (q *Queries) FindBookmarkByUserIdMostRecent(ctx context.Context, userID uuid.UUID) (Bookmark, error) {
 	row := q.db.QueryRow(ctx, findBookmarkByUserIdMostRecent, userID)
 	var i Bookmark
 	err := row.Scan(
@@ -146,7 +146,7 @@ FROM bookmarks
 WHERE folder_id = $1
 `
 
-func (q *Queries) FindBookmarksByFolderId(ctx context.Context, folderID *uuid.UUID) ([]Bookmark, error) {
+func (q *Queries) FindBookmarksByFolderId(ctx context.Context, folderID uuid.UUID) ([]Bookmark, error) {
 	rows, err := q.db.Query(ctx, findBookmarksByFolderId, folderID)
 	if err != nil {
 		return nil, err
@@ -184,7 +184,7 @@ AND updated_datetime BETWEEN $2 AND $3
 `
 
 type FindBookmarksByUserIDDateTimeRangeParams struct {
-	UserID            *uuid.UUID `json:"user_id"`
+	UserID            uuid.UUID  `json:"user_id"`
 	UpdatedDatetime   *time.Time `json:"updated_datetime"`
 	UpdatedDatetime_2 *time.Time `json:"updated_datetime_2"`
 }
@@ -225,7 +225,7 @@ FROM bookmarks
 WHERE user_id = $1
 `
 
-func (q *Queries) FindBookmarksByUserId(ctx context.Context, userID *uuid.UUID) ([]Bookmark, error) {
+func (q *Queries) FindBookmarksByUserId(ctx context.Context, userID uuid.UUID) ([]Bookmark, error) {
 	rows, err := q.db.Query(ctx, findBookmarksByUserId, userID)
 	if err != nil {
 		return nil, err
@@ -262,7 +262,7 @@ WHERE user_id = $1
 ORDER BY updated_datetime DESC
 `
 
-func (q *Queries) FindBookmarksByUserIdMostRecent(ctx context.Context, userID *uuid.UUID) ([]Bookmark, error) {
+func (q *Queries) FindBookmarksByUserIdMostRecent(ctx context.Context, userID uuid.UUID) ([]Bookmark, error) {
 	rows, err := q.db.Query(ctx, findBookmarksByUserIdMostRecent, userID)
 	if err != nil {
 		return nil, err
@@ -299,8 +299,8 @@ WHERE id = $1
 `
 
 type MoveBookmarkParams struct {
-	ID       *uuid.UUID `json:"id"`
-	FolderID *uuid.UUID `json:"folder_id"`
+	ID       uuid.UUID `json:"id"`
+	FolderID uuid.UUID `json:"folder_id"`
 }
 
 func (q *Queries) MoveBookmark(ctx context.Context, arg MoveBookmarkParams) error {
@@ -315,10 +315,10 @@ WHERE id = $1
 `
 
 type UpdateBookmarkParams struct {
-	ID       *uuid.UUID `json:"id"`
-	FolderID *uuid.UUID `json:"folder_id"`
-	Name     string     `json:"name"`
-	Link     string     `json:"link"`
+	ID       uuid.UUID `json:"id"`
+	FolderID uuid.UUID `json:"folder_id"`
+	Name     string    `json:"name"`
+	Link     string    `json:"link"`
 }
 
 func (q *Queries) UpdateBookmark(ctx context.Context, arg UpdateBookmarkParams) error {

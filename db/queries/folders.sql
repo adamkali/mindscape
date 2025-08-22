@@ -20,6 +20,10 @@ WHERE parent_id = $1;
 -- name: FindFoldersAll :many
 SELECT *
 FROM folders;
+-- name: FindFoldersRoot :many
+SELECT *
+FROM folders 
+WHERE parent_id IS NULL;
 
 -- POST queries
 -- name: CreateFolder :one
@@ -27,6 +31,7 @@ INSERT INTO folders (
     user_id, parent_id, name, description
 ) VALUES ( $1, $2, $3, $4 )
 RETURNING *;
+
 
 -- PUT queries
 -- name: UpdateFolder :exec
