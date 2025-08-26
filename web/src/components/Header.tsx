@@ -90,6 +90,13 @@ export const Header: Component = () => {
 						<span class="text-sm text-foreground">{user?.username}</span>
 
 						<A
+							href="/admin/showcase"
+							class="text-xs px-2 py-1 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 transition-colors"
+						>
+							Dev Showcase	
+						</A>
+
+						<A
 							href="/edit-profile"
 							class="text-xs px-2 py-1 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 transition-colors"
 						>

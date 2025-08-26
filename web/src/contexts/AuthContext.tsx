@@ -15,6 +15,7 @@ export interface AuthContextValue {
 	logout: () => void;
 	isAuthenticated: () => boolean;
 	isInitializing: () => boolean;
+	isAdmin: () => boolean;
 	update: (userData: ResponsesUserData, token: string) => void;
 }
 
@@ -98,11 +99,16 @@ export const AuthProvider: ParentComponent = (props) => {
 		setToken(token);
 	};
 
+	const isAdmin = () => {
+		return user()?.admin || false;
+	};
+
 	const value: AuthContextValue = {
 		user,
 		token,
 		login,
 		logout,
+		isAdmin,
 		isAuthenticated,
 		isInitializing,
 		update,

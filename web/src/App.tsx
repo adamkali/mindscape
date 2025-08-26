@@ -1,10 +1,15 @@
 import { Route, Router } from '@solidjs/router';
+import {
+	Home,
+	EditProfile,
+	Login,
+	Signup,
+} from '@/pages';
+import { Showcase } from './pages/admin';
+
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { AuthProvider } from '@/contexts/AuthContext';
-import EditProfile from '@/pages/EditProfile';
-import Home from '@/pages/Home';
-import Login from '@/pages/Login';
-import Signup from '@/pages/Signup';
+import AdminRoute from './components/AdminRoute';
 
 const App = () => {
 	return (
@@ -29,6 +34,17 @@ const App = () => {
 							</ProtectedRoute>
 						)}
 					/>
+					<Route
+						path="/admin/showcase"
+						component={() => (
+							<ProtectedRoute>
+								<AdminRoute>
+									<Showcase />
+								</AdminRoute>
+							</ProtectedRoute>
+						)}
+					/>
+					<Route path="*404" component={() => <h1>404</h1>} />
 				</Router>
 			</AuthProvider>
 		</div>
