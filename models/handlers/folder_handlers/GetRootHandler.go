@@ -120,7 +120,9 @@ func (grfh *GetRootFolderHandler) Handle(fun any) *GetRootFolderHandler {
 			var wg sync.WaitGroup
 			wg.Add(len(grfh.FolderResponses))
 			foldersData := func(folderData *responses.FolderData, er error) {
+				fmt.Printf("[INFO] GetRootFolderHandler.Handle{ handle } -> Folder: %s\n", *folderData.ID)
 				folderData.Children, er = handle(*folderData.ID)
+				fmt.Printf("[INFO] GetRootFolderHandler.Handle{ handle } -> Children: %d\n", len(folderData.Children))
 				wg.Done()
 			}
 

@@ -21,13 +21,21 @@ type FolderData struct {
 }
 
 type FolderResponse struct {
-	Data    FolderData
-	Success bool
-	Message string
+	Data    FolderData `json:"data"`
+	Success bool       `json:"success"`
+	Message string     `json:"message"`
 }
 
 func NewFolderResponse() *FolderResponse {
 	return &FolderResponse{Success: false, Message: ""}
+}
+
+func NewFolderResponseWithData(data FolderData, success bool, message string) *FolderResponse {
+	folderResponse := NewFolderResponse()
+	folderResponse.Data = data
+	folderResponse.Success = success
+	folderResponse.Message = message
+	return folderResponse
 }
 
 func NewFolderData(entity repository.Folder) FolderData {

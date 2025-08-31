@@ -36,19 +36,19 @@ export default function Showcase() {
 				<CardHeader>
 					<div class="text-lg text-foreground">Mindscape UI Buttons</div>
 				</CardHeader>
-				<CardBody padding='lg' spac>
+				<CardBody padding='lg' class="flex flex-row space-x-4">
 					<Button variant="primary">Primary</Button>
 					<Button variant="secondary">Secondary</Button>
 					<Button variant="tertiary">Tertiary</Button>
 					<Button variant="danger">Danger</Button>
 				</CardBody>
 			</Card>
-			<Card class="flex flex-col mx-auto w-1/2 ">
+			<Card class="flex flex-col mx-auto w-1/2  ">
 				<CardHeader>
 					<div class="text-lg text-foreground">Mindscape UI Forms</div>
 				</CardHeader>
-				<CardBody>
-					<form onSubmit={submit} class="flex flex-row text-center" id="form">
+				<CardBody padding='lg' >
+					<form onSubmit={submit} class="flex flex-col text-center space-y-4" id="form">
 						<Input
 							variant="primary"
 							title="Search"
@@ -113,44 +113,42 @@ export default function Showcase() {
 				<CardHeader>
 					<div class="text-lg text-foreground">Mindscape UI Folders</div>
 				</CardHeader>
-				<CardBody>
-					<div class="flex flex-col space-y-4">
-						<FolderComponent
-							folder={{
-								id: '09870d37-a8e1-4d3c-b9fa-c74475653315',
-								userId: '3fa3ebb5-7f5d-49d7-a36a-cf3878d49aea',
-								name: 'Folder 1',
-								createdDatetime: '2023-01-01T00:00:00.000Z',
-								updatedDatetime: '2025-01-01T00:00:00.000Z',
-								bookmarks: [],
-								notes: [],
-								children: [],
-							}}
-							selectedFolder={() => { }}
-							deleteFolder={() => { }}
-						/>
-						<FolderComponent
-							folder={{
-								id: '50b15788-4553-4840-8118-3bd15250fbf9',
-								userId: '7efc610e-5cb0-4dbb-95df-3507dd919202',
-								name: 'Folder 2',
-								createdDatetime: '2023-02-02T00:00:00.000Z',
-								updatedDatetime: '2025-02-02T00:00:00.000Z',
-								bookmarks: [],
-								notes: [],
-								children: [],
-							}}
-							selectedFolder={() => { }}
-							deleteFolder={() => { }}
-						/>
-						<CreateFolderComponent
-							userId={auth.user()?.id ?? EmptyGuid}
-							parentId={undefined}
-							auth={auth}
-							setShowCreateFolder={() => true}
-							folderAPIRef={folderAPIRef}
-						/>
-					</div>
+				<CardBody class="flex flex-col space-y-8">
+					<FolderComponent
+						folder={{
+							id: '09870d37-a8e1-4d3c-b9fa-c74475653315',
+							userId: '3fa3ebb5-7f5d-49d7-a36a-cf3878d49aea',
+							name: 'Folder 1',
+							createdDatetime: '2023-01-01T00:00:00.000Z',
+							updatedDatetime: '2025-01-01T00:00:00.000Z',
+							bookmarks: [],
+							notes: [],
+							children: [],
+						}}
+						selectedFolder={() => { }}
+						deleteFolder={() => { }}
+					/>
+					<FolderComponent
+						folder={{
+							id: '50b15788-4553-4840-8118-3bd15250fbf9',
+							userId: '7efc610e-5cb0-4dbb-95df-3507dd919202',
+							name: 'Folder 2',
+							createdDatetime: '2023-02-02T00:00:00.000Z',
+							updatedDatetime: '2025-02-02T00:00:00.000Z',
+							bookmarks: [],
+							notes: [],
+							children: [],
+						}}
+						selectedFolder={() => { }}
+						deleteFolder={() => { }}
+					/>
+					<CreateFolderComponent
+						userId={auth.user()?.id ?? EmptyGuid}
+						parentId={undefined}
+						auth={auth}
+						setShowCreateFolder={() => true}
+						folderAPIRef={folderAPIRef}
+					/>
 				</CardBody>
 			</Card>
 		</div>

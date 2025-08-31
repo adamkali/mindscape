@@ -37,6 +37,6 @@ sql:
               type: "string"
           - db_type: "pgtype.UUID"
             go_type:
-              pointer: true
+              pointer: false
               import: "github.com/google/uuid"
               type: "UUID"

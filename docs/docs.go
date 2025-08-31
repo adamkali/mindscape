@@ -21,6 +21,127 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/bookmarks": {
+            "post": {
+                "description": "Create a new Bookmark by Authorization Header",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Create a new Bookmark",
+                "operationId": "CreateBookmark",
+                "parameters": [
+                    {
+                        "description": "CreateBookmarkRequest",
+                        "name": "CreateBookmarkRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/repository.CreateBookmarkParams"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"Bearer token\"",
+                        "description": "Authorization Header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarkResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarkResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarkResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarkResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/bookmarks/folder/{parent_id}": {
+            "get": {
+                "description": "Get all Bookmarks by Authorization Header and by the\nParentFolderId [parent_id]",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Get Bookmarks By Folder ID",
+                "operationId": "GetBookmarks",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\"Bearer token\"",
+                        "description": "Authorization Header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Parent Folder ID",
+                        "name": "parent_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/folders": {
             "get": {
                 "description": "Get the Root Folders associated with the user by Authorization Header\nand will also try to get the children of the folder as well",
@@ -168,25 +289,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/responses.FoldersResponse"
+                            "$ref": "#/definitions/responses.FolderResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/responses.FoldersResponse"
+                            "$ref": "#/definitions/responses.FolderResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/responses.FoldersResponse"
+                            "$ref": "#/definitions/responses.FolderResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/responses.FoldersResponse"
+                            "$ref": "#/definitions/responses.FolderResponse"
                         }
                     }
                 }
@@ -638,6 +759,37 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "BookmarkResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/repository.Bookmark"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "BookmarksResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.Bookmark"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "DeleteUserResponse": {
             "type": "object",
             "properties": {
@@ -807,6 +959,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_datetime": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "repository.CreateBookmarkParams": {
+            "type": "object",
+            "properties": {
+                "folder_id": {
+                    "type": "string"
+                },
+                "link": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "user_id": {

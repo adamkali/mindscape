@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/google/uuid"
@@ -89,6 +90,7 @@ func (folderService FolderService) GetByUser(user_id uuid.UUID) ([]repository.Fo
 
 // Misnomer
 func (folderService FolderService) GetByParent(parent_id uuid.UUID) ([]repository.Folder, error) {
+	fmt.Printf("[INFO] FolderService.GetByParent{ parent_id: %v }\n", parent_id)
 	tx, err := folderService.pool.Begin(folderService.ctx)
 	if err != nil {
 		return []repository.Folder{}, err
@@ -96,17 +98,12 @@ func (folderService FolderService) GetByParent(parent_id uuid.UUID) ([]repositor
 	defer tx.Rollback(folderService.ctx)
 	repo := repository.New(tx)
 	
-	var p_id_bytes []byte
-	parent_id_type := &pgtype.UUID{}
-	if p_id_bytes, err = parent_id.MarshalBinary(); err != nil {
-		return []repository.Folder{}, err
+	parent_id_type := pgtype.UUID{
+		Bytes: parent_id,
+		Valid: true,
 	}
 
-	if err = parent_id_type.UnmarshalJSON(p_id_bytes); err != nil {
-		return []repository.Folder{}, err
-	}
-
-	folders, err := repo.FindFoldersByParentId(folderService.ctx, *parent_id_type)
+	folders, err := repo.FindFoldersByParentId(folderService.ctx, parent_id_type)
 	if err != nil {
 		return []repository.Folder{}, err
 	}

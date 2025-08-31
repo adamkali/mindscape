@@ -2,7 +2,8 @@ package folder_handlers
 
 import (
 	"fmt"
-	"sync"
+	"reflect"
+	"runtime"
 
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/responses"
@@ -16,7 +17,8 @@ import (
 
 type GetFolderByIDHandler struct {
 	UserID          uuid.UUID
-	FolderResponses []responses.FolderData
+	FolderID        uuid.UUID
+	FolderResponse responses.FolderData
 	Context         echo.Context
 	Error           error
 	Code            int
@@ -52,75 +54,52 @@ func (grfh *GetFolderByIDHandler) Handle(fun any) *GetFolderByIDHandler {
 			claims := jwt_token.Claims.(*services.CustomJwt)
 			grfh.UserID = claims.UserId
 			break 
-		case func(uuid.UUID) ([]repository.Folder, error):
+
+		case func(id uuid.UUID) (*repository.Folder, error):
 			code = 400
-			folders := make([]repository.Folder, 0)
-			grfh.FolderResponses = make([]responses.FolderData, len(folders))
-			id, err := uuid.Parse(grfh.Context.Param("id"))
-			if err != nil {
-				grfh.Error = err
-				return grfh.Lock(code)
-			}
-			code = 404
-			folders, grfh.Error = handle(id)
+			folder := new(repository.Folder) 
+			grfh.FolderID, grfh.Error = uuid.Parse(grfh.Context.Param("folder_id"))
 			if grfh.Error != nil {
+				grfh.Error = echo.NewHTTPError(
+					code,
+					fmt.Sprintf("Type assertion failed for %s: %T\n", runtime.FuncForPC(reflect.ValueOf(fun).Pointer()).Name(), fun),
+				)
 				return grfh.Lock(code)
+				
 			}
-			for i, folder := range folders {
-				grfh.FolderResponses[i] = responses.NewFolderData(folder)
-			}
-			break
-		case func(uuid.UUID) ([]repository.Bookmark, error):
 			code = 404
-			errors := make([]error, len(grfh.FolderResponses))
-			var wg sync.WaitGroup
-			wg.Add(len(grfh.FolderResponses))
-			// go func to create the folder responses
-			bookmakData := func(folderData *responses.FolderData, er error) {
-				folderData.Bookmarks, er = handle(*folderData.ID)
-				wg.Done()
-			}
-			for i := range grfh.FolderResponses {
-				go bookmakData(&grfh.FolderResponses[i], errors[i])
-			}
-			wg.Wait()
-			for _, err := range errors {
-				if err != nil {
-					grfh.Error = err
-					return grfh.Lock(code)
-				}
-			}
+			folder, grfh.Error = handle(grfh.FolderID)
+			grfh.FolderResponse = responses.NewFolderData(*folder)
 			break
 
-		case func(uuid.UUID) ([]repository.Note, error):
+		case func(id uuid.UUID) ([]repository.Bookmark, error):
 			code = 404
-			errors := make([]error, len(grfh.FolderResponses))
-			var wg sync.WaitGroup
-			wg.Add(len(grfh.FolderResponses))
-			notesData := func(folderData *responses.FolderData, er error) {
-				folderData.Notes, er = handle(*folderData.ID)
-				wg.Done()
-			}
-			for i := range grfh.FolderResponses {
-				go notesData(&grfh.FolderResponses[i], errors[i])
-			}
-			wg.Wait()
-			for _, err := range errors {
-				if err != nil {
-					grfh.Error = err
-					return grfh.Lock(code)
-				}
-			}
+			grfh.FolderResponse.Bookmarks, grfh.Error = handle(grfh.FolderID)
 			break
+
+		case func(id uuid.UUID) ([]repository.Note, error):
+			code = 404
+			grfh.FolderResponse.Notes, grfh.Error = handle(grfh.FolderID)
+			break
+
+		case func(id uuid.UUID) ([]repository.Folder, error):
+			code = 404
+			grfh.FolderResponse.Children, grfh.Error = handle(grfh.FolderID)
+			break
+
 
 		default:
 			code = 600
 			grfh.Error = echo.NewHTTPError(
 				code,
-				fmt.Sprintf("Type assertion failed for type: %T\n", fun),
+				fmt.Sprintf("Type assertion failed for %s: %T\n", runtime.FuncForPC(reflect.ValueOf(fun).Pointer()).Name(), fun),
 			)
 		}
 		if grfh.Error != nil {
+			grfh.Error = echo.NewHTTPError(
+				code,
+				fmt.Sprintf("GetFolderByIDHandler.%s caused: %s", runtime.FuncForPC(reflect.ValueOf(fun).Pointer()).Name(), grfh.Error.Error()),
+			)
 			return grfh.Lock(code)
 		}
 	}
@@ -142,9 +121,10 @@ func (h *GetFolderByIDHandler) JSON() error {
 	}
 
 	return h.Context.JSON(code,
-		responses.NewFoldersResponse(
-			h.FolderResponses,
-			!h.Locked,
-			message,
-		))
+	    responses.NewFolderResponseWithData(
+		    h.FolderResponse,
+		    !h.Locked,
+		    message,
+	    ),
+	)
 }

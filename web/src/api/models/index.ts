@@ -1,10 +1,13 @@
 /* tslint:disable */
 /* eslint-disable */
+export * from './BookmarkResponse';
+export * from './BookmarksResponse';
 export * from './DeleteUserResponse';
 export * from './LoginRequest';
 export * from './LoginResponse';
 export * from './NewUserRequest';
 export * from './RepositoryBookmark';
+export * from './RepositoryCreateBookmarkParams';
 export * from './RepositoryCreateFolderParams';
 export * from './RepositoryFolder';
 export * from './RepositoryNote';

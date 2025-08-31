@@ -168,3 +168,11 @@ func (vs ValidatorService) ValidateCreateFolderRequest(e echo.Context) (*reposit
 	}
 	return validRequest, nil
 }
+
+func (r ValidatorService) CreateBookmarkRequest(e echo.Context) (*repository.CreateBookmarkParams, error) {
+	validRequest := new(repository.CreateBookmarkParams)
+	if err := e.Bind(&validRequest); err != nil {
+		return nil, err
+	}
+	return validRequest, nil
+}

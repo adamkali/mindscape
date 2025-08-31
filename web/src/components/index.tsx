@@ -1,5 +1,7 @@
 import AdminRoute from './AdminRoute';
 import CreateFolderComponent from './CreateFolderComponent';
+import CreateBookmarkComponent from './CreateBookmarkComponent';
+import BookmarkComponent from './BookmarkComponent';
 import FolderComponent from './FolderComponent';
 import { Header } from './Header';
 import ProtectedRoute from './ProtectedRoute';
@@ -11,6 +13,8 @@ const Components = {
 	FolderComponent,
 	Header,
 	ProtectedRoute,
+	CreateBookmarkComponent,
+	BookmarkComponent,
 
 	atoms: atoms,
 }

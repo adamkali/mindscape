@@ -1,34 +1,174 @@
-import type { ResponsesFolderData } from "@/api";
-import { createEffect, type ComponentProps } from "solid-js";
+import {
+	FoldersApi,
+	type ResponsesFolderData,
+	type RepositoryBookmark,
+	BookmarksApi,
+} from '@/api';
+import { useAuth } from '@/contexts/AuthContext';
+import { cn } from '@/utils/cn';
+import {
+	createMemo,
+	createSignal,
+	For,
+	Show,
+	type ComponentProps,
+} from 'solid-js';
+import { Button } from './atoms';
+import BookmarkComponent from './BookmarkComponent';
 
 interface FolderComponentProps extends ComponentProps<'div'> {
-	folder: ResponsesFolderData
-	selectedFolder: (id: string) => void
-	deleteFolder: (id: string) => void
+	folder: ResponsesFolderData;
+	selectedFolder: () => string;
+	setSelectedFolder: (id: string) => void;
+	deleteFolder: (id: string) => void;
+	showCreateFolder: (folderBookmarkRefresh?: () => void) => void;
+	indent: number;
 }
 
 export default function FolderComponent(props: FolderComponentProps) {
-	const { folder, selectedFolder, deleteFolder } = props
-	createEffect(() => {
-		console.log(folder)
-		
-	})
+	const { folder, selectedFolder, setSelectedFolder, deleteFolder, indent } =
+		props;
 
-	return <div
-		class='flex items-center py-1 px-2 cursor-pointer transition-colors bg-primary text-primary-foreground hover:bg-primary/80'
-		onClick={() => selectedFolder(folder.id || '')}
-	>
-		<span class="mr-2 text-sm">📁</span>
-		<span class="mr-2 text-sm">{folder.name}</span>
-		<button
-			onClick={(e) => {
-				e.stopPropagation();
-				deleteFolder(folder.id || '');
-			}}
-			class="ml-2 text-red-500 hover:text-red-700 text-xs px-1"
-			title="Delete folder"
-		>
-			🗑
-		</button>
-	</div>
+	const foldersApi = new FoldersApi();
+	const auth = useAuth();
+
+	const [isFolderOpen, setIsFolderOpen] = createSignal(false);
+	const [indentNow, _setIndentNow] = createSignal(indent);
+	const indentNowCN = () => {
+		return indent * 2 + 'rem';
+	};
+	const indentNext = () => {
+		return indent + 1;
+	};
+	const indentNextCN = () => indentNext() * 2 + 'rem';
+
+	console.log({
+		Prev: indent,
+		Indent: indentNow(),
+		IndentClass: indentNowCN(),
+		IndentNext: indentNext(),
+		IndentNextClass: indentNextCN(),
+	});
+
+	const [children, setChildren] = createSignal<ResponsesFolderData[]>(
+		folder.children || [],
+	);
+	const [bookmarks, setBookmarks] = createSignal<RepositoryBookmark[]>(
+		folder.bookmarks || [],
+	);
+
+	const openFolder = async () => {
+		if (isFolderOpen()) {
+			setIsFolderOpen(false);
+		} else {
+			setIsFolderOpen(true);
+			// try to get the folder content from the server
+			const response = await foldersApi.getFolders({
+				folderId: folder.id || '',
+				authorization: `Bearer ${auth.token()}`,
+			});
+			if (response.success && response.data?.children) {
+				setChildren(response.data.children || []);
+				setIsFolderOpen(true);
+			} else {
+				console.error(
+					'Failed to get folder content:',
+					response.message,
+					response.data,
+					response.success,
+				);
+			}
+		}
+	};
+
+	const refreshBookmarks = async () => {
+		const response = await new BookmarksApi().getBookmarks({
+			parentId: folder.id || '',
+			authorization: `Bearer ${auth.token()}`,
+		});
+		if (response.success && response.data) {
+			setBookmarks(response.data || []);
+			setIsFolderOpen(true);
+		} else {
+			console.error(
+				'Failed to get folder content:',
+				response.message,
+				response.data,
+				response.success,
+			);
+		}
+	};
+
+	const renderChildren = () =>
+		createMemo(() => {
+			return (
+				<div class="space-y-4">
+					<For each={children()}>
+						{(child) => (
+							<FolderComponent
+								folder={child}
+								selectedFolder={selectedFolder}
+								setSelectedFolder={setSelectedFolder}
+								deleteFolder={deleteFolder}
+								indent={indentNext()}
+								showCreateFolder={props.showCreateFolder}
+							/>
+						)}
+					</For>
+					<For each={bookmarks()}>
+						{(bookmark) => (
+							<BookmarkComponent
+								bookmark={bookmark}
+								selected={selectedFolder}
+								setSelected={setSelectedFolder}
+								indent={indentNext()}
+							/>
+						)}
+					</For>
+					<Show when={selectedFolder() === folder.id}>
+						<Button
+							style={{ 'margin-left': indentNextCN() }}
+							variant="secondary"
+							onClick={() => {
+								props.showCreateFolder(async () => {
+									await refreshBookmarks();
+								});
+							}}
+						>
+							Create Bookmark
+						</Button>
+					</Show>
+				</div>
+			);
+		}, [children]);
+
+	const childClassName = (): string => {
+		let isFolder = '';
+		if (folder.id === selectedFolder()) {
+			isFolder = 'bg-secondary text-secondary-foreground hover:bg-secondary/80';
+		}
+		return cn(
+			`flex flex-row items-center py-1 px-2 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/80 rounded-lg
+		shadow-md hover:shadow-lg transition-all duration-200 shadow-slate-900/80 ease-in-out space-x-1 justify-between w-64`,
+			isFolder,
+		);
+	};
+
+	return (
+		<>
+			<div
+				class={childClassName()}
+				style={{ 'margin-left': indentNowCN() }}
+				onClick={() => {
+					setSelectedFolder(folder.id || '');
+					openFolder();
+				}}
+			>
+				<div>
+					<span class="mr-2 text-base font-bold">{folder.name}</span>
+				</div>
+			</div>
+			{isFolderOpen() && renderChildren()}
+		</>
+	);
 }

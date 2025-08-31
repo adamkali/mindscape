@@ -8,13 +8,20 @@ interface CreateFolderComponentProps extends ComponentProps<'div'> {
 	auth: AuthContextValue | undefined;
 	setShowCreateFolder: (show: boolean) => void;
 	folderAPIRef: FoldersApi;
+	refresh?: () => void;
 }
 
 export default function CreateFolderComponent(
 	props: CreateFolderComponentProps,
 ) {
-	const { userId, parentId, auth , setShowCreateFolder} = props;
-	const api = props.folderAPIRef;
+	const {
+		userId,
+		parentId,
+		auth,
+		setShowCreateFolder,
+		folderAPIRef,
+		refresh
+	} = props;
 	const [folderName, setFolderName] = createSignal('');
 	const [folderDescription, setFolderDescription] = createSignal('');
 
@@ -22,7 +29,7 @@ export default function CreateFolderComponent(
 		event.preventDefault();
 		if (!folderName()) return;
 		console.log('create folder', folderName());
-		const response = await api.createFolder({
+		const response = await folderAPIRef.createFolder({
 			createFolderRequest: {
 				userId,
 				parentId,
@@ -35,6 +42,7 @@ export default function CreateFolderComponent(
 		if (response.success) {
 			setFolderName('');
 			setFolderDescription('');
+			refresh?.();
 		} else {
 			console.error('Failed to create folder:', response.message);
 			return;
@@ -44,13 +52,14 @@ export default function CreateFolderComponent(
 	};
 
 	return (
-		<div class="mb-4 p-3 bg-background rounded border">
+		<div class="mb-4 p-3 bg-background rounded">
 			<input
 				type="text"
 				placeholder="Enter folder name"
 				value={folderName()}
 				onInput={(e) => setFolderName(e.currentTarget.value)}
-				class="w-full p-2 text-sm border border-card-foreground/20 rounded mb-2 focus:outline-none focus:ring-2 focus:ring-primary"
+				class="w-full p-2 text-sm border border-card-foreground/20 rounded mb-2 focus:outline-none focus:ring-2 focus:ring-primary
+				placeholder:text-card-foreground/50 text-card-foreground"
 				autofocus
 				onKeyDown={(e) => {
 					if (e.key === 'Enter') {

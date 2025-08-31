@@ -73,15 +73,15 @@ func (folderController FolderController) GetRootFolders(e echo.Context) error {
 // @Produce     json
 // @Param       folder_id           path         string                         true "Folder ID"                default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
 // @Param       Authorization       header       string                         true "Authorization Header"     default("Bearer token")
-// @Success     200                 {object}     responses.FoldersResponse
-// @Failure     401                 {object}     responses.FoldersResponse
-// @Failure     404                 {object}     responses.FoldersResponse
-// @Failure     500                 {object}     responses.FoldersResponse
+// @Success     200                 {object}     responses.FolderResponse
+// @Failure     401                 {object}     responses.FolderResponse
+// @Failure     404                 {object}     responses.FolderResponse
+// @Failure     500                 {object}     responses.FolderResponse
 // @Router      /folders/{folder_id} [get]
 func (folderController FolderController) GetFolderByID(e echo.Context) error {
 	return folder_handlers.NewGetById(e).
 		Handle(folderController.AuthService.CheckToken).
-		Handle(folderController.FolderService.GetByParent).
+		Handle(folderController.FolderService.Get).
 		Handle(folderController.BookmarkService.GetByFolder).
 		Handle(folderController.NoteService.GetByFolder).
 		Handle(folderController.FolderService.GetByParent).

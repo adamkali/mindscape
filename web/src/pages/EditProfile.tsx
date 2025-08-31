@@ -4,6 +4,7 @@ import { UsersApi, type UpdateCredentialsRequest } from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { EmptyGuid } from '@/utils';
 import { Header } from '@/components/Header';
+import { Button, Input } from '@/components/atoms';
 
 const EditProfile = () => {
 	const auth = useAuth();
@@ -298,50 +299,43 @@ const EditProfile = () => {
 								onInput={(e) => handleOldPasswordChange(e)}
 							/>
 						</div>
-
+						<Input
+							id="newPassword"
+							name="newPassword"
+							type="password"
+							placeholder="Enter your New Password"
+							value={updateCredentialsRequest().password}
+							onInput={(e) => handlePasswordChange(e)}
+							variant="primary"
+							label={
+								<span class="block text-sm font-medium bg-primary text-slate-100">
+									New Password
+								</span>
+							}
+						/>
+						<Input 
+							id="confirmPassword"
+							name="confirmPassword"
+							type="password"
+							placeholder="Confirm your New Password"
+							value={confirmPassword()}
+							onInput={(e) => handleConfirmPasswordChange(e)}
+							variant="primary"
+							label={
+								<span class="block text-sm font-medium bg-primary text-slate-100">
+									Confirm Password
+								</span>
+							}
+						/>
 						<div>
-							<label
-								for="newPassword"
-								class="block text-sm font-medium bg-primary text-slate-100"
-							>
-								New Password
-							</label>
-							<input
-								id="newPassword"
-								name="newPassword"
-								type="password"
-								class="mt-1 appearance-none relative block w-full px-3 py-2 border border-primary text-primary background-card rounded-md sm:text-sm"
-								placeholder="Enter your New Password"
-								value={updateCredentialsRequest().password}
-								onInput={(e) => handlePasswordChange(e)}
-							/>
-						</div>
-
-						<div>
-							<label
-								for="confirmPassword"
-								class="block text-sm font-medium bg-primary text-slate-100"
-							>
-								Confirm Password
-							</label>
-							<input
-								id="confirmPassword"
-								name="confirmPassword"
-								type="password"
-								class="mt-1 appearance-none relative block w-full px-3 py-2 border border-primary text-primary background-card rounded-md sm:text-sm"
-								placeholder="Confirm your New Password"
-								value={confirmPassword()}
-								onInput={(e) => handleConfirmPasswordChange(e)}
-							/>
-						</div>
-						<div>
-							<button
+							<Button 
 								type="submit"
 								disabled={isLoading()}
-								class="flex-1 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+								variant="secondary"
 							>
-								{isLoading() ? 'Updating...' : 'Update Profile'}
-							</button>
+								{isLoading() ? 'Updating...' : 'Update Password'}
+							</Button>
+
 						</div>
 					</form>
 					<div class="mt-8 flex justify-between">

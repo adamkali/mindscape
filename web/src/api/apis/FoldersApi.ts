@@ -151,7 +151,7 @@ export class FoldersApi extends runtime.BaseAPI {
      * Get the Folders associated with the user under A Parent Folder by Authorization Header and will also try to get the children of the folder as well
      * Get the Folders associated with the user under A Parent Folder
      */
-    async getFoldersRaw(requestParameters: GetFoldersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesFoldersResponse>> {
+    async getFoldersRaw(requestParameters: GetFoldersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesFolderResponse>> {
         if (requestParameters['folderId'] == null) {
             throw new runtime.RequiredError(
                 'folderId',
@@ -181,14 +181,14 @@ export class FoldersApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ResponsesFoldersResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ResponsesFolderResponseFromJSON(jsonValue));
     }
 
     /**
      * Get the Folders associated with the user under A Parent Folder by Authorization Header and will also try to get the children of the folder as well
      * Get the Folders associated with the user under A Parent Folder
      */
-    async getFolders(requestParameters: GetFoldersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ResponsesFoldersResponse> {
+    async getFolders(requestParameters: GetFoldersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ResponsesFolderResponse> {
         const response = await this.getFoldersRaw(requestParameters, initOverrides);
         return await response.value();
     }

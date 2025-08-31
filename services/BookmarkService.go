@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -83,6 +82,7 @@ func (bookmarkService BookmarkService) GetByUser(user_id uuid.UUID) ([]repositor
 	tx.Commit(bookmarkService.ctx)
 	return bookmarks, nil
 }
+
 func (bookmarkService BookmarkService) GetMostRecent(user_id uuid.UUID) (*repository.Bookmark, error){
 	tx, err := bookmarkService.pool.Begin(bookmarkService.ctx)
 	if err != nil {
