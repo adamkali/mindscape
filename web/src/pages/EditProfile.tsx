@@ -4,7 +4,14 @@ import { UsersApi, type UpdateCredentialsRequest } from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { EmptyGuid } from '@/utils';
 import { Header } from '@/components/Header';
-import { Button, Input } from '@/components/atoms';
+import {
+	Button,
+	Card,
+	CardBody,
+	CardFooter,
+	CardHeader,
+	Input,
+} from '@/components/atoms';
 
 const EditProfile = () => {
 	const auth = useAuth();
@@ -185,173 +192,186 @@ const EditProfile = () => {
 	return (
 		<div class="min-h-screen bg-background">
 			<Header />
-			<div class="max-w-2xl mx-auto mt-4">
-				<div class="bg-card text-card-foreground rounded-lg shadow-lg p-8 space-y-2">
-					<div class="mb-8">
+			<div class="max-w-2xl mx-auto mt-4 space-y-4">
+				<Card variant="elevated">
+					<CardHeader>
 						<h1 class="text-3xl font-bold text-gray-900 dark:text-white">
 							Edit Profile
 						</h1>
 						<p class="text-gray-600 dark:text-gray-400 mt-2">
 							Update your profile information
 						</p>
-					</div>
-
+					</CardHeader>
 					<form class="space-y-6" onSubmit={handleSubmit}>
-						<div class="flex flex-row items-center justify-evenly space-y-4">
-							<div class="w-32 h-32 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-								{isLoadingPicture() ? (
-									<div class="text-gray-500 dark:text-gray-400">Loading...</div>
-								) : profilePicture() ? (
-									<img
-										src={profilePicture()}
-										alt="Profile picture"
-										class="w-full h-full object-cover"
-									/>
-								) : (
-									<div class="text-4xl text-gray-400 dark:text-gray-500">
-										{user.username?.charAt(0).toUpperCase()}
-									</div>
-								)}
-							</div>
-
-							<div class="flex flex-col space-y-2">
-								<div >
-								<label
-									for="profilePicture"
-									class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-								>
-									Update Profile Picture
-								</label>
-								<input
-									id="profilePicture"
-									name="profilePicture"
-									type="file"
-									accept="image/*"
-									class="block w-full text-sm text-secondary-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-secondary file:text-secondary-foreground hover:file:bg-secondary/80"
-									onChange={handleFileSelect}
-								/>
+						<CardBody padding="lg" class="flex flex-row space-x-4">
+							<div class="flex flex-row items-center justify-evenly space-y-4">
+								<div class="w-32 h-32 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+									{isLoadingPicture() ? (
+										<div class="text-gray-500 dark:text-gray-400">
+											Loading...
+										</div>
+									) : profilePicture() ? (
+										<img
+											src={profilePicture()}
+											alt="Profile picture"
+											class="w-full h-full object-cover"
+										/>
+									) : (
+										<div class="text-4xl text-gray-400 dark:text-gray-500">
+											{user.username?.charAt(0).toUpperCase()}
+										</div>
+									)}
 								</div>
-								<button
-									type="submit"
-									class="bg-secondary hover:bg-secondary/80 text-secondary-foreground font-bold py-2 px-4 rounded"
-									disabled={isLoading()}
-								>
-									Save
-								</button>
-							</div>
-						</div>
-					</form>
-					<form class="space-y-6" onSubmit={handleCredentialsSubmit}>
-						<div class="space-x-4 flex flex-row">
-							<div class="flex-1">
-								<label
-									for="username"
-									class="block text-sm font-medium bg-primary text-foreground dark:text-slate-100 rounded-t-md pl-4"
-								>
-									Username
-								</label>
-								<input
-									id="username"
-									name="username"
-									type="text"
-									required
-									class="appearance-none relative block w-full px-3 py-2 border border-primary text-primary background-card rounded-b-md sm:text-sm"
-									placeholder="Enter your username"
-									value={updateCredentialsRequest().username}
-									onInput={(e) => handleUsernameChange(e)}
-								/>
-							</div>
 
-							<div class="flex-1">
-								<label
-									for="email"
-									class="block text-sm font-medium bg-primary text-foreground dark:text-slate-100 rounded-t-md pl-4"
-								>
-									Email
-								</label>
-								<input
-									id="email"
-									name="email"
-									type="email"
-									required
-									class="appearance-none relative block w-full px-3 py-2 border border-primary text-primary background-card rounded-b-md sm:text-sm"
-									placeholder="Enter your email"
-									value={updateCredentialsRequest().email}
-									onInput={(e) => handleEmailChange(e)}
-								/>
+								<div class="flex flex-col space-y-2">
+									<div>
+										<label
+											for="profilePicture"
+											class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+										>
+											Update Profile Picture
+										</label>
+										<input
+											id="profilePicture"
+											name="profilePicture"
+											type="file"
+											accept="image/*"
+											class="block w-full text-sm text-secondary-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-secondary file:text-secondary-foreground hover:file:bg-secondary/80"
+											onChange={handleFileSelect}
+										/>
+									</div>
+								</div>
 							</div>
-						</div>
-
-						<div>
-							<label
-								for="password"
-								class="block text-sm font-medium bg-primary text-slate-100"
-							>
-								Current Password
-							</label>
-							<input
-								id="password"
-								name="password"
-								type="password"
-								class="mt-1 appearance-none relative block w-full px-3 py-2 border border-primary text-primary background-card rounded-md sm:text-sm"
-								placeholder="Enter your Current Password"
-								value={updateCredentialsRequest().oldPassword}
-								onInput={(e) => handleOldPasswordChange(e)}
-							/>
-						</div>
-						<Input
-							id="newPassword"
-							name="newPassword"
-							type="password"
-							placeholder="Enter your New Password"
-							value={updateCredentialsRequest().password}
-							onInput={(e) => handlePasswordChange(e)}
-							variant="primary"
-							label={
-								<span class="block text-sm font-medium bg-primary text-slate-100">
-									New Password
-								</span>
-							}
-						/>
-						<Input 
-							id="confirmPassword"
-							name="confirmPassword"
-							type="password"
-							placeholder="Confirm your New Password"
-							value={confirmPassword()}
-							onInput={(e) => handleConfirmPasswordChange(e)}
-							variant="primary"
-							label={
-								<span class="block text-sm font-medium bg-primary text-slate-100">
-									Confirm Password
-								</span>
-							}
-						/>
-						<div>
-							<Button 
-								type="submit"
-								disabled={isLoading()}
-								variant="secondary"
-							>
-								{isLoading() ? 'Updating...' : 'Update Password'}
+						</CardBody>
+						<CardFooter>
+							<Button type="submit" disabled={isLoading()} variant="secondary">
+								Save
 							</Button>
-
-						</div>
+							<Button onClick={handleCancel}>Cancel</Button>
+						</CardFooter>
 					</form>
-					<div class="mt-8 flex justify-between">
-						{error() && <div class="text-red-600 text-sm">{error()}</div>}
+				</Card>
+				<Card variant="elevated">
+					<CardHeader>
+						<h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+							Update Credentials Data
+						</h1>
+						<p class="text-gray-600 dark:text-gray-400 mt-2 text-wrap text-justify">
+							Update your credentials information, You do not need to change
+							your password, just leave it blank.
+						</p>
+					</CardHeader>
+					<form class="space-y-6" onSubmit={handleCredentialsSubmit}>
+						<CardBody padding="lg">
+							<div class="space-x-4 flex flex-row">
+								<div class="flex-1">
+									<label
+										for="username"
+										class="block text-sm font-medium bg-primary text-foreground dark:text-slate-100 rounded-t-md pl-4"
+									>
+										Username
+									</label>
+									<input
+										id="username"
+										name="username"
+										type="text"
+										required
+										class="appearance-none relative block w-full px-3 py-2 border border-primary text-primary background-card rounded-b-md sm:text-sm"
+										placeholder="Enter your username"
+										value={updateCredentialsRequest().username}
+										onInput={(e) => handleUsernameChange(e)}
+									/>
+								</div>
 
-						{success() && <div class="text-green-600 text-sm">{success()}</div>}
+								<div class="flex-1">
+									<label
+										for="email"
+										class="block text-sm font-medium bg-primary text-foreground dark:text-slate-100 rounded-t-md pl-4"
+									>
+										Email
+									</label>
+									<input
+										id="email"
+										name="email"
+										type="email"
+										required
+										class="appearance-none relative block w-full px-3 py-2 border border-primary text-primary background-card rounded-b-md sm:text-sm"
+										placeholder="Enter your email"
+										value={updateCredentialsRequest().email}
+										onInput={(e) => handleEmailChange(e)}
+									/>
+								</div>
+							</div>
 
-						<div class="flex space-x-4">
-							<button
-								type="button"
-								onClick={handleCancel}
-								class="flex-1 flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600"
-							>
-								Cancel
-							</button>
-						</div>
+							<div>
+								<label
+									for="password"
+									class="block text-sm font-medium bg-primary text-slate-100"
+								>
+									Current Password
+								</label>
+								<input
+									id="password"
+									name="password"
+									type="password"
+									class="mt-1 appearance-none relative block w-full px-3 py-2 border border-primary text-primary background-card rounded-md sm:text-sm"
+									placeholder="Enter your Current Password"
+									value={updateCredentialsRequest().oldPassword}
+									onInput={(e) => handleOldPasswordChange(e)}
+								/>
+							</div>
+							<Input
+								id="newPassword"
+								name="newPassword"
+								type="password"
+								placeholder="Enter your New Password"
+								value={updateCredentialsRequest().password}
+								onInput={(e) => handlePasswordChange(e)}
+								variant="primary"
+								label={
+									<span class="block text-sm font-medium bg-primary text-slate-100">
+										New Password
+									</span>
+								}
+							/>
+							<Input
+								id="confirmPassword"
+								name="confirmPassword"
+								type="password"
+								placeholder="Confirm your New Password"
+								value={confirmPassword()}
+								onInput={(e) => handleConfirmPasswordChange(e)}
+								variant="primary"
+								label={
+									<span class="block text-sm font-medium bg-primary text-slate-100">
+										Confirm Password
+									</span>
+								}
+							/>
+							<div></div>
+						</CardBody>
+						<CardFooter>
+							<Button type="submit" disabled={isLoading()} variant="secondary">
+								{isLoading() ? 'Updating...' : 'Update Credentials'}
+							</Button>
+							<Button onClick={handleCancel}>Cancel</Button>
+						</CardFooter>
+					</form>
+				</Card>
+
+				<div class="mt-8 flex justify-between">
+					{error() && <div class="text-red-600 text-sm">{error()}</div>}
+
+					{success() && <div class="text-green-600 text-sm">{success()}</div>}
+
+					<div class="flex space-x-4">
+						<button
+							type="button"
+							onClick={handleCancel}
+							class="flex-1 flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600"
+						>
+							Cancel
+						</button>
 					</div>
 				</div>
 			</div>

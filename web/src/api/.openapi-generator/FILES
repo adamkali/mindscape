@@ -1,3 +1,4 @@
+apis/BackgroundApi.ts
 apis/BookmarksApi.ts
 apis/FoldersApi.ts
 apis/UsersApi.ts

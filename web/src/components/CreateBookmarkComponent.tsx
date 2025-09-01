@@ -62,7 +62,7 @@ export default function CreateBookmarkComponent(
 							id="linkUrl"
 							name="linkUrl"
 							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-							onchange={setLinkUrl}
+							onChange={(e) => setLinkUrl(e.currentTarget.value)}
 						/>
 					</div>
 
@@ -78,7 +78,7 @@ export default function CreateBookmarkComponent(
 							id="linkName"
 							name="linkName"
 							class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-							onchange={setLinkName}
+							onChange={(e) => setLinkName(e.currentTarget.value)}
 						/>
 					</div>
 				</form>

@@ -1,6 +1,6 @@
 import { A } from '@solidjs/router';
-import { createEffect, createSignal, Show } from 'solid-js';
-import { FoldersApi, type ResponsesFolderData } from '@/api';
+import { createResource, createEffect, createSignal, Show } from 'solid-js';
+import { BackgroundApi, FoldersApi, type ResponsesFolderData } from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Header } from '@/components/Header';
 import CreateFolderComponent from '@/components/CreateFolderComponent';
@@ -20,9 +20,34 @@ const Home = () => {
 	const foldersApi = new FoldersApi();
 	const user = auth.user();
 
+
 	createEffect(() => {
 		fetchRootFolders();
 	});
+
+	const [defaultBackground] = createResource(async () => {
+		const api = new BackgroundApi();
+		const response = await api.getDefaultBackground();
+		if (response.success && response.data) {
+			return response.data;
+		} else {
+			throw new Error('Failed to fetch default background: ' + response.message);
+		}
+	});
+
+	createEffect(() => {
+		if (focusedNodeId() === EmptyGuid) {
+			setFocusedNodeId('');
+		}
+		if (showCreateFolder()) {
+			setShowCreateBookmark(false);
+		}
+		if (showCreateBookmark()) {
+			setShowCreateFolder(false);
+		}
+
+	});
+
 
 	const fetchRootFolders = async () => {
 		if (!auth.token()) return;
@@ -100,7 +125,10 @@ const Home = () => {
 
 
 	return (
-		<div class="min-h-screen bg-background">
+		<div
+			class="min-h-screen bg-background"
+			style={{ "background-image": `url(${defaultBackground()})` }}
+		>
 			<Header />
 
 			{/* Main content */}

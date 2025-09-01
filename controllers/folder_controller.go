@@ -25,8 +25,6 @@ func (uc FolderController) ControllerName() string {
 }
 
 func BuildFolderController(p *Registrar) FolderController {
-	fmt.Println("Building Folder Controller")
-
 	return FolderController{
 		Name:             "/folders",
 		Config:           p.Config,

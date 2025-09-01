@@ -16,6 +16,7 @@ func NewStringResponse() *StringResponse {
 	return &StringResponse{Success: false, Message: ""}
 }
 
+
 func (StringResponse *StringResponse) Fail(ctx echo.Context, code int, err error) error {
 	StringResponse.Message = err.Error()
 	return ctx.JSON(code, StringResponse)

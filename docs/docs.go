@@ -21,6 +21,72 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/background": {
+            "get": {
+                "description": "Get Default Background",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Background"
+                ],
+                "summary": "Get Default Background",
+                "operationId": "GetDefaultBackground",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/background/choices": {
+            "get": {
+                "description": "Get Background Choices",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Background"
+                ],
+                "summary": "Get Background Choices",
+                "operationId": "GetBackgroundChoices",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/bookmarks": {
             "post": {
                 "description": "Create a new Bookmark by Authorization Header",

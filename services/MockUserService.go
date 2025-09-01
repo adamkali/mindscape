@@ -26,17 +26,12 @@ func CreateMockUserService(ctx context.Context, pool *pgxpool.Pool) *MockUserSer
 }
 
 func (service *MockUserService) Create(params *requests.NewUserRequest) (*repository.User, error) {
-	BCryptHash, err := hashPassword(params.Password)
-	if err != nil {
-		return nil, err
-	}
-
-	userID := uuid.New()
+	userID := EmptyUUID
 	user := repository.User{
 		ID:       userID,
 		Username: params.Username,
 		Email:    params.Email,
-		BCryptHash: BCryptHash,
+		BCryptHash: EmptyUUID.String(),
 		Admin:  params.IsAdmin,
 	}
 	return &user, nil
@@ -91,4 +86,15 @@ func (service *MockUserService) Update(user_id uuid.UUID, profile_name string) (
 
 func (service *MockUserService) Remove(id uuid.UUID) error {
 	return nil
+}
+
+func (service *MockUserService) UpdateUserCredentials(params *requests.UpdateCredentialsRequest) (*repository.User, error) {
+	user := repository.User{
+		ID:       params.ID,
+		Username: params.Username,
+		Email:    params.Email,
+		BCryptHash: "----------------",
+		Admin:  true,
+	}
+	return &user, nil
 }

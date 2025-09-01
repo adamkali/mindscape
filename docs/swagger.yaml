@@ -269,6 +269,50 @@ info:
   title: mindscape
   version: 0.0.1
 paths:
+  /background:
+    get:
+      description: Get Default Background
+      operationId: GetDefaultBackground
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/StringResponse'
+      summary: Get Default Background
+      tags:
+      - Background
+  /background/choices:
+    get:
+      description: Get Background Choices
+      operationId: GetBackgroundChoices
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/StringResponse'
+      summary: Get Background Choices
+      tags:
+      - Background
   /bookmarks:
     post:
       consumes:
