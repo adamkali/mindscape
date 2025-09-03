@@ -3,12 +3,11 @@
 package user_handlers
 
 import (
-	"fmt"
-
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/requests"
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
+	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/labstack/echo/v4"
 )
 
@@ -41,26 +40,20 @@ func NewLoginHandler(
 	}
 }
 
-func (h *LoginHandler) Handle() *LoginHandler {
+func (h *LoginHandler) Handle() handlers.IHandler {
 	request := new(requests.LoginRequest)
 	var err error
 	if request, err = h.ValidatorService.ValidateLoginRequest(h.ctx); err != nil {
-		h.Lock(400, err)
+		handlers.Lock(h, 400, err)
 	}
 	h.authenticated, err = h.UserService.Login(request)
 	if err != nil {
-		h.Lock(401, err)
+		handlers.Lock(h, 401, err)
 	}
 	h.token, err = h.AuthService.Update(*h.authenticated)
 	if err != nil {
-		h.Lock(500, err)
+		handlers.Lock(h, 500, err)
 	}
-	return h
-}
-
-func (h *LoginHandler) Lock(code int, err error) *LoginHandler {
-	h.code = code
-	h.err = fmt.Errorf("%d Error: %s", err.Error())
 	return h
 }
 
@@ -84,3 +77,11 @@ func (h *LoginHandler) JSON() error {
 	}
 }
 
+func (h *LoginHandler) SetCode(code int) handlers.IHandler {
+	h.code = code
+	return h
+}
+func (h *LoginHandler) SetError(err error) handlers.IHandler {
+	h.err = err
+	return h
+}
