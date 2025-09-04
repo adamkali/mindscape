@@ -1,5 +1,7 @@
 package handlers
 
+import "fmt"
+
 type IHandler interface {
 	Handle() IHandler
 	JSON() error
@@ -9,6 +11,6 @@ type IHandler interface {
 
 func Lock(h IHandler, code int, err error) IHandler {
 	h.SetCode(code)
-	h.SetError(err)
+	h.SetError(fmt.Errorf("%d Error: %s", code, err.Error()))
 	return h
 }

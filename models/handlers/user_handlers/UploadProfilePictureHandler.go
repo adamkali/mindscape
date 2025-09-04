@@ -3,104 +3,115 @@
 package user_handlers
 
 import (
-	"fmt"
-	"io"
 	"mime/multipart"
 
 	"github.com/adamkali/mindscape/db/repository"
+	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
 type UploadProfilePictureHandler struct {
-	UserUploadFilename          string
-	UserResponse 				*repository.User
-	UserID                      uuid.UUID
-	Context                     echo.Context
-	Error                       error
-	Code                        int
-	Locked                      bool
+	ctx      echo.Context
+	err      error
+	code     int
+	vs       services.ValidatorService
+	us       services.IUserService
+	as       services.IAuthService
+	ms       services.IMinioService
+	response *repository.User
 }
 
-func NewUploadProfilePictureHandler(ctx echo.Context) *UploadProfilePictureHandler {
-	return &UploadProfilePictureHandler {
-		Context: ctx,
-		Locked:  false,
-		Error:   nil,
-		Code:    200,
+func NewUploadProfilePictureHandler(
+	ctx echo.Context,
+	validator services.ValidatorService,
+	us services.IUserService,
+	as services.IAuthService,
+	ms services.IMinioService,
+) *UploadProfilePictureHandler {
+	return &UploadProfilePictureHandler{
+		ctx:  ctx,
+		err:  nil,
+		code: 200,
+		vs:   validator,
+		us:   us,
+		as:   as,
+		ms:   ms,
 	}
 }
 
-func (h *UploadProfilePictureHandler) Lock(code int) *UploadProfilePictureHandler{
-	h.Locked = true
-	h.Code = code
+func (h *UploadProfilePictureHandler) Lock(code int, err error) handlers.IHandler {
+	return handlers.Lock(h, code, err)
+}
+
+func (h *UploadProfilePictureHandler) SetCode(code int) handlers.IHandler {
+	h.code = code
 	return h
 }
 
-func (h *UploadProfilePictureHandler) Handle(fun any) *UploadProfilePictureHandler {
-	var code int
-	if !h.Locked {
-		switch handle := fun.(type) {
-		case func(token string) error:
-			jwt_token := h.Context.Get("user").(*jwt.Token)
-			claims := jwt_token.Claims.(*services.CustomJwt)
-			h.UserID = claims.UserId
-			h.Error = handle(jwt_token.Raw)
-			code = 401
-		case func(
-			uploaderID uuid.UUID,
-			uploadName string,
-			uploadFile io.Reader,
-			size int64,
-		) error :
-			var file *multipart.FileHeader
-			var src multipart.File
-			file, h.Error = h.Context.FormFile("file")
-			if h.Error != nil {
-				code = 400
-				break
-			}
-			src, h.Error = file.Open()
-			defer src.Close()
-			h.UserUploadFilename = file.Filename
-			h.Error = handle(h.UserID, h.UserUploadFilename, src, file.Size)
-			code = 500
-		case func(user_id uuid.UUID, profile_name string) (*repository.User, error):
-			h.UserResponse, h.Error = handle(h.UserID, h.UserUploadFilename)
-			code = 500
-		default:
-			fmt.Printf("Type assertion failed for type: %T\n", fun)
-			code = 600
-			h.Error = echo.NewHTTPError(code, "Misaligned handler on the server")
-		}
-		if h.Error != nil {
-			return h.Lock(code)
-		}
+func (h *UploadProfilePictureHandler) SetError(err error) handlers.IHandler {
+	h.err = err
+	return h
+}
+
+func (h *UploadProfilePictureHandler) Handle() handlers.IHandler {
+	// Handle(UserController.AuthService.CheckToken).
+	// Handle(UserController.MinioService.Upload).
+	// Handle(UserController.UserService.Update).
+	// var file *multipart.FileHeader
+	// var src multipart.File
+	// file, h.Error = h.Context.FormFile("file")
+	// if h.Error != nil {
+	// 	code = 400
+	// 	break
+	// }
+	// src, h.Error = file.Open()
+	// defer src.Close()
+	// h.UserUploadFilename = file.Filename
+	// h.Error = handle(h.UserID, h.UserUploadFilename, src, file.Size)
+	// code = 500
+	// case func(user_id uuid.UUID, profile_name string) (*repository.User, error):
+	// 	h.UserResponse, h.Error = handle(h.UserID, h.UserUploadFilename)
+	// 	code = 500
+
+	filename := "" 
+	jwt_token := h.ctx.Get("user").(*jwt.Token)
+	claims := jwt_token.Claims.(*services.CustomJwt)
+	userId := claims.UserId
+	err := h.as.CheckToken(jwt_token.Raw)
+	if err != nil {
+		return h.Lock(401, err)
+	}
+	var file *multipart.FileHeader
+	var src multipart.File
+	file, err = h.ctx.FormFile("file")
+	if err != nil {
+		return h.Lock(400, err)
+	}
+	src, err = file.Open()
+	if err != nil {
+		return h.Lock(500, err)
+	}
+	defer src.Close()
+	filename = file.Filename
+	err = h.ms.Upload(userId, filename, src, file.Size)
+	if err != nil {
+		return h.Lock(500, err)
+	}
+	h.response, err = h.us.Update(userId, filename)
+	if err != nil {
+		return h.Lock(500, err)
 	}
 	return h
-}
 
+}
 
 func (h *UploadProfilePictureHandler) JSON() error {
-	var code int
-	var message string
-	if h.Locked && h.Error != nil {
-		code = h.Code
-		if code == 600 {
-			message = "Misaligend handler on the server"
-		} else {
-			message = h.Error.Error()
-		}
-	} else if code == 200 {
-		message = "OK"
+	if h.err != nil {
+		return responses.NewUserResponse().Fail(h.ctx, h.code, h.err)
+	} else {
+		return responses.NewUserResponse().Successful(h.ctx, h.response)
 	}
-	return h.Context.JSON(code, responses.UserResponse{
-		Message: message,
-		Success: !h.Locked,
-		Data: responses.UserDataFromRepository(h.UserResponse),
-	})
-
 }

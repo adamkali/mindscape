@@ -3,135 +3,98 @@
 package user_handlers
 
 import (
-	"fmt"
 	"time"
 
-	"github.com/adamkali/mindscape/db/repository"
-	"github.com/adamkali/mindscape/services"
+	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
+	"github.com/adamkali/mindscape/services"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"github.com/redis/go-redis/v9"
 )
 
 type GetProfilePictureHandler struct {
-	UserID                      uuid.UUID
-	Context                     echo.Context
-	ProfilePictureName          string
-	PresignedUserProfilePicture string
-	UpdateRedis                 bool			// This will tell the handler to update the redis cache if the profile picture needs to be updated
-	Error                       error
-	Code                        int
-	Locked                      bool
+	ctx  echo.Context
+	err  error
+	code int
+	url  string
+	Vs   services.ValidatorService
+	Rs   services.IRedisService
+	Ms   services.IMinioService
+	As   services.IAuthService
+	Us   services.IUserService
 }
 
-func NewGetProfilPictureHandler(ctx echo.Context) *GetProfilePictureHandler {
+func NewGetProfilPictureHandler(
+	ctx echo.Context,
+	ValidatorService services.ValidatorService,
+	RedisService services.IRedisService,
+	MinioService services.IMinioService,
+	AuthService services.IAuthService,
+	UserService services.IUserService,
+) *GetProfilePictureHandler {
 	return &GetProfilePictureHandler{
-		Context: ctx,
-		Locked:  false,
-		Error:   nil,
-		Code:    200,
+		ctx:  ctx,
+		err:  nil,
+		code: 200,
+		Vs:   ValidatorService,
+		Rs:   RedisService,
+		Ms:   MinioService,
+		As:   AuthService,
+		Us:   UserService,
 	}
 }
 
-func (h *GetProfilePictureHandler) Lock(code int) *GetProfilePictureHandler {
-	h.Locked = true
-	h.Code = code
-	return h
-}
-
-func (h *GetProfilePictureHandler) Handle(fun any) *GetProfilePictureHandler {
-	var code int
-	if !h.Locked {
-		switch handle := fun.(type) {
-		case func(token string) error:
-			jwt_token := h.Context.Get("user").(*jwt.Token)
-			claims := jwt_token.Claims.(*services.CustomJwt)
-			h.UserID = claims.UserId
-			h.Error = handle(jwt_token.Raw)
-			code = 401
-			h.ProfilePictureName = claims.ProfilePic
-			fmt.Printf("[DEBUG] GetProfilePictureHandler.Handle{ claims.User: %s, claims.ProfilePic: %s }\n", claims.User, claims.ProfilePic)
-			break
-		case func(user_id uuid.UUID) (*repository.User, error):
-			user, err := handle(h.UserID)
-			if user.ProfilePicUrl != nil {
-				if h.ProfilePictureName != *user.ProfilePicUrl {
-					h.UpdateRedis = true
-					h.ProfilePictureName = *user.ProfilePicUrl
-					h.PresignedUserProfilePicture = ""
-				}
-			}
-			h.Error = err
-			code = 500
-			break
-		case func(uploaderID uuid.UUID, uploadName string) (string, error):
-			// check if the PresignedUserProfilePicture exists yet in the handler 
-			if h.PresignedUserProfilePicture != "" {
-				fmt.Printf("[DEBUG] Cached GetProfilePictureHandler.Handle{ h.UserID } Success\n", )
-				h.Error = nil
-				h.UpdateRedis = false
-				break // basically we say that the we have the url from cache and we can return
-			}
-			fmt.Printf("[DEBUG] GetProfilePictureHandler.Handle{ Must be updated: h.UserID / h.ProfilePictureName: %s / %s }\n", h.UserID.String(), h.ProfilePictureName)
-			h.PresignedUserProfilePicture, h.Error = handle(h.UserID, h.ProfilePictureName)
-			h.UpdateRedis = true
-			code = 500
-			break
-		// IRedisService GetWithExpiration
-		case func(key string) (string, error):
-			// check if the PresignedUserProfilePicture exists in redis
-			fmt.Printf("[DEBUG] GetProfilePictureHandler.Handle{ h.UserID / h.PresignedUserProfilePicture: %s/%s }\n", h.UserID.String(), h.ProfilePictureName)
-			h.PresignedUserProfilePicture, h.Error = handle(h.UserID.String() + "/" + h.ProfilePictureName)
-			// dont worry
-			if h.Error == redis.Nil {
-				h.UpdateRedis = true
-				h.PresignedUserProfilePicture = ""
-				h.Error = nil
-			} else {
-				h.UpdateRedis = false	
-				code = 500
-			}
-			break
-		case func(key string, value string, expiration time.Duration) error:
-			if !h.UpdateRedis {
-				h.Error = nil
-				break
-			}
-			h.Error = handle(h.UserID.String() + "/" + h.ProfilePictureName, h.PresignedUserProfilePicture, time.Hour*24)
-			code = 500
-			break
-		default:
-			fmt.Printf("Type assertion failed for type: %T\n", fun)
-			code = 600
-			h.Error = echo.NewHTTPError(code, "Misaligned handler on the server")
-			break
+func (h *GetProfilePictureHandler) Handle() handlers.IHandler {
+	jwt_token := h.ctx.Get("user").(*jwt.Token)
+	claims := jwt_token.Claims.(*services.CustomJwt)
+	userID := claims.UserId
+	profilePictureName := ""
+	err := h.As.CheckToken(jwt_token.Raw)
+	if err != nil {
+		handlers.Lock(h, 401, err)
+	}
+	user, err := h.Us.Get(userID)
+	if user.ProfilePicUrl != nil {
+		if profilePictureName != *user.ProfilePicUrl {
+			profilePictureName = *user.ProfilePicUrl
+			h.url = ""
 		}
-		if h.Error != nil {
-			return h.Lock(code)
+	}
+	if err != nil {
+		handlers.Lock(h, 404, err)
+	}
+	// now check redis
+	h.url, h.err = h.Rs.Get(profilePictureName)
+	if h.err == redis.Nil {
+		h.url, h.err = h.Ms.GetPresigned(userID,profilePictureName)
+		if h.err != nil {
+			return handlers.Lock(h, 500, h.err)
+		}
+		h.err = h.Rs.SetWithExpiration(
+			profilePictureName,
+			h.url,
+			time.Hour*24*7,
+		)
+		if h.err != nil {
+			return handlers.Lock(h, 500, h.err) 
 		}
 	}
 	return h
 }
 
 func (h *GetProfilePictureHandler) JSON() error {
-	var code int
-	var message string
-	if h.Locked && h.Error != nil {
-		code = h.Code
-		if code == 600 {
-			message = "Misaligend handler on the server"
-		} else {
-			message = h.Error.Error()
-		}
-	} else if code == 200 {
-		message = "OK"
+	if h.err != nil {
+		return responses.NewStringResponse().Fail(h.ctx, h.code, h.err)
 	}
-	return h.Context.JSON(code, responses.StringResponse{
-		Message: message,
-		Success: !h.Locked,
-		Data:    &h.PresignedUserProfilePicture,
-	})
+	return responses.NewStringResponse().Successful(h.ctx, h.url)
 
+}
+func (h *GetProfilePictureHandler) SetCode(code int) handlers.IHandler {
+	h.code = code
+	return h
+}
+func (h *GetProfilePictureHandler) SetError(err error) handlers.IHandler {
+	h.err = err
+	return h
 }

@@ -1,10 +1,9 @@
 package user_handlers
 
 import (
-	"errors"
-	"fmt"
 	"time"
 
+	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
 	"github.com/labstack/echo/v4"
@@ -41,14 +40,14 @@ func (h *DefaultBackgroundHandler) Lock(code int, err error) *DefaultBackgroundH
 	return h
 }
 
-func (h *DefaultBackgroundHandler) Handle() *DefaultBackgroundHandler {
+func (h *DefaultBackgroundHandler) Handle() handlers.IHandler{
 	h.url, h.err = h.RedisService.Get("default")
 	if h.err == nil {
 		return h
 	}
 	h.url, h.err = h.MinioService.GetDefault()
 	if h.err != nil {
-		return h.Lock(500, h.err)
+		return handlers.Lock(h,500, h.err)
 	}
 	h.err = h.RedisService.SetWithExpiration(
 		"default",
@@ -56,16 +55,25 @@ func (h *DefaultBackgroundHandler) Handle() *DefaultBackgroundHandler {
 		time.Hour*24*7,
 	)
 	if h.err != nil {
-		return h.Lock(500, h.err)
+		return handlers.Lock(h,500, h.err)
 	}
 	return h
 }
 
 func (h *DefaultBackgroundHandler) JSON() error {
 	if h.err != nil {
-		errorMessage := errors.New(fmt.Sprintf("%d Error: %s", h.code, h.err.Error()))
-		return responses.NewStringResponse().Fail(h.ctx, h.code, errorMessage)
+		return responses.NewStringResponse().Fail(h.ctx, h.code, h.err)
 	} else {
 		return responses.NewStringResponse().Successful(h.ctx, h.url)
 	}
+}
+
+func (h *DefaultBackgroundHandler) SetError(err error) handlers.IHandler {
+	h.err = err
+	return h
+}
+
+func (h *DefaultBackgroundHandler) SetCode(code int) handlers.IHandler {
+	h.code = code
+	return h
 }

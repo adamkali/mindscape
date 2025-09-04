@@ -1,11 +1,10 @@
 package user_handlers
 
 import (
-	"errors"
-	"fmt"
 	"strings"
 	"time"
 
+	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
 	"github.com/labstack/echo/v4"
@@ -42,7 +41,7 @@ func (h *BackgroundChoicesHandler) Lock(code int, err error) *BackgroundChoicesH
 	return h
 }
 
-func (h *BackgroundChoicesHandler) Handle() *BackgroundChoicesHandler {
+func (h *BackgroundChoicesHandler) Handle() handlers.IHandler {
 	var urlstring string
 	urlstring, h.err = h.RedisService.Get("background_choices")
 	if h.err == nil {
@@ -51,7 +50,7 @@ func (h *BackgroundChoicesHandler) Handle() *BackgroundChoicesHandler {
 	}
 	h.urls , h.err = h.MinioService.GetBackgroundChoices()
 	if h.err != nil {
-		return h.Lock(500, h.err)
+		return handlers.Lock(h,500, h.err)
 	}
 	h.err = h.RedisService.SetWithExpiration(
 		"background_choices",
@@ -59,16 +58,25 @@ func (h *BackgroundChoicesHandler) Handle() *BackgroundChoicesHandler {
 		time.Hour*24*7,
 	)
 	if h.err != nil {
-		return h.Lock(500, h.err)
+		return handlers.Lock(h,500, h.err)
 	}
 	return h
 }
 
 func (h *BackgroundChoicesHandler) JSON() error {
 	if h.err != nil {
-		errorMessage := errors.New(fmt.Sprintf("%d Error: %s", h.code, h.err.Error()))
-		return responses.NewStringsResponse().Fail(h.ctx, h.code, errorMessage)
+		return responses.NewStringsResponse().Fail(h.ctx, h.code, h.err)
 	} else {
 		return responses.NewStringsResponse().Successful(h.ctx, h.urls)
 	}
+}
+
+func (h *BackgroundChoicesHandler) SetError(err error) handlers.IHandler {
+	h.err = err
+	return h
+}
+
+func (h *BackgroundChoicesHandler) SetCode(code int) handlers.IHandler {
+	h.code = code
+	return h
 }

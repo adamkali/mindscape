@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/adamkali/mindscape/db/repository"
+	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
 	"github.com/golang-jwt/jwt/v5"
@@ -14,94 +15,74 @@ import (
 )
 
 type DeleteUserHandler struct {
-	Ok      string
-	Admin   *repository.User
-	UserID  uuid.UUID
-	Context echo.Context
-	Error   error
-	Code    int
-	Locked  bool
+	Data             *repository.User
+	err              error
+	code             int
+	ctx              echo.Context
+	AuthService      services.IAuthService
+	UserService      services.IUserService
+	ValidatorService services.ValidatorService
 }
 
-func NewDeleteUserHandler(ctx echo.Context) *DeleteUserHandler {
+func NewDeleteUserHandler(
+	ctx echo.Context,
+	ValidatorService services.ValidatorService,
+	UserService services.IUserService,
+	AuthService services.IAuthService,
+) *DeleteUserHandler {
 	return &DeleteUserHandler{
-		Context: ctx,
-		Locked:  false,
-		Error:   nil,
-		Code:    200,
+		ctx:              ctx,
+		code:             200,
+		ValidatorService: ValidatorService,
+		UserService:      UserService,
+		AuthService:      AuthService,
 	}
-}
-func (h *DeleteUserHandler) Lock(code int) *DeleteUserHandler {
-	h.Locked = true
-	h.Code = code
-	return h
 }
 
-func (h *DeleteUserHandler) Handle(fun any) *DeleteUserHandler {
-	var code int
-	if !h.Locked {
-		switch handle := fun.(type) {
-		case func(token string) error:
-			jwt_token := h.Context.Get("user").(*jwt.Token)
-			claims := jwt_token.Claims.(*services.CustomJwt)
-			h.UserID = claims.UserId
-			h.Error = handle(jwt_token.Raw)
-			if h.Error!= nil {
-				code = 401
-				break
-			}
-		case func(user_id uuid.UUID) (*repository.User, error):
-			h.Admin, h.Error = handle(h.UserID)
-			if h.Error != nil {
-				code = 404
-				break
-			}
-			if !h.Admin.Admin {
-				code = 403
-				h.Error = echo.NewHTTPError(code, "Not Admin")
-				break
-			}
-		case func(user_id uuid.UUID) error:
-			var delete_user_id_parsed uuid.UUID
-			delete_user_id := h.Context.Param("user_id")
-			delete_user_id_parsed, h.Error = uuid.Parse(delete_user_id)
-			h.Error = handle(delete_user_id_parsed)
-			if h.Error != nil {
-				code = 500
-				break
-			}
-			h.Ok = "Successfully deleted: " + delete_user_id
-		default:
-			code = 600
-			h.Error = echo.NewHTTPError(
-				code,
-				fmt.Sprintf("Type assertion failed for type: %T\n", fun),
-			)
-		}
-		if h.Error != nil {
-			return h.Lock(code)
-		}
+
+func (h *DeleteUserHandler) Handle() handlers.IHandler {
+	jwt_token := h.ctx.Get("user").(*jwt.Token)
+	claims := jwt_token.Claims.(*services.CustomJwt)
+	userID := claims.UserId
+	user:= new(repository.User)
+	var err error
+	if err = h.AuthService.CheckToken(jwt_token.Raw); h.err != nil {
+		handlers.Lock(h, 401, err)
+	}
+	if user, err = h.UserService.Get(userID); err != nil {
+		handlers.Lock(h, 404, err)
+	}
+	if !user.Admin {
+		handlers.Lock(h, 403, err)
+	}
+	deleteId, err := uuid.Parse(h.ctx.Param("user_id"))
+	if err != nil {
+		handlers.Lock(h, 400, err)
+	}
+	if err = h.UserService.Remove(deleteId); err != nil {
+		handlers.Lock(h, 404, err)
 	}
 	return h
+
 }
 
 func (h *DeleteUserHandler) JSON() error {
-	var code int
 	var message string
-	if h.Locked && h.Error != nil {
-		code = h.Code
-		if code == 600 {
-			message = "Misaligend handler on the server"
-		} else {
-			message = h.Error.Error()
-		}
+	if h.err != nil {
+		errMessage := fmt.Errorf("%d Error: %s", h.code, h.err.Error())
+		return responses.NewStringResponse().Fail(h.ctx, h.code, errMessage)
 	} else {
 		message = "OK"
-		code = 200
+		return responses.NewStringResponse().Successful(h.ctx, message)
+		
 	}
-	return h.Context.JSON(code, responses.StringResponse{
-		Data:    &h.Ok,
-		Success: !h.Locked,
-		Message: message,
-	})
+}
+
+func (h *DeleteUserHandler) SetCode(code int) handlers.IHandler {
+	h.code = code
+	return h
+}
+func (h *DeleteUserHandler) SetError(err error) handlers.IHandler {
+	h.err = err
+	return h
 }

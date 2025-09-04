@@ -5,9 +5,7 @@ package controllers
 import (
 	"github.com/adamkali/mindscape/cmd/configuration"
 	handlers "github.com/adamkali/mindscape/models/handlers/user_handlers"
-	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -48,11 +46,12 @@ func BuildUserController(p *Registrar) UserController {
 // @Success     200                 {object}     responses.DeleteUserResponse
 // @Router      /users/{user_id}    [delete]
 func (UserController *UserController) DeleteUser(ctx echo.Context) error {
-	return handlers.NewDeleteUserHandler(ctx).
-		Handle(UserController.AuthService.CheckToken). // Check if the user is signed in
-		Handle(UserController.UserService.Get).        // Get the User from the repository
-		Handle(UserController.UserService.Remove).     // Delete the user from the repository
-		JSON()
+	return handlers.NewDeleteUserHandler(
+		ctx,
+		*UserController.ValidatorService,
+		UserController.UserService,
+		UserController.AuthService,
+	).Handle().JSON()
 }
 
 // @Summary Signup to the app
@@ -110,17 +109,12 @@ func (uc *UserController) Login(ctx echo.Context) error {
 // @Failure     401             {object}     responses.UserResponse
 // @Router      /users/current  [get]
 func (UserController *UserController) GetCurrent(ctx echo.Context) error {
-	jwt_token := ctx.Get("user").(*jwt.Token)
-	claims := jwt_token.Claims.(*services.CustomJwt)
-	err := UserController.AuthService.CheckToken(jwt_token.Raw)
-	if err != nil {
-		return responses.NewUserResponse().Fail(ctx, 401, err)
-	}
-	user_data, err := UserController.UserService.Get(claims.UserId)
-	if err != nil {
-		return responses.NewUserResponse().Fail(ctx, 404, err)
-	}
-	return responses.NewUserResponse().Successful(ctx, user_data)
+	return handlers.NewGetCurrentLoggedInUserHandler(
+		ctx,
+		*UserController.ValidatorService,
+		UserController.UserService,
+		UserController.AuthService,
+	).Handle().JSON()
 }
 
 // @Summary		Upload file
@@ -138,11 +132,13 @@ func (UserController *UserController) GetCurrent(ctx echo.Context) error {
 // @Failure		    404					{object}	UserResponse
 // @Router			/users/profile		[post]
 func (UserController *UserController) UploadProfilePicture(ctx echo.Context) error {
-	return handlers.NewUploadProfilePictureHandler(ctx).
-		Handle(UserController.AuthService.CheckToken).
-		Handle(UserController.MinioService.Upload).
-		Handle(UserController.UserService.Update).
-		JSON()
+	return handlers.NewUploadProfilePictureHandler(
+		ctx,
+		*UserController.ValidatorService,
+		UserController.UserService,
+		UserController.AuthService,
+		UserController.MinioService,
+	).Handle().JSON()
 }
 
 // @Summary Get User Profile by Authorization Header
@@ -157,16 +153,16 @@ func (UserController *UserController) UploadProfilePicture(ctx echo.Context) err
 // @Failure     403                 {object}     responses.StringResponse
 // @Failure     500                 {object}     responses.StringResponse
 // @Router      /users/profile		[get]
-func (UserController *UserController) GetProfile(ctx echo.Context) error {
-	return handlers.NewGetProfilPictureHandler(ctx).
-		Handle(UserController.AuthService.CheckToken).
-		Handle(UserController.UserService.Get).
-		Handle(UserController.RedisService.Get).
-		Handle(UserController.MinioService.GetPresigned).
-		Handle(UserController.RedisService.SetWithExpiration).
-		JSON()
+func (uc *UserController) GetProfile(ctx echo.Context) error {
+	return handlers.NewGetProfilPictureHandler(
+		ctx,
+		*uc.ValidatorService,
+		uc.RedisService,
+		uc.MinioService,
+		uc.AuthService,
+		uc.UserService,
+	).Handle().JSON()
 }
-
 
 // @Summary Get All Users
 // @Description Get All Users. Must be Admin using the new mediator pattern
@@ -181,10 +177,11 @@ func (UserController *UserController) GetProfile(ctx echo.Context) error {
 // @Failure     500                 {object}     UsersResponse
 // @Router      /users/			    [get]
 func (uc *UserController) GetUsers(ctx echo.Context) error {
-	return handlers.NewGetUsersHandler(ctx).
-		Handle(uc.AuthService.CheckToken).
-		Handle(uc.UserService.GetAll).
-		JSON()
+	return handlers.NewGetUsersHandler(
+		ctx,
+		uc.AuthService,
+		uc.UserService,
+	).Handle().JSON()
 }
 
 // @Summary Update User Credentials
@@ -203,14 +200,13 @@ func (uc *UserController) GetUsers(ctx echo.Context) error {
 // @Failure     500                      {object}     UpdateUserResponse
 // @Router      /users/creds             [post]
 func (uc *UserController) UpdateUser(ctx echo.Context) error {
-	return handlers.NewUpdateUserHandler(ctx).
-		Handle(uc.AuthService.CheckToken).
-		Handle(uc.ValidatorService.ValidateUpdateUserCredentialRequest).
-		Handle(uc.UserService.UpdateUserCredentials).
-		Handle(uc.AuthService.Update).
-		JSON()
+	return handlers.NewUpdateUserHandler(
+		ctx,
+		*uc.ValidatorService,
+		uc.UserService,
+		uc.AuthService,
+	).Handle().JSON()
 }
-
 
 // @Summary Get Default Background
 // @Description Get Default Background
@@ -235,7 +231,7 @@ func (uc *UserController) GetDefaultBackground(ctx echo.Context) error {
 // @Description Get Background Choices
 //
 // @ID          GetBackgroundChoices
-// @Tags        Background 
+// @Tags        Background
 // @Produce     json
 // @Success     200                 {object}     responses.StringResponse
 // @Failure     404                 {object}     responses.StringResponse

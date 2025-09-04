@@ -3,106 +3,64 @@
 package user_handlers
 
 import (
-	"fmt"
 	"github.com/adamkali/mindscape/db/repository"
+	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
-
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
 type GetUsersHandler struct {
-	Admin   bool
-	UserID  uuid.UUID
-	Users   []repository.User
-	Context echo.Context
-	Error   error
-	Code    int
-	Locked  bool
+	Users       []repository.User
+	Context     echo.Context
+	err         error
+	code        int
+	AuthService services.IAuthService
+	UserService services.IUserService
 }
 
-func NewGetUsersHandler(ctx echo.Context) *GetUsersHandler {
+func NewGetUsersHandler(ctx echo.Context, authService services.IAuthService, userService services.IUserService) *GetUsersHandler {
 	return &GetUsersHandler{
-		Context: ctx,
-		Locked:  false,
-		Error:   nil,
-		Code:    200,
+		Context:     ctx,
+		err:         nil,
+		code:        200,
+		AuthService: authService,
+		UserService: userService,
 	}
 }
 
-func (h *GetUsersHandler) Lock(code int) *GetUsersHandler {
-	h.Locked = true
-	h.Code = code
-	return h
-}
-
-func (h *GetUsersHandler) Handle(fun any) *GetUsersHandler {
-	var code int
-	if !h.Locked {
-		switch handle := fun.(type) {
-		case func(token string) error:
-			// UWU 
-			jwt_token := h.Context.Get("user").(*jwt.Token)
-			claims := jwt_token.Claims.(*services.CustomJwt)
-			h.UserID = claims.UserId
-			h.Admin = claims.IsAdmin
-			//fmt.Printf("[DEBUG] GetUsersHandler.Handle{ jwt_token.Claims.(*services.CustomJwt) }.{claims.User}: %s, {claims.IsAdmin}: %v, {claims.ProfilePic}: %s\n", claims.User, claims.IsAdmin, claims.ProfilePic)
-			code = 401
-			h.Error = handle(jwt_token.Raw)
-			if !h.Admin {
-				code = 403
-				h.Error = echo.NewHTTPError(code, "Not Admin")
-			}
-		case func() ([]repository.User, error):
-			code = 500
-			h.Users, h.Error = handle()
-
-		default:
-			code = 600
-			h.Error = echo.NewHTTPError(
-				code,
-				fmt.Sprintf("Type assertion failed for type: %T\n", fun),
-			)
-		}
-		if h.Error != nil {
-			return h.Lock(code)
-		}
+func (h *GetUsersHandler) Handle() handlers.IHandler {
+	jwt_token := h.Context.Get("user").(*jwt.Token)
+	claims := jwt_token.Claims.(*services.CustomJwt)
+	admin := claims.IsAdmin
+	err := h.AuthService.CheckToken(jwt_token.Raw)
+	if err != nil {
+		handlers.Lock(h, 401, err)
+	}
+	if !admin {
+		handlers.Lock(h, 403, err)
+	}
+	h.Users, err = h.UserService.GetAll()
+	if err != nil {
+		handlers.Lock(h, 404, err)
 	}
 	return h
 }
 
 func (h *GetUsersHandler) JSON() error {
-	var code int
-	var message string
-	if h.Locked && h.Error != nil {
-		code = h.Code
-		if code == 600 {
-			message = "Misaligend handler on the server"
-		} else {
-			message = h.Error.Error()
-		}
-	} else if code == 200 {
-		message = "OK"
+	if h.err != nil {
+		return responses.NewUsersResponse().Fail(h.Context, h.code, h.err)
 	}
-	
-	data := make([]responses.UserData, len(h.Users))
-	for i, val := range h.Users {
-		 data[i] = *responses.UserDataFromRepository(&val)
-	}
-
-	return h.Context.JSON(code, responses.UsersResponse{
-		Message: message,
-		Success: !h.Locked,
-		Data: data,
-	})
+	return responses.NewUsersResponse().Successful(h.Context, h.Users)
 }
 
-func (h *GetUsersHandler) Response() error {
-	if h.Locked && h.Error != nil {
-		return h.JSON()
-	} else {
-		return h.JSON()
-	}
+func (h *GetUsersHandler) SetCode(code int) handlers.IHandler {
+	h.code = code
+	return h
+}
+
+func (h *GetUsersHandler) SetError(err error) handlers.IHandler {
+	h.err = err
+	return h
 }
