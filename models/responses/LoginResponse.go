@@ -23,7 +23,7 @@ func (LoginResponse *LoginResponse) Fail(ctx echo.Context, code int, err error) 
 	return ctx.JSON(code, LoginResponse)
 }
 
-func (LoginResponse *LoginResponse) Successful(ctx echo.Context, user *repository.User, token string) error {
+func (LoginResponse *LoginResponse) Successful(ctx echo.Context, user *repository.User, token string) error{
 	LoginResponse.Data = UserDataFromRepository(user)
 	LoginResponse.JWT = token
 	LoginResponse.Success = true

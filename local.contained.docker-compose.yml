@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  mindscape-site:
+    build:
+      context: .
+      dockerfile: Local.Dockerfile
+      target: dev
+    container_name: mindscape-local
+    ports:
+      - "60000:60000"
+    volumes:
+      - ./config:/usr/src/config:ro
+      - .:/usr/src
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:60000/api/_health"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+  mindscape-db:
+    image: postgres:14
+    container_name: mindscape-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: mindscape
+      POSTGRES_PASSWORD: mindscape
+      POSTGRES_DB: mindscape
+    restart: unless-stopped
+    volumes:
+      - mindscape-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mindscape -d mindscape"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+  mindscape-cache:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly
+    container_name: mindscape-cache
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    environment:
+      DRAGONFLYDB_PASSWORD: dragonfly
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+  mindscape-s3:
+    image: 'quay.io/minio/minio:latest'
+    command: 'server /data --console-address ":9001"'
+    environment:
+      - MINIO_SERVER_URL="localhost:9001"
+      - MINIO_BROWSER_REDIRECT_URL="http://localhost:60000"
+      - MINIO_ROOT_USER="6242f04a-ea36-4778-a181-4a58065a0624"
+      - MINIO_ROOT_PASSWORD="8a9020bd-3795-4b4f-93ef-34c810c177cc"
+    volumes:
+      - 'minio-data:/data'
+    healthcheck:
+      test:
+        - CMD
+        - mc
+        - ready
+        - local
+      interval: 10s
+      timeout: 20s
+      retries: 5
+volumes:
+  mindscape-db-data:

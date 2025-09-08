@@ -23,7 +23,7 @@ FROM folders;
 -- name: FindFoldersRoot :many
 SELECT *
 FROM folders 
-WHERE parent_id IS NULL;
+WHERE parent_id IS NULL AND user_id = $1;
 
 -- POST queries
 -- name: CreateFolder :one

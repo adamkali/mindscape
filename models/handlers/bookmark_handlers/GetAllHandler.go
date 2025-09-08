@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/adamkali/mindscape/db/repository"
+	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
 	"github.com/golang-jwt/jwt/v5"
@@ -12,88 +13,63 @@ import (
 )
 
 type GetByFolderHandler struct {
-	UserID    uuid.UUID
-	Bookmarks []repository.Bookmark
-	Context   echo.Context
-	Error     error
-	Code      int
-	Locked    bool
+	Data         []repository.Bookmark
+	err          error
+	code         int
+	ctx          echo.Context
+	AuthService  services.IAuthService
+	BookmarkService services.IBookmarkService
 }
 
-func NewGetFolderHandler(e echo.Context) *GetByFolderHandler {
+func NewGetFolderHandler(
+	ctx echo.Context,
+	BookmarkService services.IBookmarkService,
+	AuthService services.IAuthService,
+) *GetByFolderHandler {
 	return &GetByFolderHandler{
-		Context: e,
-		Locked:  false,
-		Code:    200,
-		Error:   nil,
+		ctx:             ctx,
+		code:            200,
+		BookmarkService: BookmarkService,
+		AuthService:     AuthService,
 	}
 }
 
-func (h *GetByFolderHandler) Lock(code int) *GetByFolderHandler {
-	h.Locked = true
-	h.Code = code
-	return h
-}
-
-func (h *GetByFolderHandler) Handle(fun any) *GetByFolderHandler {
-	var code int
-	if !h.Locked {
-		switch handle := fun.(type) {
-		case func(token string) error: // this is to the jwt token
-			code = 401
-			h.Error = handle(h.Context.Get("user").(*jwt.Token).Raw)
-			if h.Error != nil {
-				return h.Lock(code)
-			}
-			jwt_token := h.Context.Get("user").(*jwt.Token)
-			claims := jwt_token.Claims.(*services.CustomJwt)
-			h.UserID = claims.UserId
-			break
-		case func(uuid.UUID) ([]repository.Bookmark, error):
-			code = 400
-			var parentId uuid.UUID
-			h.UserID, h.Error = uuid.Parse(h.Context.Param("parent_id"))
-			if h.Error != nil {
-				return h.Lock(code)
-			}
-			h.Bookmarks, h.Error = handle(parentId)
-			for _, bookmark := range h.Bookmarks {
-				if bookmark.UserID != h.UserID {
-					return h.Lock(404)
-				}
-			}
-			code = 404
-			break
-		default:
-			code = 600
-			h.Error = echo.NewHTTPError(
-				code,
-				fmt.Sprintf("Type assertion failed for type: %T\n", fun),
-			)
-		}
-		if h.Error != nil {
-			return h.Lock(code)
+func (h *GetByFolderHandler) Handle() handlers.IHandler {
+	jwt_token := h.ctx.Get("user").(*jwt.Token)
+	claims := jwt_token.Claims.(*services.CustomJwt)
+	userID := claims.UserId
+	var err error
+	if err = h.AuthService.CheckToken(jwt_token.Raw); err != nil {
+		handlers.Lock(h, 401, err)
+	}
+	var parentID uuid.UUID
+	if parentID, err = uuid.Parse(h.ctx.Param("parent_id")); err != nil {
+		handlers.Lock(h, 400, err)
+	}
+	if h.Data, err = h.BookmarkService.GetByFolder(parentID); err != nil {
+		handlers.Lock(h, 404, err)
+	}
+	for _, bookmark := range h.Data {
+		if bookmark.UserID != userID {
+			handlers.Lock(h, 403, fmt.Errorf("unauthorized access to bookmark"))
 		}
 	}
 	return h
 }
 
 func (h *GetByFolderHandler) JSON() error {
-	var code int
-	var message string
-	if h.Locked && h.Error != nil {
-		code = h.Code
-		if code == 600 {
-			message = "Misaligend handler on the server: " + h.Error.Error()
-		} else {
-			message = h.Error.Error()
-		}
-	} else if code == 200 {
-		message = "OK"
+	if h.err != nil {
+		return responses.NewBookmarksResponse().Fail(h.ctx, h.code, h.err)
 	}
-	return h.Context.JSON(code, responses.NewBookmarksResponse(
-		h.Bookmarks,
-		!h.Locked,
-		message,
-	))
+	return responses.NewBookmarksResponse().Successful(h.ctx, h.Data)
+}
+
+func (h *GetByFolderHandler) SetCode(code int) handlers.IHandler {
+	h.code = code
+	return h
+}
+
+func (h *GetByFolderHandler) SetError(err error) handlers.IHandler {
+	h.err = fmt.Errorf("%d Error: %s", h.code, err.Error())
+	return h
 }

@@ -1,8 +1,6 @@
 package controllers
 
 import (
-	"fmt"
-
 	"github.com/adamkali/mindscape/cmd/configuration"
 	"github.com/adamkali/mindscape/models/handlers/folder_handlers"
 	"github.com/adamkali/mindscape/services"
@@ -52,13 +50,13 @@ func BuildFolderController(p *Registrar) FolderController {
 // @Failure     500                 {object}     responses.FoldersResponse
 // @Router      /folders [get]
 func (folderController FolderController) GetRootFolders(e echo.Context) error {
-	return folder_handlers.NewGetRootHandler(e).
-		Handle(folderController.AuthService.CheckToken).
-		Handle(folderController.FolderService.GetRoot).
-		Handle(folderController.BookmarkService.GetByFolder).
-		Handle(folderController.NoteService.GetByFolder).
-		Handle(folderController.FolderService.GetByParent).
-		JSON()
+	return folder_handlers.NewGetRootHandler(
+		e,
+		folderController.FolderService,
+		folderController.BookmarkService,
+		folderController.NoteService,
+		folderController.AuthService,
+	).Handle().JSON()
 }
 
 // @Summary Get the Folders associated with the user under A Parent Folder
@@ -77,13 +75,13 @@ func (folderController FolderController) GetRootFolders(e echo.Context) error {
 // @Failure     500                 {object}     responses.FolderResponse
 // @Router      /folders/{folder_id} [get]
 func (folderController FolderController) GetFolderByID(e echo.Context) error {
-	return folder_handlers.NewGetById(e).
-		Handle(folderController.AuthService.CheckToken).
-		Handle(folderController.FolderService.Get).
-		Handle(folderController.BookmarkService.GetByFolder).
-		Handle(folderController.NoteService.GetByFolder).
-		Handle(folderController.FolderService.GetByParent).
-		JSON()
+	return folder_handlers.NewGetById(
+		e,
+		folderController.FolderService,
+		folderController.BookmarkService,
+		folderController.NoteService,
+		folderController.AuthService,
+	).Handle().JSON()
 }
 
 // @Summary Create a new Folder
@@ -101,12 +99,12 @@ func (folderController FolderController) GetFolderByID(e echo.Context) error {
 // @Failure     500                 {object}     responses.FolderResponse
 // @Router      /folders [post]
 func (folderController FolderController) CreateFolder(e echo.Context) error {
-	fmt.Println("Create Folder")
-	return folder_handlers.NewCreateHandler(e).
-		Handle(folderController.AuthService.CheckToken).
-		Handle(folderController.ValidatorService.ValidateCreateFolderRequest).
-		Handle(folderController.FolderService.Create).
-		JSON()
+	return folder_handlers.NewCreateHandler(
+		e,
+		*folderController.ValidatorService,
+		folderController.FolderService,
+		folderController.AuthService,
+	).Handle().JSON()
 }
 
 // @Summary Delete a Folder
@@ -123,11 +121,11 @@ func (folderController FolderController) CreateFolder(e echo.Context) error {
 // @Failure     500                 {object}     responses.FolderResponse
 // @Router      /folders/{folder_id} [delete]
 func (folderController FolderController) DeleteFolder(e echo.Context) error {
-	return folder_handlers.NewDeleteHandler(e).
-		Handle(folderController.AuthService.CheckToken).
-		Handle(folderController.FolderService.Get).
-		Handle(folderController.FolderService.Delete).
-		JSON()
+	return folder_handlers.NewDeleteHandler(
+		e,
+		folderController.FolderService,
+		folderController.AuthService,
+	).Handle().JSON()
 }
 
 func (folderController FolderController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {

@@ -69,8 +69,7 @@ func (h *DeleteUserHandler) Handle() handlers.IHandler {
 func (h *DeleteUserHandler) JSON() error {
 	var message string
 	if h.err != nil {
-		errMessage := fmt.Errorf("%d Error: %s", h.code, h.err.Error())
-		return responses.NewStringResponse().Fail(h.ctx, h.code, errMessage)
+		return responses.NewStringResponse().Fail(h.ctx, h.code, h.err)
 	} else {
 		message = "OK"
 		return responses.NewStringResponse().Successful(h.ctx, message)
@@ -83,6 +82,6 @@ func (h *DeleteUserHandler) SetCode(code int) handlers.IHandler {
 	return h
 }
 func (h *DeleteUserHandler) SetError(err error) handlers.IHandler {
-	h.err = err
+	h.err = fmt.Errorf("%d Error: %s", h.code, h.err.Error())
 	return h
 }

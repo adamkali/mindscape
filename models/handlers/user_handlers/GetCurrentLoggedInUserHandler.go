@@ -54,7 +54,6 @@ func (h *GetCurrentLoggedInUserHandler) JSON() error {
 		return responses.NewUserResponse().Fail(h.ctx, h.code, h.err)
 	}
 	return responses.NewUserResponse().Successful(h.ctx, h.Data)
-
 }
 
 func (h *GetCurrentLoggedInUserHandler) SetCode(code int) handlers.IHandler {

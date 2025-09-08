@@ -5,6 +5,7 @@ import (
 
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/google/uuid"
+	"github.com/labstack/echo/v4"
 )
 
 type FolderData struct {
@@ -59,4 +60,17 @@ func NewFolderData(entity repository.Folder) FolderData {
 		Bookmarks:       []repository.Bookmark{},
 		Notes:           []repository.Note{},
 	}
+}
+
+func (f *FolderResponse) Fail(ctx echo.Context, code int, err error) error {
+	f.Success = false
+	f.Message = err.Error()
+	return ctx.JSON(code, f)
+}
+
+func (f *FolderResponse) Successful(ctx echo.Context, data repository.Folder) error {
+	f.Success = true
+	f.Message = "OK"
+	f.Data = NewFolderData(data)
+	return ctx.JSON(200, f)
 }

@@ -4,10 +4,10 @@ package user_handlers
 
 import (
 	"github.com/adamkali/mindscape/db/repository"
+	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/requests"
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
-	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/labstack/echo/v4"
 )
 
@@ -63,17 +63,11 @@ func (h *LoginHandler) JSON() error {
 		jwt = ""
 	} else {
 		jwt = *h.token
-	} 
-	if h.err == nil{
-		return h.ctx.JSON(
-			h.code,
-			responses.NewLoginResponse().Successful(h.ctx, h.authenticated, jwt),
-		)
+	}
+	if h.err == nil {
+		return responses.NewLoginResponse().Successful(h.ctx, h.authenticated, jwt)
 	} else {
-		return h.ctx.JSON(
-			h.code,
-			responses.NewLoginResponse().Fail(h.ctx, h.code, h.err),
-		)
+		return responses.NewLoginResponse().Fail(h.ctx, h.code, h.err)
 	}
 }
 

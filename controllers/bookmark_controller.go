@@ -50,11 +50,13 @@ func BuildBookmarkController(p *Registrar) BookmarkController {
 // @Failure     500                 {object}     BookmarkResponse
 // @Router      /bookmarks [post]
 func (c BookmarkController) Create(e echo.Context) error {
-	return bookmark_handlers.NewCreateHandler(e).
-		Handle(c.AuthService.CheckToken).
-		Handle(c.ValidatorService.CreateBookmarkRequest).
-		Handle(c.BookmarkService.Create).
-		JSON()
+	return bookmark_handlers.NewCreateHandler(
+		e,
+		*c.ValidatorService,
+		c.BookmarkService,
+		c.AuthService,
+	).
+		Handle().JSON()
 }
 
 // @Summary Get Bookmarks By Folder ID
@@ -73,10 +75,11 @@ func (c BookmarkController) Create(e echo.Context) error {
 // @Failure     500                 {object}     BookmarksResponse
 // @Router      /bookmarks/folder/{parent_id} [get]
 func (c BookmarkController) GetByFolder(e echo.Context) error {
-	return bookmark_handlers.NewGetFolderHandler(e).
-		Handle(c.AuthService.CheckToken).
-		Handle(c.BookmarkService.GetByFolder).
-		JSON()
+	return bookmark_handlers.NewGetFolderHandler(
+		e,
+		c.BookmarkService,
+		c.AuthService,
+	).Handle().JSON()
 }
 
 func (c BookmarkController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {

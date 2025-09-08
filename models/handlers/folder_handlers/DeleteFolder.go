@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/adamkali/mindscape/db/repository"
+	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
 	"github.com/golang-jwt/jwt/v5"
@@ -12,99 +13,67 @@ import (
 )
 
 type DeleteFolderHandler struct {
-	UserID          uuid.UUID
-	FolderID        uuid.UUID
-	FolderData      responses.FolderData
-	Context         echo.Context
-	Error           error
-	Code            int
-	Locked          bool
+	Data          *repository.Folder
+	err           error
+	code          int
+	ctx           echo.Context
+	AuthService   services.IAuthService
+	FolderService services.IFolderService
 }
 
-func NewDeleteHandler(context echo.Context) *DeleteFolderHandler {
+func NewDeleteHandler(
+	ctx echo.Context,
+	FolderService services.IFolderService,
+	AuthService services.IAuthService,
+) *DeleteFolderHandler {
 	return &DeleteFolderHandler{
-		Context: context,
-		Locked:  false,
-		Code:    200,
+		ctx:           ctx,
+		code:          200,
+		FolderService: FolderService,
+		AuthService:   AuthService,
 	}
 }
 
-func (h *DeleteFolderHandler) Lock(code int) *DeleteFolderHandler {
-	h.Code = code
-	h.Locked = true
+func (h *DeleteFolderHandler) Handle() handlers.IHandler {
+	jwt_token := h.ctx.Get("user").(*jwt.Token)
+	claims := jwt_token.Claims.(*services.CustomJwt)
+	userID := claims.UserId
+	var err error
+	if err = h.AuthService.CheckToken(jwt_token.Raw); err != nil {
+		handlers.Lock(h, 401, err)
+	}
+	var folderID uuid.UUID
+	if folderID, err = uuid.Parse(h.ctx.Param("folder_id")); err != nil {
+		handlers.Lock(h, 400, err)
+	}
+	if h.Data, err = h.FolderService.Get(folderID); err != nil {
+		handlers.Lock(h, 404, err)
+	}
+	if h.Data.UserID != userID {
+		handlers.Lock(h, 403, fmt.Errorf("unauthorized access to folder"))
+	}
+	if err = h.FolderService.Remove(folderID); err != nil {
+		handlers.Lock(h, 500, err)
+	}
 	return h
 }
 
-func (h *DeleteFolderHandler) Response() error {
-	if h.Locked && h.Error != nil {
-		return h.JSON()
-	} else {
-		return h.JSON()
-	}
-}
-
 func (h *DeleteFolderHandler) JSON() error {
-	var code int
 	var message string
-	if h.Locked && h.Error != nil {
-		code = h.Code
-		if code == 600 {
-			message = "Misaligend handler on the server"
-		} else {
-			message = h.Error.Error()
-		}
-	} else if code == 200 {
-		message = "OK"
+	if h.err != nil {
+		return responses.NewStringResponse().Fail(h.ctx, h.code, h.err)
+	} else {
+		message = "Folder deleted successfully"
+		return responses.NewStringResponse().Successful(h.ctx, message)
 	}
-
-	return h.Context.JSON(code, responses.FolderResponse{
-		Data:    h.FolderData,
-		Message: message,
-		Success: !h.Locked,
-	})
 }
 
-func (h *DeleteFolderHandler) Handle(fun any) *DeleteFolderHandler {
-	var code int
-	if !h.Locked {
-		switch handle := fun.(type) {
-		case func(token string) error: // this is to the jwt token
-			code = 401
-			h.Error = handle(h.Context.Get("user").(*jwt.Token).Raw)
-			if h.Error != nil {
-				return h.Lock(code)
-			}
-			jwt_token := h.Context.Get("user").(*jwt.Token)
-			claims := jwt_token.Claims.(*services.CustomJwt)
-			h.UserID = claims.UserId
-			break
+func (h *DeleteFolderHandler) SetCode(code int) handlers.IHandler {
+	h.code = code
+	return h
+}
 
-		case func(folderID uuid.UUID) (*repository.Folder, error):
-			code = 404
-			folder := new(repository.Folder)
-			folder, h.Error = handle(h.FolderID)
-			if h.Error != nil {
-				return h.Lock(code)	
-			}
-			h.FolderData = responses.NewFolderData(*folder)
-			break
-		case func(folderID uuid.UUID) error:
-			code = 500
-			h.Error = handle(h.FolderID)
-			if h.Error != nil {
-				return h.Lock(code)
-			}
-			break
-		default:
-			code = 600
-			h.Error = echo.NewHTTPError(
-				code,
-				fmt.Sprintf("Type assertion failed for type: %T\n", fun),
-			)
-		}
-		if h.Error != nil {
-			return h.Lock(code)
-		}
-	}
+func (h *DeleteFolderHandler) SetError(err error) handlers.IHandler {
+	h.err = fmt.Errorf("%d Error: %s", h.code, err.Error())
 	return h
 }

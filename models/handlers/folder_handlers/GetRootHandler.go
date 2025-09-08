@@ -2,173 +2,86 @@ package folder_handlers
 
 import (
 	"fmt"
-	"sync"
 
 	"github.com/adamkali/mindscape/db/repository"
+	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
 	"github.com/golang-jwt/jwt/v5"
-
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
 type GetRootFolderHandler struct {
-	UserID          uuid.UUID
-	FolderResponses []responses.FolderData
-	Context         echo.Context
-	Error           error
-	Code            int
-	Locked          bool
+	Data            []responses.FolderData
+	err             error
+	code            int
+	ctx             echo.Context
+	AuthService     services.IAuthService
+	FolderService   services.IFolderService
+	BookmarkService services.IBookmarkService
+	NoteService     services.INoteService
 }
 
-func NewGetRootHandler(ctx echo.Context) *GetRootFolderHandler {
+func NewGetRootHandler(
+	ctx echo.Context,
+	FolderService services.IFolderService,
+	BookmarkService services.IBookmarkService,
+	NoteService services.INoteService,
+	AuthService services.IAuthService,
+) *GetRootFolderHandler {
 	return &GetRootFolderHandler{
-		Context: ctx,
-		Locked:  false,
-		Error:   nil,
-		Code:    200,
+		ctx:             ctx,
+		code:            200,
+		FolderService:   FolderService,
+		BookmarkService: BookmarkService,
+		NoteService:     NoteService,
+		AuthService:     AuthService,
 	}
 }
 
-func (grfh *GetRootFolderHandler) Lock(code int) *GetRootFolderHandler {
-	grfh.Locked = true
-	grfh.Code = code
-	return grfh
-}
-
-func (grfh *GetRootFolderHandler) Handle(fun any) *GetRootFolderHandler {
-	var code int
-	if !grfh.Locked {
-		switch handle := fun.(type) {
-		case func(token string) error: // this is to the jwt token
-			code = 401
-			grfh.Error = handle(grfh.Context.Get("user").(*jwt.Token).Raw)
-			if grfh.Error != nil {
-				return grfh.Lock(code)
-			}
-			jwt_token := grfh.Context.Get("user").(*jwt.Token)
-			claims := jwt_token.Claims.(*services.CustomJwt)
-			grfh.UserID = claims.UserId
-			break
-		case func() ([]repository.Folder, error):
-			code = 404
-			folders := make([]repository.Folder, 0)
-			grfh.FolderResponses = make([]responses.FolderData, len(folders))
-			folders, grfh.Error = handle()
-			if grfh.Error != nil {
-				return grfh.Lock(code)
-			}
-			//fmt.Printf("[INFO] GetRootFolderHandler.Handle{ handle } -> Folders: %v\n", folders)
-			for _, folder := range folders {
-				if folder.UserID != grfh.UserID {
-					continue
-				}
-				grfh.FolderResponses = append(
-					grfh.FolderResponses,
-					responses.NewFolderData(folder),
-				)
-			}
-			break
-
-		case func(uuid.UUID) ([]repository.Bookmark, error):
-			code = 404
-			errors := make([]error, len(grfh.FolderResponses))
-			var wg sync.WaitGroup
-			wg.Add(len(grfh.FolderResponses))
-			// go func to create the folder responses
-			bookmakData := func(folderData *responses.FolderData, er error) {
-				folderData.Bookmarks, er = handle(*folderData.ID)
-				wg.Done()
-			}
-			for i := range grfh.FolderResponses {
-				go bookmakData(&grfh.FolderResponses[i], errors[i])
-			}
-			wg.Wait()
-			for _, err := range errors {
-				if err != nil {
-					grfh.Error = err
-					return grfh.Lock(code)
-				}
-			}
-			break
-
-		case func(uuid.UUID) ([]repository.Note, error):
-			code = 404
-			errors := make([]error, len(grfh.FolderResponses))
-			var wg sync.WaitGroup
-			wg.Add(len(grfh.FolderResponses))
-			notesData := func(folderData *responses.FolderData, er error) {
-				folderData.Notes, er = handle(*folderData.ID)
-				wg.Done()
-			}
-			for i := range grfh.FolderResponses {
-				go notesData(&grfh.FolderResponses[i], errors[i])
-			}
-			wg.Wait()
-			for _, err := range errors {
-				if err != nil {
-					grfh.Error = err
-					return grfh.Lock(code)
-				}
-			}
-			break
-
-		case func(uuid.UUID) ([]repository.Folder, error):
-			code = 404
-			errors := make([]error, len(grfh.FolderResponses))
-			var wg sync.WaitGroup
-			wg.Add(len(grfh.FolderResponses))
-			foldersData := func(folderData *responses.FolderData, er error) {
-				fmt.Printf("[INFO] GetRootFolderHandler.Handle{ handle } -> Folder: %s\n", *folderData.ID)
-				folderData.Children, er = handle(*folderData.ID)
-				fmt.Printf("[INFO] GetRootFolderHandler.Handle{ handle } -> Children: %d\n", len(folderData.Children))
-				wg.Done()
-			}
-
-			for i := range grfh.FolderResponses {
-				go foldersData(&grfh.FolderResponses[i], errors[i])
-			}
-			wg.Wait()
-			for _, err := range errors {
-				if err != nil {
-					grfh.Error = err
-					return grfh.Lock(code)
-				}
-			}
-			break
-
-		default:
-			code = 600
-			grfh.Error = echo.NewHTTPError(
-				code,
-				fmt.Sprintf("Type assertion failed for type: %T\n", fun),
-			)
-		}
-		if grfh.Error != nil {
-			return grfh.Lock(code)
-		}
+func (h *GetRootFolderHandler) Handle() handlers.IHandler {
+	jwt_token := h.ctx.Get("user").(*jwt.Token)
+	claims := jwt_token.Claims.(*services.CustomJwt)
+	userID := claims.UserId
+	var err error
+	if err = h.AuthService.CheckToken(jwt_token.Raw); err != nil {
+		handlers.Lock(h, 401, err)
 	}
-	return grfh
+	folders := make([]repository.Folder, 0)
+	if folders, err = h.FolderService.GetRoot(userID); err != nil {
+		handlers.Lock(h, 404, err)
+	}
+	h.Data = make([]responses.FolderData, 0)
+	for _, folder := range folders {
+		folderData := responses.NewFolderData(folder)
+		if folderData.Bookmarks, err = h.BookmarkService.GetByFolder(*folderData.ID); err != nil {
+			handlers.Lock(h, 500, err)
+		}
+		if folderData.Notes, err = h.NoteService.GetByFolder(*folderData.ID); err != nil {
+			handlers.Lock(h, 500, err)
+		}
+		if folderData.Children, err = h.FolderService.GetByParent(*folderData.ID); err != nil {
+			handlers.Lock(h, 500, err)
+		}
+		h.Data = append(h.Data, folderData)
+	}
+	return h
 }
 
 func (h *GetRootFolderHandler) JSON() error {
-	var code int
-	var message string
-	if h.Locked && h.Error != nil {
-		code = h.Code
-		if code == 600 {
-			message = "Misaligend handler on the server" + h.Error.Error()
-		} else {
-			message = h.Error.Error()
-		}
-	} else if code == 200 {
-		message = "OK"
+	if h.err != nil {
+		return responses.NewFoldersResponse().Fail(h.ctx, h.code, h.err)
 	}
-	return h.Context.JSON(code,
-		responses.NewFoldersResponse(
-			h.FolderResponses,
-			!h.Locked,
-			message,
-		))
+	return responses.NewFoldersResponse().Successful(h.ctx, h.Data)
+}
+
+func (h *GetRootFolderHandler) SetCode(code int) handlers.IHandler {
+	h.code = code
+	return h
+}
+
+
+func (h *GetRootFolderHandler) SetError(err error) handlers.IHandler {
+	h.err = fmt.Errorf("%d Error: %s", h.code, err.Error())
+	return h
 }

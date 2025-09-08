@@ -206,11 +206,11 @@ func (q *Queries) FindFoldersByUserId(ctx context.Context, userID uuid.UUID) ([]
 const findFoldersRoot = `-- name: FindFoldersRoot :many
 SELECT id, parent_id, user_id, name, description, created_datetime, updated_datetime
 FROM folders 
-WHERE parent_id IS NULL
+WHERE parent_id IS NULL AND user_id = $1
 `
 
-func (q *Queries) FindFoldersRoot(ctx context.Context) ([]Folder, error) {
-	rows, err := q.db.Query(ctx, findFoldersRoot)
+func (q *Queries) FindFoldersRoot(ctx context.Context, userID uuid.UUID) ([]Folder, error) {
+	rows, err := q.db.Query(ctx, findFoldersRoot, userID)
 	if err != nil {
 		return nil, err
 	}

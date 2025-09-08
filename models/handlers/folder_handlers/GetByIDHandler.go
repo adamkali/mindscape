@@ -2,129 +2,89 @@ package folder_handlers
 
 import (
 	"fmt"
-	"reflect"
-	"runtime"
 
 	"github.com/adamkali/mindscape/db/repository"
+	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
 	"github.com/golang-jwt/jwt/v5"
-
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
-
 type GetFolderByIDHandler struct {
-	UserID          uuid.UUID
-	FolderID        uuid.UUID
-	FolderResponse responses.FolderData
-	Context         echo.Context
-	Error           error
-	Code            int
-	Locked          bool
+	Data            *responses.FolderData
+	err             error
+	code            int
+	ctx             echo.Context
+	AuthService     services.IAuthService
+	FolderService   services.IFolderService
+	BookmarkService services.IBookmarkService
+	NoteService     services.INoteService
 }
 
-func NewGetById(e echo.Context) *GetFolderByIDHandler {
+func NewGetById(
+	ctx echo.Context,
+	FolderService services.IFolderService,
+	BookmarkService services.IBookmarkService,
+	NoteService services.INoteService,
+	AuthService services.IAuthService,
+) *GetFolderByIDHandler {
 	return &GetFolderByIDHandler{
-		Context: e,
-		Locked:  false,
-		Error:   nil,
-		Code:    200,
+		ctx:             ctx,
+		code:            200,
+		FolderService:   FolderService,
+		BookmarkService: BookmarkService,
+		NoteService:     NoteService,
+		AuthService:     AuthService,
 	}
 }
 
-func (grfh *GetFolderByIDHandler) Lock(code int) *GetFolderByIDHandler {
-	grfh.Locked = true
-	grfh.Code = code
-	return grfh
-}
-
-func (grfh *GetFolderByIDHandler) Handle(fun any) *GetFolderByIDHandler {
-	var code int
-	if !grfh.Locked {
-		switch handle := fun.(type) {
-		case func(token string) error: // this is to the jwt token
-			code = 401
-			grfh.Error = handle(grfh.Context.Get("user").(*jwt.Token).Raw)
-			if grfh.Error != nil {
-				return grfh.Lock(code)
-			}
-			jwt_token := grfh.Context.Get("user").(*jwt.Token)
-			claims := jwt_token.Claims.(*services.CustomJwt)
-			grfh.UserID = claims.UserId
-			break 
-
-		case func(id uuid.UUID) (*repository.Folder, error):
-			code = 400
-			folder := new(repository.Folder) 
-			grfh.FolderID, grfh.Error = uuid.Parse(grfh.Context.Param("folder_id"))
-			if grfh.Error != nil {
-				grfh.Error = echo.NewHTTPError(
-					code,
-					fmt.Sprintf("Type assertion failed for %s: %T\n", runtime.FuncForPC(reflect.ValueOf(fun).Pointer()).Name(), fun),
-				)
-				return grfh.Lock(code)
-				
-			}
-			code = 404
-			folder, grfh.Error = handle(grfh.FolderID)
-			grfh.FolderResponse = responses.NewFolderData(*folder)
-			break
-
-		case func(id uuid.UUID) ([]repository.Bookmark, error):
-			code = 404
-			grfh.FolderResponse.Bookmarks, grfh.Error = handle(grfh.FolderID)
-			break
-
-		case func(id uuid.UUID) ([]repository.Note, error):
-			code = 404
-			grfh.FolderResponse.Notes, grfh.Error = handle(grfh.FolderID)
-			break
-
-		case func(id uuid.UUID) ([]repository.Folder, error):
-			code = 404
-			grfh.FolderResponse.Children, grfh.Error = handle(grfh.FolderID)
-			break
-
-
-		default:
-			code = 600
-			grfh.Error = echo.NewHTTPError(
-				code,
-				fmt.Sprintf("Type assertion failed for %s: %T\n", runtime.FuncForPC(reflect.ValueOf(fun).Pointer()).Name(), fun),
-			)
-		}
-		if grfh.Error != nil {
-			grfh.Error = echo.NewHTTPError(
-				code,
-				fmt.Sprintf("GetFolderByIDHandler.%s caused: %s", runtime.FuncForPC(reflect.ValueOf(fun).Pointer()).Name(), grfh.Error.Error()),
-			)
-			return grfh.Lock(code)
-		}
+func (h *GetFolderByIDHandler) Handle() handlers.IHandler {
+	jwt_token := h.ctx.Get("user").(*jwt.Token)
+	claims := jwt_token.Claims.(*services.CustomJwt)
+	userID := claims.UserId
+	var err error
+	if err = h.AuthService.CheckToken(jwt_token.Raw); err != nil {
+		handlers.Lock(h, 401, err)
 	}
-	return grfh
+	var folderID uuid.UUID
+	if folderID, err = uuid.Parse(h.ctx.Param("folder_id")); err != nil {
+		handlers.Lock(h, 400, err)
+	}
+	folder := new(repository.Folder)
+	if folder, err = h.FolderService.Get(folderID); err != nil {
+		handlers.Lock(h, 404, err)
+	}
+	if folder.UserID != userID {
+		handlers.Lock(h, 403, fmt.Errorf("unauthorized access to folder"))
+	}
+	folderData := responses.NewFolderData(*folder)
+	if folderData.Bookmarks, err = h.BookmarkService.GetByFolder(folderID); err != nil {
+		handlers.Lock(h, 500, err)
+	}
+	if folderData.Notes, err = h.NoteService.GetByFolder(folderID); err != nil {
+		handlers.Lock(h, 500, err)
+	}
+	if folderData.Children, err = h.FolderService.GetByParent(folderID); err != nil {
+		handlers.Lock(h, 500, err)
+	}
+	return h
 }
 
 func (h *GetFolderByIDHandler) JSON() error {
-	var code int
-	var message string
-	if h.Locked && h.Error != nil {
-		code = h.Code
-		if code == 600 {
-			message = fmt.Sprintf("Misaligend handler on the server: %s", h.Error.Error())
-		} else {
-			message = h.Error.Error()
-		}
-	} else if code == 200 {
-		message = "OK"
+	if h.err != nil {
+		return responses.NewFolderResponse().Fail(h.ctx, h.code, h.err)
 	}
+	return h.ctx.JSON(200, responses.NewFolderResponseWithData(*h.Data, true, "OK"))
+}
 
-	return h.Context.JSON(code,
-	    responses.NewFolderResponseWithData(
-		    h.FolderResponse,
-		    !h.Locked,
-		    message,
-	    ),
-	)
+func (h *GetFolderByIDHandler) SetCode(code int) handlers.IHandler {
+	h.code = code
+	return h
+}
+
+func (h *GetFolderByIDHandler) SetError(err error) handlers.IHandler {
+	h.err = fmt.Errorf("%d Error: %s", h.code, err.Error())
+	return h
 }

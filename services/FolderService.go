@@ -40,14 +40,14 @@ func (folderService FolderService) GetAll() ([]repository.Folder, error) {
 	return folders, nil
 }
 
-func (folderService FolderService) GetRoot() ([]repository.Folder, error) {
+func (folderService FolderService) GetRoot(user_id uuid.UUID) ([]repository.Folder, error) {
 	tx, err := folderService.pool.Begin(folderService.ctx)
 	if err != nil {
 		return []repository.Folder{}, err
 	}
 	defer tx.Rollback(folderService.ctx)
 	repo := repository.New(tx)
-	folders, err := repo.FindFoldersRoot(folderService.ctx)
+	folders, err := repo.FindFoldersRoot(folderService.ctx, uuid.Nil)
 	if err != nil {
 		return []repository.Folder{}, err
 	}
