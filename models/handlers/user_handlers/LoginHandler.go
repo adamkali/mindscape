@@ -46,19 +46,19 @@ func (h *LoginHandler) Handle() handlers.IHandler {
 	request := new(requests.LoginRequest)
 	var err error
 	if request, err = h.ValidatorService.ValidateLoginRequest(h.ctx); err != nil {
-		handlers.Lock(h, 400, err)
+		return handlers.Lock(h, 400, err)
 	}
 	h.authenticated, err = h.UserService.Login(request)
 	if err != nil {
-		handlers.Lock(h, 401, err)
+		return handlers.Lock(h, 401, err)
 	} 
 	if h.authenticated == nil {
-		handlers.Lock(h, 401, fmt.Errorf("invalid credentials"))
+		return handlers.Lock(h, 401, fmt.Errorf("invalid credentials"))
 	}
 	fmt.Println(h.authenticated)
 	h.token, err = h.AuthService.Update(*h.authenticated)
 	if err != nil {
-		handlers.Lock(h, 500, err)
+		return handlers.Lock(h, 500, err)
 	}
 	return h
 }

@@ -36,14 +36,14 @@ func (h *GetUsersHandler) Handle() handlers.IHandler {
 	admin := claims.IsAdmin
 	err := h.AuthService.CheckToken(jwt_token.Raw)
 	if err != nil {
-		handlers.Lock(h, 401, err)
+		return handlers.Lock(h, 401, err)
 	}
 	if !admin {
-		handlers.Lock(h, 403, err)
+		return handlers.Lock(h, 403, err)
 	}
 	h.Users, err = h.UserService.GetAll()
 	if err != nil {
-		handlers.Lock(h, 404, err)
+		return handlers.Lock(h, 404, err)
 	}
 	return h
 }
