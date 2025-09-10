@@ -40,11 +40,11 @@ func (h *GetCurrentLoggedInUserHandler) Handle() handlers.IHandler {
 	claims := jwt_token.Claims.(*services.CustomJwt)
 	err := h.As.CheckToken(jwt_token.Raw)
 	if err != nil {
-		handlers.Lock(h, 401, err)
+		return handlers.Lock(h, 401, err)
 	}
 	h.Data, err = h.Us.Get(claims.UserId)
 	if err != nil {
-		handlers.Lock(h, 404, err)
+		return handlers.Lock(h, 404, err)
 	}
 	return h
 }

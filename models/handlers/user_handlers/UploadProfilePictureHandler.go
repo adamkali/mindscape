@@ -82,27 +82,27 @@ func (h *UploadProfilePictureHandler) Handle() handlers.IHandler {
 	userId := claims.UserId
 	err := h.as.CheckToken(jwt_token.Raw)
 	if err != nil {
-		return h.Lock(401, err)
+		return handlers.Lock(h,401, err)
 	}
 	var file *multipart.FileHeader
 	var src multipart.File
 	file, err = h.ctx.FormFile("file")
 	if err != nil {
-		return h.Lock(400, err)
+		return handlers.Lock(h, 400, err)
 	}
 	src, err = file.Open()
 	if err != nil {
-		return h.Lock(500, err)
+		return handlers.Lock(h, 500, err)
 	}
 	defer src.Close()
 	filename = file.Filename
 	err = h.ms.Upload(userId, filename, src, file.Size)
 	if err != nil {
-		return h.Lock(500, err)
+		return handlers.Lock(h, 500, err)
 	}
 	h.response, err = h.us.Update(userId, filename)
 	if err != nil {
-		return h.Lock(500, err)
+		return handlers.Lock(h, 500, err)
 	}
 	return h
 

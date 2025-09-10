@@ -52,7 +52,7 @@ func (h *GetProfilePictureHandler) Handle() handlers.IHandler {
 	profilePictureName := ""
 	err := h.As.CheckToken(jwt_token.Raw)
 	if err != nil {
-		handlers.Lock(h, 401, err)
+		return handlers.Lock(h, 401, err)
 	}
 	user, err := h.Us.Get(userID)
 	if user.ProfilePicUrl != nil {
@@ -62,7 +62,7 @@ func (h *GetProfilePictureHandler) Handle() handlers.IHandler {
 		}
 	}
 	if err != nil {
-		handlers.Lock(h, 404, err)
+		return handlers.Lock(h, 404, err)
 	}
 	// now check redis
 	h.url, h.err = h.Rs.Get(profilePictureName)
