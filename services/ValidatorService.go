@@ -14,6 +14,7 @@ import (
 	"github.com/adamkali/mindscape/cmd/configuration"
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/requests"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -76,7 +77,7 @@ func (ValidatorService ValidatorService) ValidateNewUserRequest(e echo.Context) 
 
 	_, err := mail.ParseAddress(validRequest.Email)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Validation failed (%s) is not a valid email address", validRequest.Email)
 	}
 
 	sevenOrMore, number, upper, special := validatePassword(validRequest.Password)
@@ -98,6 +99,27 @@ func (ValidatorService ValidatorService) ValidateLoginRequest(e echo.Context) (*
 	validRequest := new(requests.LoginRequest)
 	if err := e.Bind(&validRequest); err != nil {
 		return nil, err
+	}
+	if validRequest.Email == "" && validRequest.Username == "" {
+		err := errors.New("Email and Username cannot be null")
+		return nil, err
+	}
+	// validRequest.Username can be sql injection
+	if !validateUsername(validRequest.Username) {
+		return nil, fmt.Errorf("Validation failed (%s) is not a valid username", validRequest.Username)
+	}
+	if validRequest.Password == "" {
+		err := errors.New("You must send a password")
+		return nil, err
+	}
+	sevenOrMore, number, upper, special := validatePassword(validRequest.Password)
+	if !(sevenOrMore && number && upper && special) {
+		return nil, fmt.Errorf(
+			"Validation failed. Seven Or More (%t), Number (%t), Upper (%t), Special (%t)",
+			sevenOrMore,
+			number,
+			upper,
+			special)
 	}
 	return validRequest, nil
 }
@@ -126,11 +148,14 @@ func (vs ValidatorService) ValidateUpdateUserCredentialRequest(e echo.Context) (
 	if err := e.Bind(&validRequest); err != nil {
 		return nil, err
 	}
-	
+	if validRequest.ID == uuid.Nil {
+		err := errors.New("ID cannot be null")
+		return nil, err
+	}
 	if !validateUsername(validRequest.Username) {
 		return nil, fmt.Errorf("Validation failed (%s) is not a valid username", validRequest.Username)
 	}
-
+	
 	_, err := mail.ParseAddress(validRequest.Email)
 	if err != nil {
 		return nil, err
@@ -156,7 +181,6 @@ func (vs ValidatorService) ValidateUpdateUserCredentialRequest(e echo.Context) (
 }
 
 func (vs ValidatorService) ValidateCreateFolderRequest(e echo.Context) (*repository.CreateFolderParams, error) {
-	println("[INFO] ValidatorService.ValidateCreateFolderRequest")
 	validRequest := new(repository.CreateFolderParams)
 	if err := e.Bind(&validRequest); err != nil {
 		fmt.Printf("[ERROR] ValidatorService.ValidateCreateFolderRequest{ err: %v }\n", err)
