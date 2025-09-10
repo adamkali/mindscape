@@ -118,6 +118,7 @@ func (a *AuthService) CheckToken(token string) error {
 
 	defer tx.Rollback(a.ctx)
 	repo := repository.New(tx)
+
 	_, err = repo.FindTokenByToken(a.ctx, &token)
 	if err != nil {
 		return err
@@ -154,15 +155,18 @@ func (a *AuthService) Update(user repository.User) (*string, error) {
 
 	defer tx.Rollback(a.ctx)
 	expiration := jwttoken.ExpiresAt
+	println("starting")
 
 	// Create token with claims
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwttoken)
+	println("token created")
 	// Sign it with the server JWT_TOKEN
 	t, err := token.SignedString([]byte(a.config.Server.JWT))
 	if err != nil {
 		fmt.Printf("[ERROR] AuthService.Update{ token.SignedString } -> Error signing token: %v", err)
 		return nil, err
 	}
+	println("token signed")
 
 	fmt.Printf("[INFO] AuthService.Update{ token.SignedString } -> Token: %v TokenLength: %d", t, len(t))
 	params := repository.UpdateTokenByUserIdParams{
@@ -170,12 +174,14 @@ func (a *AuthService) Update(user repository.User) (*string, error) {
 		ExpirationDatetime: &expiration.Time,
 		Token:              &t,
 	}
+	println("params created")
 	repo := repository.New(tx)
 	err = repo.UpdateTokenByUserId(a.ctx, params)
 	if err != nil {
 		fmt.Printf("[ERROR] AuthService.Update{ repo.UpdateTokenByUserId } -> Error updating token: %v", err)
 		return nil, err
 	}
+	println("token updated")
 	tx.Commit(a.ctx)
 	return &t, nil
 }

@@ -156,8 +156,10 @@ func (vs ValidatorService) ValidateUpdateUserCredentialRequest(e echo.Context) (
 }
 
 func (vs ValidatorService) ValidateCreateFolderRequest(e echo.Context) (*repository.CreateFolderParams, error) {
+	println("[INFO] ValidatorService.ValidateCreateFolderRequest")
 	validRequest := new(repository.CreateFolderParams)
 	if err := e.Bind(&validRequest); err != nil {
+		fmt.Printf("[ERROR] ValidatorService.ValidateCreateFolderRequest{ err: %v }\n", err)
 		return nil, err
 	}
 	if validRequest.Name == "" {

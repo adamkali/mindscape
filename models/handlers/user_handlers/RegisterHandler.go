@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/adamkali/mindscape/db/repository"
+	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/requests"
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
@@ -46,18 +47,20 @@ func (h *RegisterHandler) Lock(code int, err error) *RegisterHandler {
 	return h
 }
 
-func (h *RegisterHandler) Handle() *RegisterHandler {
+func (h *RegisterHandler) Handle() handlers.IHandler{
 	var request *requests.NewUserRequest
 	var err error
 
 	if request, err = h.ValidatorService.ValidateNewUserRequest(h.ctx); err != nil {
-		h.Lock(400, err)
+		return handlers.Lock(h, 400, err)
 	}
+	fmt.Println(request)
 	if h.newUser, err = h.UserService.Create(request); err != nil {
-		h.Lock(500, err)
+		return handlers.Lock(h, 500, err)
 	}
-	if h.token, err = h.AuthService.Update(*h.newUser); err != nil {
-		h.Lock(500, err)
+	fmt.Println(h.newUser)
+	if h.token, err = h.AuthService.Create(h.newUser); err != nil {
+		return handlers.Lock(h, 500, err)
 	}
 	return h
 }
@@ -71,4 +74,13 @@ func (h *RegisterHandler) JSON() error {
 	} else {
 		return responses.NewLoginResponse().Successful(h.ctx, h.newUser, *h.token)
 	}
+}
+
+func (h *RegisterHandler) SetError(err error) handlers.IHandler {
+	h.err = err
+	return h
+}
+func (h *RegisterHandler) SetCode(code int) handlers.IHandler {
+	h.code = code
+	return h
 }

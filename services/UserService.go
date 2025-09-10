@@ -5,6 +5,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/requests"
@@ -71,17 +72,21 @@ func (UserService *UserService) addNewUser(
 	params repository.CreateUserParams,
 ) (*repository.User, error) {
 	var user repository.User
+	fmt.Println("Starting Connection")
 	tx, err := UserService.pool.Begin(UserService.ctx)
+	fmt.Println(err.Error())
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback(UserService.ctx)
+	println("adding")
 	repo := repository.New(tx)
 	user, err = repo.CreateUser(UserService.ctx, params)
 	if err != nil {
 		return nil, err
 	}
 	tx.Commit(UserService.ctx)
+	fmt.Println(user)
 	return &user, nil
 }
 
@@ -127,11 +132,14 @@ func (UserService *UserService) Login(params *requests.LoginRequest) (*repositor
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println(BCryptHash)
 		if verifyPassword(BCryptHash, params.Password) {
+			fmt.Println("Verified")
 			user, err = repo.FindUserByEmail(UserService.ctx, params.Email)
 			if err != nil {
 				return nil, err
 			}
+			fmt.Println(user)
 		} else {
 			return nil, errors.New("Could not verify password")
 		}

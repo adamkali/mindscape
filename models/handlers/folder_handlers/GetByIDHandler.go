@@ -46,29 +46,30 @@ func (h *GetFolderByIDHandler) Handle() handlers.IHandler {
 	userID := claims.UserId
 	var err error
 	if err = h.AuthService.CheckToken(jwt_token.Raw); err != nil {
-		handlers.Lock(h, 401, err)
+		return handlers.Lock(h, 401, err)
 	}
 	var folderID uuid.UUID
 	if folderID, err = uuid.Parse(h.ctx.Param("folder_id")); err != nil {
-		handlers.Lock(h, 400, err)
+		return handlers.Lock(h, 400, err)
 	}
 	folder := new(repository.Folder)
 	if folder, err = h.FolderService.Get(folderID); err != nil {
-		handlers.Lock(h, 404, err)
+		return handlers.Lock(h, 404, err)
 	}
 	if folder.UserID != userID {
-		handlers.Lock(h, 403, fmt.Errorf("unauthorized access to folder"))
+		return handlers.Lock(h, 403, fmt.Errorf("unauthorized access to folder"))
 	}
 	folderData := responses.NewFolderData(*folder)
 	if folderData.Bookmarks, err = h.BookmarkService.GetByFolder(folderID); err != nil {
-		handlers.Lock(h, 500, err)
+		return handlers.Lock(h, 500, err)
 	}
 	if folderData.Notes, err = h.NoteService.GetByFolder(folderID); err != nil {
-		handlers.Lock(h, 500, err)
+		return handlers.Lock(h, 500, err)
 	}
 	if folderData.Children, err = h.FolderService.GetByParent(folderID); err != nil {
-		handlers.Lock(h, 500, err)
+		return handlers.Lock(h, 500, err)
 	}
+	h.Data = &folderData
 	return h
 }
 

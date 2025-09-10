@@ -3,6 +3,8 @@
 package user_handlers
 
 import (
+	"fmt"
+
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/requests"
@@ -49,7 +51,11 @@ func (h *LoginHandler) Handle() handlers.IHandler {
 	h.authenticated, err = h.UserService.Login(request)
 	if err != nil {
 		handlers.Lock(h, 401, err)
+	} 
+	if h.authenticated == nil {
+		handlers.Lock(h, 401, fmt.Errorf("invalid credentials"))
 	}
+	fmt.Println(h.authenticated)
 	h.token, err = h.AuthService.Update(*h.authenticated)
 	if err != nil {
 		handlers.Lock(h, 500, err)

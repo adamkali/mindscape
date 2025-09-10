@@ -45,23 +45,23 @@ func (h *GetRootFolderHandler) Handle() handlers.IHandler {
 	userID := claims.UserId
 	var err error
 	if err = h.AuthService.CheckToken(jwt_token.Raw); err != nil {
-		handlers.Lock(h, 401, err)
+		return handlers.Lock(h, 401, err)
 	}
 	folders := make([]repository.Folder, 0)
 	if folders, err = h.FolderService.GetRoot(userID); err != nil {
-		handlers.Lock(h, 404, err)
+		return handlers.Lock(h, 404, err)
 	}
 	h.Data = make([]responses.FolderData, 0)
 	for _, folder := range folders {
 		folderData := responses.NewFolderData(folder)
 		if folderData.Bookmarks, err = h.BookmarkService.GetByFolder(*folderData.ID); err != nil {
-			handlers.Lock(h, 500, err)
+			return handlers.Lock(h, 500, err)
 		}
 		if folderData.Notes, err = h.NoteService.GetByFolder(*folderData.ID); err != nil {
-			handlers.Lock(h, 500, err)
+			return handlers.Lock(h, 500, err)
 		}
 		if folderData.Children, err = h.FolderService.GetByParent(*folderData.ID); err != nil {
-			handlers.Lock(h, 500, err)
+			return handlers.Lock(h, 500, err)
 		}
 		h.Data = append(h.Data, folderData)
 	}

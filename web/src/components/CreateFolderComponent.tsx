@@ -1,5 +1,6 @@
 import type { FoldersApi } from '@/api';
 import type { AuthContextValue } from '@/contexts/AuthContext';
+import { EmptyGuid } from '@/utils';
 import { createSignal, type ComponentProps } from 'solid-js';
 
 interface CreateFolderComponentProps extends ComponentProps<'div'> {
@@ -29,10 +30,12 @@ export default function CreateFolderComponent(
 		event.preventDefault();
 		if (!folderName()) return;
 		console.log('create folder', folderName());
+		console.log('parent id', parentId === "" ? "null" : parentId);
+		
 		const response = await folderAPIRef.createFolder({
 			createFolderRequest: {
 				userId,
-				parentId,
+				parentId: parentId === "" ? undefined : parentId,
 				name: folderName(),
 				description: folderDescription(),
 			},
@@ -42,7 +45,6 @@ export default function CreateFolderComponent(
 		if (response.success) {
 			setFolderName('');
 			setFolderDescription('');
-			refresh?.();
 		} else {
 			console.error('Failed to create folder:', response.message);
 			return;

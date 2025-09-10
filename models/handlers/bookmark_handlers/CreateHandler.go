@@ -40,14 +40,14 @@ func (h *CreateHandler) Handle() handlers.IHandler {
 	jwt_token := h.ctx.Get("user").(*jwt.Token)
 	var err error
 	if err = h.AuthService.CheckToken(jwt_token.Raw); err != nil {
-		handlers.Lock(h, 401, err)
+		return handlers.Lock(h, 401, err)
 	}
 	request := new(repository.CreateBookmarkParams)
 	if request, err = h.ValidatorService.CreateBookmarkRequest(h.ctx); err != nil {
-		handlers.Lock(h, 400, err)
+		return handlers.Lock(h, 400, err)
 	}
 	if h.Data, err = h.BookmarkService.Create(request); err != nil {
-		handlers.Lock(h, 500, err)
+		return handlers.Lock(h, 500, err)
 	}
 	return h
 }

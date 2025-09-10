@@ -47,7 +47,7 @@ func (folderService FolderService) GetRoot(user_id uuid.UUID) ([]repository.Fold
 	}
 	defer tx.Rollback(folderService.ctx)
 	repo := repository.New(tx)
-	folders, err := repo.FindFoldersRoot(folderService.ctx, uuid.Nil)
+	folders, err := repo.FindFoldersRoot(folderService.ctx, user_id)
 	if err != nil {
 		return []repository.Folder{}, err
 	}

@@ -40,20 +40,20 @@ func (h *DeleteFolderHandler) Handle() handlers.IHandler {
 	userID := claims.UserId
 	var err error
 	if err = h.AuthService.CheckToken(jwt_token.Raw); err != nil {
-		handlers.Lock(h, 401, err)
+		return handlers.Lock(h, 401, err)
 	}
 	var folderID uuid.UUID
 	if folderID, err = uuid.Parse(h.ctx.Param("folder_id")); err != nil {
-		handlers.Lock(h, 400, err)
+		return handlers.Lock(h, 400, err)
 	}
 	if h.Data, err = h.FolderService.Get(folderID); err != nil {
-		handlers.Lock(h, 404, err)
+		return handlers.Lock(h, 404, err)
 	}
 	if h.Data.UserID != userID {
-		handlers.Lock(h, 403, fmt.Errorf("unauthorized access to folder"))
+		return handlers.Lock(h, 403, fmt.Errorf("unauthorized access to folder"))
 	}
 	if err = h.FolderService.Remove(folderID); err != nil {
-		handlers.Lock(h, 500, err)
+		return handlers.Lock(h, 500, err)
 	}
 	return h
 }

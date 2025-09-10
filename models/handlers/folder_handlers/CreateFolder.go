@@ -42,19 +42,20 @@ func (h *CreateFolderHandler) Handle() handlers.IHandler {
 	userID := claims.UserId
 	var err error
 	if err = h.AuthService.CheckToken(jwt_token.Raw); err != nil {
-		handlers.Lock(h, 401, err)
+		return handlers.Lock(h, 401, err)
 	}
-	request := new(repository.CreateFolderParams)
-	if request, err = h.ValidatorService.ValidateCreateFolderRequest(h.ctx); err != nil {
-		handlers.Lock(h, 400, err)
+	request, err := h.ValidatorService.ValidateCreateFolderRequest(h.ctx)
+	if err != nil {
+		return handlers.Lock(h, 400, err)
 	}
+	fmt.Printf("[INFO] CreateFolderHandler.Handle{ request: %v }\n", request)
 	params := &repository.CreateFolderParams{
 		UserID:   userID,
 		Name:     request.Name,
 		ParentID: request.ParentID,
 	}
 	if h.Data, err = h.FolderService.Create(params); err != nil {
-		handlers.Lock(h, 500, err)
+		return handlers.Lock(h, 500, err)
 	}
 	return h
 }
