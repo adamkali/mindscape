@@ -8,14 +8,15 @@ import {
 import type { ResponsesUserData } from '@/api';
 import { UsersApi } from '@/api';
 
-interface AuthContextValue {
+export interface AuthContextValue {
 	user: () => ResponsesUserData | null;
 	token: () => string | null;
 	login: (token: string, userData: ResponsesUserData) => void;
 	logout: () => void;
 	isAuthenticated: () => boolean;
 	isInitializing: () => boolean;
-	updateUser: (userData: ResponsesUserData) => void;
+	isAdmin: () => boolean;
+	update: (userData: ResponsesUserData, token: string) => void;
 }
 
 const AuthContext = createContext<AuthContextValue>();
@@ -93,8 +94,13 @@ export const AuthProvider: ParentComponent = (props) => {
 		return !!token() && !!user();
 	};
 
-	const updateUser = (userData: ResponsesUserData) => {
+	const update = (userData: ResponsesUserData, token: string) => {
 		setUser(userData);
+		setToken(token);
+	};
+
+	const isAdmin = () => {
+		return user()?.admin || false;
 	};
 
 	const value: AuthContextValue = {
@@ -102,9 +108,10 @@ export const AuthProvider: ParentComponent = (props) => {
 		token,
 		login,
 		logout,
+		isAdmin,
 		isAuthenticated,
 		isInitializing,
-		updateUser,
+		update,
 	};
 
 	return (

@@ -13,6 +13,7 @@ import (
 type IFolderService interface {
 	GetAll() ([]repository.Folder, error)
 	Get(id uuid.UUID) (*repository.Folder, error)
+	GetRoot(user_id uuid.UUID) ([]repository.Folder, error)
 	GetByUser(user_id uuid.UUID) ([]repository.Folder, error)
 	GetByParent(parent_id uuid.UUID) ([]repository.Folder, error)
 	Create(params *repository.CreateFolderParams) (*repository.Folder, error)

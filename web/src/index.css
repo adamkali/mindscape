@@ -1,34 +1,51 @@
 @import "tailwindcss";
+@import "https://www.nerdfonts.com/assets/css/webfont.css"
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-	--background: oklch(0.8527 0.074 305.92);
-	--foreground: oklch(0.194 0.0355 305.92);
-	--card: oklch(0.7879 0.1332 305.92);
-	--card-foreground: oklch(0.9026 0.037 305.92);
-	--primary: oklch(0.3526 0.1455 305.92);
-	--primary-foreground: oklch(0.6526 0.2097 305.92);
-	--secondary: oklch(0.5738 0.1497 250.81);
-	--secondary-foreground: oklch(0.8408 0.0715 250.81);
-	--accent: oklch(0.5738 0.1497 250.81);
-	--accent-foreground: oklch(0.8408 0.0715 250.81);
-	--error: oklch(0.6933 0.1801 0.93);
-	--error-foreground: oklch(0.8673 0.0345 0.93);
+	--background: #FdceFd;
+	--foreground: #000000;
+	--card: #ad7ead;
+	--card-foreground: #000000;
+	--primary: #FB82F6;
+	--primary-foreground: #200a56;
+    --primary-hover: #FBa2F6;
+    --primary-hover-foreground: #300a56;
+	--secondary: #63b3f3;
+	--secondary-foreground: #0F1550;
+    --secondary-hover: #43c3f3;
+    --secondary-hover-foreground: #0F2550;
+    --tertiary: #808080;
+    --tertiary-foreground: #404040;
+    --tertiary-hover: #c0c0c0;
+    --tertiary-hover-foreground: #404040;
+	--error: #f07070;
+	--error-foreground: #e04545;
+    --error-hover: #f07575;
+    --error-hover-foreground: #f06060;
 }
 .dark {
-	--foreground: oklch(0.8527 0.074 305.92);
-	--background: oklch(0.194 0.0355 305.92);
-	--card: oklch(0.4148 0.0509 291.04);
-	--card-foreground: oklch(0.9026 0.037 305.92);
-	--primary: oklch(0.5467 0.2393 305.92);
-	--primary-foreground: oklch(0.6526 0.2097 305.92);
-	--secondary: oklch(0.5738 0.1497 250.81);
-	--secondary-foreground: oklch(0.8408 0.0715 250.81);
-	--accent: oklch(0.5738 0.1497 250.81);
-	--accent-foreground: oklch(0.8408 0.0715 250.81);
-	--error: oklch(0.6933 0.1801 0.93);
-	--error-foreground: oklch(0.8673 0.0345 0.93);
+    --background: #000000;
+    --foreground: #ffffff;
+    --card: #714071;
+    --card-foreground: #ffffff;
+    --primary: #600FcF;
+    --primary-foreground: #fdaff6;
+    --primary-hover: #604FcF;
+    --primary-hover-foreground:#ffcff6;
+    --secondary: #0F30c6;
+    --secondary-foreground: #b3efff;
+    --secondary-hover: #2F40c6;
+    --secondary-hover-foreground: #d5efff;
+    --tertiary: #303030;
+    --tertiary-foreground: #f0f0f0;
+    --tertiary-hover: #808080;
+    --tertiary-hover-foreground: #f0f0f0;
+    --error: #f07070;
+    --error-foreground: #b04040;
+	--error-hover: #f09090;
+	--error-hover-foreground: #d06060;
 }
 
 @theme inline {
@@ -38,12 +55,20 @@
 	--color-card-foreground: var(--card-foreground);
 	--color-primary: var(--primary);
 	--color-primary-foreground: var(--primary-foreground);
+    --color-primary-hover: var(--primary-hover);
+    --color-primary-hover-foreground: var(--primary-hover-foreground);
 	--color-secondary: var(--secondary);
 	--color-secondary-foreground: var(--secondary-foreground);
-	--color-accent: var(--accent);
-	--color-accent-foreground: var(--accent-foreground);
+    --color-secondary-hover: var(--secondary-hover);
+    --color-secondary-hover-foreground: var(--secondary-hover-foreground);
+    --color-tertiary: var(--tertiary);
+    --color-tertiary-foreground: var(--tertiary-foreground);
+    --color-tertiary-hover: var(--tertiary-hover);
+    --color-tertiary-hover-foreground: var(--tertiary-hover-foreground);
 	--color-error: var(--error);
 	--color-error-foreground: var(--error-foreground);
+    --color-error-hover: var(--error-hover);
+    --color-error-hover-foreground: var(--error-hover-foreground);
 }
 
 @layer base {

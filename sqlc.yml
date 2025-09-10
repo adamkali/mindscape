@@ -14,7 +14,7 @@ sql:
         overrides:
           - db_type: "uuid"
             go_type:
-              pointer: true
+              pointer: false 
               import: "github.com/google/uuid"
               type: "UUID"
           - db_type: "pg_catalog.timestamptz"
@@ -35,3 +35,8 @@ sql:
             go_type:
               pointer: true
               type: "string"
+          - db_type: "pgtype.UUID"
+            go_type:
+              pointer: false
+              import: "github.com/google/uuid"
+              type: "UUID"

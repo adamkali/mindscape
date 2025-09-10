@@ -1,5 +1,25 @@
 basePath: /api
 definitions:
+  BookmarkResponse:
+    properties:
+      data:
+        $ref: '#/definitions/repository.Bookmark'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  BookmarksResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/repository.Bookmark'
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   DeleteUserResponse:
     properties:
       data:
@@ -49,6 +69,30 @@ definitions:
       success:
         type: boolean
     type: object
+  UpdateCredentialsRequest:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      oldPassword:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  UpdateUserResponse:
+    properties:
+      data:
+        $ref: '#/definitions/responses.UserData'
+      jwt:
+        type: string
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   UserResponse:
     properties:
       data:
@@ -63,6 +107,134 @@ definitions:
       data:
         items:
           $ref: '#/definitions/responses.UserData'
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  repository.Bookmark:
+    properties:
+      created_datetime:
+        type: string
+      description:
+        type: string
+      folder_id:
+        type: string
+      icon:
+        type: string
+      id:
+        type: string
+      link:
+        type: string
+      name:
+        type: string
+      updated_datetime:
+        type: string
+      user_id:
+        type: string
+    type: object
+  repository.CreateBookmarkParams:
+    properties:
+      folder_id:
+        type: string
+      link:
+        type: string
+      name:
+        type: string
+      user_id:
+        type: string
+    type: object
+  repository.CreateFolderParams:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      parent_id:
+        type: string
+      user_id:
+        type: string
+    type: object
+  repository.Folder:
+    properties:
+      created_datetime:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      parent_id:
+        type: string
+      updated_datetime:
+        type: string
+      user_id:
+        type: string
+    type: object
+  repository.Note:
+    properties:
+      content:
+        type: string
+      created_datetime:
+        type: string
+      description:
+        type: string
+      folder_id:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updated_datetime:
+        type: string
+      user_id:
+        type: string
+    type: object
+  responses.FolderData:
+    properties:
+      bookmarks:
+        items:
+          $ref: '#/definitions/repository.Bookmark'
+        type: array
+      children:
+        items:
+          $ref: '#/definitions/repository.Folder'
+        type: array
+      created_datetime:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      notes:
+        items:
+          $ref: '#/definitions/repository.Note'
+        type: array
+      parent_id:
+        type: string
+      updated_datetime:
+        type: string
+      user_id:
+        type: string
+    type: object
+  responses.FolderResponse:
+    properties:
+      data:
+        $ref: '#/definitions/responses.FolderData'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  responses.FoldersResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/responses.FolderData'
         type: array
       message:
         type: string
@@ -97,6 +269,290 @@ info:
   title: mindscape
   version: 0.0.1
 paths:
+  /background:
+    get:
+      description: Get Default Background
+      operationId: GetDefaultBackground
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/StringResponse'
+      summary: Get Default Background
+      tags:
+      - Background
+  /background/choices:
+    get:
+      description: Get Background Choices
+      operationId: GetBackgroundChoices
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/StringResponse'
+      summary: Get Background Choices
+      tags:
+      - Background
+  /bookmarks:
+    post:
+      consumes:
+      - application/json
+      description: Create a new Bookmark by Authorization Header
+      operationId: CreateBookmark
+      parameters:
+      - description: CreateBookmarkRequest
+        in: body
+        name: CreateBookmarkRequest
+        required: true
+        schema:
+          $ref: '#/definitions/repository.CreateBookmarkParams'
+      - default: '"Bearer token"'
+        description: Authorization Header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/BookmarkResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/BookmarkResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/BookmarkResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/BookmarkResponse'
+      summary: Create a new Bookmark
+      tags:
+      - Bookmarks
+  /bookmarks/folder/{parent_id}:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        Get all Bookmarks by Authorization Header and by the
+        ParentFolderId [parent_id]
+      operationId: GetBookmarks
+      parameters:
+      - default: '"Bearer token"'
+        description: Authorization Header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Parent Folder ID
+        in: path
+        name: parent_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/BookmarksResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/BookmarksResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/BookmarksResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/BookmarksResponse'
+      summary: Get Bookmarks By Folder ID
+      tags:
+      - Bookmarks
+  /folders:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        Get the Root Folders associated with the user by Authorization Header
+        and will also try to get the children of the folder as well
+      operationId: GetRootFolders
+      parameters:
+      - default: '"Bearer token"'
+        description: Authorization Header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.FoldersResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.FoldersResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.FoldersResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.FoldersResponse'
+      summary: Get the Root Folders associated with the user
+      tags:
+      - Folders
+    post:
+      consumes:
+      - application/json
+      description: Create a new Folder by Authorization Header
+      operationId: CreateFolder
+      parameters:
+      - description: Create Folder Request
+        in: body
+        name: CreateFolderRequest
+        required: true
+        schema:
+          $ref: '#/definitions/repository.CreateFolderParams'
+      - default: '"Bearer token"'
+        description: Authorization Header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+      summary: Create a new Folder
+      tags:
+      - Folders
+  /folders/{folder_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a Folder by Authorization Header and tries to cascade delete
+      operationId: DeleteFolder
+      parameters:
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Folder ID
+        in: path
+        name: folder_id
+        required: true
+        type: string
+      - default: '"Bearer token"'
+        description: Authorization Header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+      summary: Delete a Folder
+      tags:
+      - Folders
+    get:
+      consumes:
+      - application/json
+      description: |-
+        Get the Folders associated with the user under A Parent Folder by Authorization Header
+        and will also try to get the children of the folder as well
+      operationId: GetFolders
+      parameters:
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Folder ID
+        in: path
+        name: folder_id
+        required: true
+        type: string
+      - default: '"Bearer token"'
+        description: Authorization Header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+      summary: Get the Folders associated with the user under A Parent Folder
+      tags:
+      - Folders
   /users/:
     get:
       description: Get All Users. Must be Admin using the new mediator pattern
@@ -155,6 +611,49 @@ paths:
           schema:
             $ref: '#/definitions/DeleteUserResponse'
       summary: Delete User by their UUID
+      tags:
+      - Users
+  /users/creds:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Update User Credentials by id, Must be the same user in the jwt
+        that is being updated
+      operationId: UpdateUser
+      parameters:
+      - description: Update User Credentials Request
+        in: body
+        name: UpdateCredentialsRequest
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateCredentialsRequest'
+      - default: Bearer token
+        description: admin header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/UpdateUserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/UpdateUserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/UpdateUserResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/UpdateUserResponse'
+      summary: Update User Credentials
       tags:
       - Users
   /users/current:
@@ -320,4 +819,6 @@ paths:
       summary: Signup to the app
       tags:
       - Users
+schemes:
+- http
 swagger: "2.0"

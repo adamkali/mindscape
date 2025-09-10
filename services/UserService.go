@@ -5,6 +5,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/requests"
@@ -71,17 +72,21 @@ func (UserService *UserService) addNewUser(
 	params repository.CreateUserParams,
 ) (*repository.User, error) {
 	var user repository.User
+	fmt.Println("Starting Connection")
 	tx, err := UserService.pool.Begin(UserService.ctx)
+	fmt.Println(err.Error())
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback(UserService.ctx)
+	println("adding")
 	repo := repository.New(tx)
 	user, err = repo.CreateUser(UserService.ctx, params)
 	if err != nil {
 		return nil, err
 	}
 	tx.Commit(UserService.ctx)
+	fmt.Println(user)
 	return &user, nil
 }
 
@@ -127,11 +132,14 @@ func (UserService *UserService) Login(params *requests.LoginRequest) (*repositor
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println(BCryptHash)
 		if verifyPassword(BCryptHash, params.Password) {
+			fmt.Println("Verified")
 			user, err = repo.FindUserByEmail(UserService.ctx, params.Email)
 			if err != nil {
 				return nil, err
 			}
+			fmt.Println(user)
 		} else {
 			return nil, errors.New("Could not verify password")
 		}
@@ -169,7 +177,7 @@ func (UserService *UserService) Remove(user_id uuid.UUID) error {
 	}
 	defer tx.Rollback(UserService.ctx)
 	repo := repository.New(tx)
-	if err := repo.DeleteUserByID(UserService.ctx, &user_id); err != nil {
+	if err := repo.DeleteUserByID(UserService.ctx, user_id); err != nil {
 		return err
 	}
 	tx.Commit(UserService.ctx)
@@ -191,7 +199,7 @@ func (UserService *UserService) Get(user_id uuid.UUID) (*repository.User, error)
 	defer tx.Rollback(UserService.ctx)
 	var user repository.User
 	repo := repository.New(tx)
-	if user, err = repo.FindUserByID(UserService.ctx, &user_id); err != nil {
+	if user, err = repo.FindUserByID(UserService.ctx, user_id); err != nil {
 		return nil, err
 	}
 	tx.Commit(UserService.ctx)
@@ -244,15 +252,57 @@ func (UserService *UserService) Update(user_id uuid.UUID, profile_name string) (
 		UserService.ctx,
 		repository.UpdateUserProfileParams{
 			ProfilePicUrl: &profile_name,
-			ID:            &user_id,
+			ID:            user_id,
 		},
 	); err != nil {
 		return nil, err
 	}
-	user, err = repo.FindUserByID(UserService.ctx, &user_id)
+	user, err = repo.FindUserByID(UserService.ctx, user_id)
 	if err != nil {
 		return nil, err
 	}
+	tx.Commit(UserService.ctx)
+	return &user, nil
+}
+
+// UpdateUserCredentials
+// params: *repository.UpdateUserCredentialsParams
+// returns: (*repository.User, error)
+//
+// This function takes a UpdateUserCredentialsParams object and returns a User object.
+// If the user does not exist, an error is returned.
+func (UserService *UserService) UpdateUserCredentials(params *requests.UpdateCredentialsRequest) (*repository.User, error) {
+	tx, err := UserService.pool.Begin(UserService.ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(UserService.ctx)
+	repo := repository.New(tx)
+	var user repository.User
+
+	user, err = repo.FindUserByID(UserService.ctx, params.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	updateParams, err := params.Into(hashPassword)
+	// if OldPassword is empty then we do not need to update the password
+	if params.OldPassword == "" {
+		updateParams.BCryptHash = user.BCryptHash
+		updateParams.BCryptHash_2 = user.BCryptHash
+	} else if verifyPassword(user.BCryptHash, params.OldPassword) {
+		updateParams.BCryptHash_2 = user.BCryptHash
+	}
+
+	if err = repo.UpdateUserCredentials(UserService.ctx, updateParams); err != nil {
+		return nil, err
+	}
+	// at this point we can assume that the user was updated, so now lets the 
+	// update the user inplace
+	user.BCryptHash = updateParams.BCryptHash
+	user.Email = updateParams.Email
+	user.Username = updateParams.Username
+
 	tx.Commit(UserService.ctx)
 	return &user, nil
 }

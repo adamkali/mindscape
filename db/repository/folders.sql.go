@@ -20,7 +20,7 @@ RETURNING id, parent_id, user_id, name, description, created_datetime, updated_d
 `
 
 type CreateFolderParams struct {
-	UserID      *uuid.UUID  `json:"user_id"`
+	UserID      uuid.UUID   `json:"user_id"`
 	ParentID    pgtype.UUID `json:"parent_id"`
 	Name        string      `json:"name"`
 	Description *string     `json:"description"`
@@ -52,7 +52,7 @@ DELETE FROM folders WHERE id = $1
 `
 
 // Delete queries
-func (q *Queries) DeleteFolder(ctx context.Context, id *uuid.UUID) error {
+func (q *Queries) DeleteFolder(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteFolder, id)
 	return err
 }
@@ -64,7 +64,7 @@ WHERE id = $1
 `
 
 // GET queries
-func (q *Queries) FindFolderById(ctx context.Context, id *uuid.UUID) (Folder, error) {
+func (q *Queries) FindFolderById(ctx context.Context, id uuid.UUID) (Folder, error) {
 	row := q.db.QueryRow(ctx, findFolderById, id)
 	var i Folder
 	err := row.Scan(
@@ -87,7 +87,7 @@ ORDER BY updated_datetime DESC
 LIMIT 1
 `
 
-func (q *Queries) FindFolderByUserIdMostRecent(ctx context.Context, userID *uuid.UUID) (Folder, error) {
+func (q *Queries) FindFolderByUserIdMostRecent(ctx context.Context, userID uuid.UUID) (Folder, error) {
 	row := q.db.QueryRow(ctx, findFolderByUserIdMostRecent, userID)
 	var i Folder
 	err := row.Scan(
@@ -175,8 +175,42 @@ FROM folders
 WHERE user_id = $1
 `
 
-func (q *Queries) FindFoldersByUserId(ctx context.Context, userID *uuid.UUID) ([]Folder, error) {
+func (q *Queries) FindFoldersByUserId(ctx context.Context, userID uuid.UUID) ([]Folder, error) {
 	rows, err := q.db.Query(ctx, findFoldersByUserId, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Folder
+	for rows.Next() {
+		var i Folder
+		if err := rows.Scan(
+			&i.ID,
+			&i.ParentID,
+			&i.UserID,
+			&i.Name,
+			&i.Description,
+			&i.CreatedDatetime,
+			&i.UpdatedDatetime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const findFoldersRoot = `-- name: FindFoldersRoot :many
+SELECT id, parent_id, user_id, name, description, created_datetime, updated_datetime
+FROM folders 
+WHERE parent_id IS NULL AND user_id = $1
+`
+
+func (q *Queries) FindFoldersRoot(ctx context.Context, userID uuid.UUID) ([]Folder, error) {
+	rows, err := q.db.Query(ctx, findFoldersRoot, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -210,7 +244,7 @@ WHERE id = $1
 `
 
 type MoveFolderParams struct {
-	ID       *uuid.UUID  `json:"id"`
+	ID       uuid.UUID   `json:"id"`
 	ParentID pgtype.UUID `json:"parent_id"`
 }
 
@@ -226,9 +260,9 @@ WHERE id = $3
 `
 
 type UpdateFolderParams struct {
-	Name        string     `json:"name"`
-	Description *string    `json:"description"`
-	ID          *uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	Description *string   `json:"description"`
+	ID          uuid.UUID `json:"id"`
 }
 
 // PUT queries
@@ -244,7 +278,7 @@ WHERE id = $1
 `
 
 // PATCH queries
-func (q *Queries) UpdateFolderDateTime(ctx context.Context, id *uuid.UUID) error {
+func (q *Queries) UpdateFolderDateTime(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, updateFolderDateTime, id)
 	return err
 }

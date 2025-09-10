@@ -46,7 +46,7 @@ func (noteService NoteService) Get(id uuid.UUID) (*repository.Note, error) {
 	}
 	defer tx.Rollback(noteService.ctx)
 	repo := repository.New(tx)
-	note, err := repo.FindNoteById(noteService.ctx, &id)
+	note, err := repo.FindNoteById(noteService.ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (noteService NoteService) GetMostRecent(user_id uuid.UUID) (*repository.Not
 	}
 	defer tx.Rollback(noteService.ctx)
 	repo := repository.New(tx)
-	note, err := repo.FindNoteByUserIdMostRecent(noteService.ctx, &user_id)
+	note, err := repo.FindNoteByUserIdMostRecent(noteService.ctx, user_id)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (noteService NoteService) GetMostRecents(user_id uuid.UUID) ([]repository.N
 	}
 	defer tx.Rollback(noteService.ctx)
 	repo := repository.New(tx)
-	notes, err := repo.FindNotesByUserIdMostRecent(noteService.ctx, &user_id)
+	notes, err := repo.FindNotesByUserIdMostRecent(noteService.ctx, user_id)
 	if err != nil {
 		return []repository.Note{}, err
 	}
@@ -93,7 +93,7 @@ func (noteService NoteService) GetByUser(user_id uuid.UUID) ([]repository.Note, 
 	}
 	defer tx.Rollback(noteService.ctx)
 	repo := repository.New(tx)
-	notes, err := repo.FindNotesByUserId(noteService.ctx, &user_id)
+	notes, err := repo.FindNotesByUserId(noteService.ctx, user_id)
 	if err != nil {
 		return []repository.Note{}, err
 	}
@@ -108,7 +108,7 @@ func (noteService NoteService) GetByFolder(folder_id uuid.UUID) ([]repository.No
 	}
 	defer tx.Rollback(noteService.ctx)
 	repo := repository.New(tx)
-	notes, err := repo.FindNotesByFolderId(noteService.ctx, &folder_id)
+	notes, err := repo.FindNotesByFolderId(noteService.ctx, folder_id)
 	if err != nil {
 		return []repository.Note{}, err
 	}
@@ -157,7 +157,7 @@ func (noteService NoteService) Update(id uuid.UUID, params *repository.UpdateNot
 		return nil, err
 	}
 
-	note, err := repo.FindNoteById(noteService.ctx, &id)
+	note, err := repo.FindNoteById(noteService.ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +172,7 @@ func (noteService NoteService) Delete(id uuid.UUID) error {
 	}
 	defer tx.Rollback(noteService.ctx)
 	repo := repository.New(tx)
-	if err := repo.DeleteNote(noteService.ctx, &id); err != nil {
+	if err := repo.DeleteNote(noteService.ctx, id); err != nil {
 		return err
 	}
 	tx.Commit(noteService.ctx)

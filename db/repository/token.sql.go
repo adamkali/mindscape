@@ -20,7 +20,7 @@ RETURNING id, user_id, expiration_datetime, token
 `
 
 type CreateTokenParams struct {
-	UserID             *uuid.UUID `json:"user_id"`
+	UserID             uuid.UUID  `json:"user_id"`
 	ExpirationDatetime *time.Time `json:"expiration_datetime"`
 	Token              *string    `json:"token"`
 }
@@ -66,7 +66,7 @@ SELECT id, user_id, expiration_datetime, token
     AND  expiration_datetime > now()
 `
 
-func (q *Queries) FindTokenByUserId(ctx context.Context, userID *uuid.UUID) (Token, error) {
+func (q *Queries) FindTokenByUserId(ctx context.Context, userID uuid.UUID) (Token, error) {
 	row := q.db.QueryRow(ctx, findTokenByUserId, userID)
 	var i Token
 	err := row.Scan(
@@ -87,7 +87,7 @@ UPDATE tokens
 type UpdateTokenByUserIdParams struct {
 	Token              *string    `json:"token"`
 	ExpirationDatetime *time.Time `json:"expiration_datetime"`
-	UserID             *uuid.UUID `json:"user_id"`
+	UserID             uuid.UUID  `json:"user_id"`
 }
 
 func (q *Queries) UpdateTokenByUserId(ctx context.Context, arg UpdateTokenByUserIdParams) error {

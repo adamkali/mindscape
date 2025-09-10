@@ -47,4 +47,8 @@ type IUserService interface {
 	// This function takes a uuid.UUID object and a string object and returns a repository.User object.
 	// If the user does not exist, an error is returned.
 	Update(user_id uuid.UUID, profil_name string ) (*repository.User, error)
+
+	// Update a user by id with new credentials
+	UpdateUserCredentials(params *requests.UpdateCredentialsRequest) (*repository.User, error) 
+
 }

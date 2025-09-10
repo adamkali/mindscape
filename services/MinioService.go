@@ -35,17 +35,20 @@ func CreateMinioService(ctx context.Context, config *configuration.Configuration
 // Upload
 //
 // params:
-//   uploaderID: uuid.UUID
-//   uploadName: string
-//   uploadFile: io.Reader
-//   size: int64
+//
+//	uploaderID: uuid.UUID
+//	uploadName: string
+//	uploadFile: io.Reader
+//	size: int64
+//
 // returns:
-//   error
+//
+//	error
 //
 // Uploads a file to S3 compatible storage. If the bucket does not exist, it will be created.
 // If the file already exists, it will be overwritten.
-// 
-// The function should return an error only if there is a problem uploading the file, or if 
+//
+// The function should return an error only if there is a problem uploading the file, or if
 // when creating the bucket something went wrong.
 func (MinioService *MinioService) Upload(uploaderID uuid.UUID, uploadName string, uploadFile io.Reader, size int64) error {
 	exists, err := MinioService.client.BucketExists(MinioService.ctx, uploaderID.String())
@@ -68,11 +71,14 @@ func (MinioService *MinioService) Upload(uploaderID uuid.UUID, uploadName string
 // Get
 //
 // params:
-//   uploaderID: uuid.UUID
-//   uploadName: string
+//
+//	uploaderID: uuid.UUID
+//	uploadName: string
+//
 // returns:
-//   []byte
-//   error
+//
+//	[]byte
+//	error
 //
 // Gets a file from S3 compatible storage. If the file does not exist, it will return an error.
 func (MinioService *MinioService) Get(uploaderID uuid.UUID, uploadName string) ([]byte, error) {
@@ -94,11 +100,14 @@ func (MinioService *MinioService) Get(uploaderID uuid.UUID, uploadName string) (
 // GetPresigned
 //
 // params:
-//   uploaderID: uuid.UUID
-//   uploadName: string
+//
+//	uploaderID: uuid.UUID
+//	uploadName: string
+//
 // returns:
-//   string
-//   error
+//
+//	string
+//	error
 //
 // Gets a presigned url from S3 compatible storage. If the file does not exist, it will return an error.
 func (m *MinioService) GetPresigned(uploaderID uuid.UUID, uploadName string) (string, error) {
@@ -109,4 +118,51 @@ func (m *MinioService) GetPresigned(uploaderID uuid.UUID, uploadName string) (st
 		return "", err
 	}
 	return presigedUrl.String(), nil
+}
+
+// GetDefault
+//
+// params:
+//
+//	uploaderID: uuid.UUID
+//	uploadName: string
+//
+// returns:
+//
+//	string
+//	error
+//
+// Gets the default background image url from S3 compatible storage. If the file does not exist, it will return an error.
+func (m *MinioService) GetDefault() (string, error) {
+	reqParams := make(url.Values)
+	reqParams.Set("response-content-disposition", "attachment; filename=\"beach.jpeg\"")
+	presigedUrl, err := m.client.PresignedGetObject(m.ctx, "mindspace", "beach.jpeg", time.Hour*24*7, reqParams)
+	if err != nil {
+		return "", err
+	}
+	return presigedUrl.String(), nil
+}
+
+func (m *MinioService) GetBackgroundChoices() ([]string, error) {
+	reqParams := make(url.Values)
+	backgrounds := make([]minio.ObjectInfo, 0)
+	for objects := range m.client.ListObjects(m.ctx, "mindspace", minio.ListObjectsOptions{
+		Recursive: false,
+	}) {
+		if err := objects.Err; err != nil {
+			return nil, err
+		}
+		backgrounds = append(backgrounds, objects)
+	}
+	bakcgroundUrls := make([]string, len(backgrounds))
+	for i, background := range backgrounds {
+		reqParams.Set("response-content-disposition", "attachment; filename=\""+background.Key+"\"")
+		presigedUrl, err := m.client.PresignedGetObject(m.ctx, "mindspace", background.Key, time.Hour*24*7, reqParams)
+		if err != nil {
+			return nil, err
+		}
+		bakcgroundUrls[i] = presigedUrl.String()
+	}
+
+	return bakcgroundUrls, nil
 }

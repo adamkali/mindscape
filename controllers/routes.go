@@ -15,22 +15,26 @@ import (
 func RegisterRoutes(e *echo.Echo, config *configuration.Configuration) {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-    e.Use(middleware.RequestID())
-
-	// here is an example of where you can load in your 
-	// More complex Middle ware configs as you go through the 
-	// development.
-	e.Use(middleware.StaticWithConfig(configs.StaticMiddlewareConfig(config)))
+	e.Use(middleware.RequestID())
 
 	params, err := createControllerParams(config)
 	if err != nil {
 		panic(err)
 	}
-	// please add your controllers that implement IController after Build UserController(params) 
+	// please add your controllers that implement IController after Build UserController(params)
 	// AttatchControllers(e, BuildUserController(params), BuildFooBarController(params))
-	AttatchControllers(e, config, BuildUserController(params))
+	AttatchControllers(e, config,
+		BuildUserController(params),
+		BuildFolderController(params),
+		BuildBookmarkController(params),
+	)
 
+	// Static middleware disabled - using explicit static routes instead
+	e.Use(middleware.StaticWithConfig(configs.StaticMiddlewareConfig(config)))
+
+	e.Static("/assets", "assets")
 	e.Static("/public", "public")
+
 	e.GET("/api/_health", func(ctx echo.Context) error {
 		return ctx.JSON(http.StatusOK, map[string]any{"ok": true})
 	})

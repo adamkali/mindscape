@@ -1,0 +1,30 @@
+# This is a docker compose file for local development
+# See https://docs.docker.com/compose/
+#
+# This file is intended to set up the mindscape, with only 
+# the webserver running. You will need to be running the
+# - postgresql-compatible databse
+# - redis-compatible cache
+# - s3-compatible storage
+# separately.
+#
+# the Local.Dockerfile in this directory needs the 
+# ./config/development.yaml is present and correctly configured
+# to connect to the database, redis, and s3.
+version: '3.8'
+
+services:
+  mindscape:
+    build:
+      context: .
+      dockerfile: Local.Dockerfile
+      target: dev
+    container_name: mindscape-local
+    ports:
+      - "60000:60000"
+    volumes:
+      - ./config:/usr/src/config:ro
+      - .:/usr/src
+      - /usr/src/web/node_modules
+      - /usr/src/web/
+    restart: unless-stopped

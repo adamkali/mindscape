@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -46,7 +45,7 @@ func (bookmarkService BookmarkService) Get(id uuid.UUID) (*repository.Bookmark, 
 	}
 	defer tx.Rollback(bookmarkService.ctx)
 	repo := repository.New(tx)
-	bookmark, err := repo.FindBookmarkById(bookmarkService.ctx, &id)
+	bookmark, err := repo.FindBookmarkById(bookmarkService.ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +60,7 @@ func (bookmarkService BookmarkService) GetByFolder(folder_id uuid.UUID) ([]repos
 	}
 	defer tx.Rollback(bookmarkService.ctx)
 	repo := repository.New(tx)
-	bookmarks, err := repo.FindBookmarksByFolderId(bookmarkService.ctx, &folder_id)
+	bookmarks, err := repo.FindBookmarksByFolderId(bookmarkService.ctx, folder_id)
 	if err != nil {
 		return []repository.Bookmark{}, err
 	}
@@ -76,13 +75,14 @@ func (bookmarkService BookmarkService) GetByUser(user_id uuid.UUID) ([]repositor
 	}
 	defer tx.Rollback(bookmarkService.ctx)
 	repo := repository.New(tx)
-	bookmarks, err := repo.FindBookmarksByUserId(bookmarkService.ctx, &user_id)
+	bookmarks, err := repo.FindBookmarksByUserId(bookmarkService.ctx, user_id)
 	if err != nil {
 		return []repository.Bookmark{}, err
 	}
 	tx.Commit(bookmarkService.ctx)
 	return bookmarks, nil
 }
+
 func (bookmarkService BookmarkService) GetMostRecent(user_id uuid.UUID) (*repository.Bookmark, error){
 	tx, err := bookmarkService.pool.Begin(bookmarkService.ctx)
 	if err != nil {
@@ -90,7 +90,7 @@ func (bookmarkService BookmarkService) GetMostRecent(user_id uuid.UUID) (*reposi
 	}
 	defer tx.Rollback(bookmarkService.ctx)
 	repo := repository.New(tx)
-	bookmark, err := repo.FindBookmarkByUserIdMostRecent(bookmarkService.ctx, &user_id)
+	bookmark, err := repo.FindBookmarkByUserIdMostRecent(bookmarkService.ctx, user_id)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (bookmarkService BookmarkService) GetMostRecents(user_id uuid.UUID) ([]repo
 	}
 	defer tx.Rollback(bookmarkService.ctx)
 	repo := repository.New(tx)
-	bookmarks, err := repo.FindBookmarksByUserIdMostRecent(bookmarkService.ctx, &user_id)
+	bookmarks, err := repo.FindBookmarksByUserIdMostRecent(bookmarkService.ctx, user_id)
 	if err != nil {
 		return []repository.Bookmark{}, err
 	}
@@ -151,7 +151,7 @@ func (bookmarkService BookmarkService) Update(id uuid.UUID, params *repository.U
 		return nil, err
 	}
 
-	bookmark, err := repo.FindBookmarkById(bookmarkService.ctx, &id)
+	bookmark, err := repo.FindBookmarkById(bookmarkService.ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +184,7 @@ func (bookmarkService BookmarkService) Remove(id uuid.UUID) error {
 	}
 	defer tx.Rollback(bookmarkService.ctx)
 	repo := repository.New(tx)
-	if err := repo.DeleteBookmark(bookmarkService.ctx, &id); err != nil {
+	if err := repo.DeleteBookmark(bookmarkService.ctx, id); err != nil {
 		return err
 	}
 	tx.Commit(bookmarkService.ctx)
