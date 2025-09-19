@@ -3,6 +3,8 @@
 package user_handlers
 
 import (
+	"fmt"
+	
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
@@ -39,7 +41,7 @@ func (h *GetUsersHandler) Handle() handlers.IHandler {
 		return handlers.Lock(h, 401, err)
 	}
 	if !admin {
-		return handlers.Lock(h, 403, err)
+		return handlers.Lock(h, 403, fmt.Errorf("access denied: admin privileges required"))
 	}
 	h.Users, err = h.UserService.GetAll()
 	if err != nil {
@@ -58,6 +60,18 @@ func (h *GetUsersHandler) JSON() error {
 func (h *GetUsersHandler) SetCode(code int) handlers.IHandler {
 	h.code = code
 	return h
+}
+
+func (h *GetUsersHandler) Code() int {
+	return h.code
+}
+
+func (h *GetUsersHandler) Data() any {
+	return h.Users
+}
+
+func (h *GetUsersHandler) Error() error {
+	return h.err
 }
 
 func (h *GetUsersHandler) SetError(err error) handlers.IHandler {

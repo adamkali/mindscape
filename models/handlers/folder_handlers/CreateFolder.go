@@ -12,7 +12,7 @@ import (
 )
 
 type CreateFolderHandler struct {
-	Data             *repository.Folder
+	data             *repository.Folder
 	err              error
 	code             int
 	ctx              echo.Context
@@ -54,7 +54,7 @@ func (h *CreateFolderHandler) Handle() handlers.IHandler {
 		Name:     request.Name,
 		ParentID: request.ParentID,
 	}
-	if h.Data, err = h.FolderService.Create(params); err != nil {
+	if h.data, err = h.FolderService.Create(params); err != nil {
 		return handlers.Lock(h, 500, err)
 	}
 	return h
@@ -64,12 +64,24 @@ func (h *CreateFolderHandler) JSON() error {
 	if h.err != nil {
 		return responses.NewFolderResponse().Fail(h.ctx, h.code, h.err)
 	}
-	return responses.NewFolderResponse().Successful(h.ctx, *h.Data)
+	return responses.NewFolderResponse().Successful(h.ctx, *h.data)
 }
 
 func (h *CreateFolderHandler) SetCode(code int) handlers.IHandler {
 	h.code = code
 	return h
+}
+
+func (h *CreateFolderHandler) Code() int {
+	return h.code
+}
+
+func (h *CreateFolderHandler) Data() any {
+	return h.data
+}
+
+func (h *CreateFolderHandler) Error() error {
+	return h.err
 }
 
 func (h *CreateFolderHandler) SetError(err error) handlers.IHandler {

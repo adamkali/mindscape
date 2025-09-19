@@ -80,3 +80,15 @@ func (h *BackgroundChoicesHandler) SetCode(code int) handlers.IHandler {
 	h.code = code
 	return h
 }
+
+func (h *BackgroundChoicesHandler) Code() int {
+	return h.code
+}
+
+func (h *BackgroundChoicesHandler) Data() any {
+	return h.urls
+}
+
+func (h *BackgroundChoicesHandler) Error() error {
+	return h.err
+}

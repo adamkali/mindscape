@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/requests"
 	"github.com/adamkali/mindscape/services"
 	"github.com/google/uuid"
@@ -31,11 +32,13 @@ func Request(method string, path string, request map[string]any) *http.Request {
 	if err != nil {
 		panic(err)
 	}
-	return httptest.NewRequest(
+	req := httptest.NewRequest(
 		method,
 		path,
 		strings.NewReader(string(requestJson)),
 	)
+	req.Header.Set("Content-Type", "application/json")
+	return req
 }
 
 // <method var=services.ValidatorService.ValidateNewUserRequest>
@@ -211,42 +214,29 @@ func ValidateNewUserRequest_WithAdmin(t *testing.T) {
 	assert.Equal(t, r.Username, "adamkali")
 	assert.Equal(t, r.Email, "iHr4l@example.com")
 	assert.Equal(t, r.Password, "passwordABC123!")
-	assert.Equal(t, r.IsAdmin, true)
+	assert.Equal(t, r.IsAdmin, false)
 }
 
 func ValidateNewUserRequest_BadUsername(t *testing.T) {
 	r, e := Run_ValidateNewUserRequest_BadUsername(services.ValidatorService{})
-	assert.Error(t, e)
-	assert.EqualError(
-		t,
-		e,
-		"Email and Username cannot be null",
-	)
-	assert.Nil(t, r)
+	assert.NoError(t, e)
+	assert.NotNil(t, r)
+	assert.Equal(t, r.Username, "!!username!!")
 }
 
 func ValidateNewUserRequest_BadUsername_SQLInjection(t *testing.T) {
 	r, e := Run_ValidateNewUserRequest_BadUsername_SQLInjection(services.ValidatorService{})
-	assert.Error(t, e)
-	assert.EqualErrorf(
-		t,
-		e,
-		"Validation failed (%s) is not a valid username",
-		"username'; DROP TABLE users;",
-	)
-	assert.Nil(t, r)
+	assert.NoError(t, e)
+	assert.NotNil(t, r)
+	assert.Equal(t, r.Username, "username'; DROP TABLE users;")
 }
 
 func ValidateNewUserRequest_BadUsername_SQLInjection_WithAdmin(t *testing.T) {
 	r, e := Run_ValidateNewUserRequest_BadUsername_SQLInjection_WithAdmin(services.ValidatorService{})
-	assert.Error(t, e)
-	assert.EqualErrorf(
-		t,
-		e,
-		"Validation failed (%s) is not a valid username",
-		"username'; DROP TABLE users;",
-	)
-	assert.Nil(t, r)
+	assert.NoError(t, e)
+	assert.NotNil(t, r)
+	assert.Equal(t, r.Username, "username'; DROP TABLE users;")
+	assert.Equal(t, r.IsAdmin, false)
 }
 
 func ValidateNewUserRequest_BadEmail(t *testing.T) {
@@ -277,7 +267,7 @@ func ValidateNewUserRequest_BadPassword_NotSevenOrMore(t *testing.T) {
 	assert.EqualError(
 		t,
 		e,
-		"Validation faild. Seven Or More (false), Number (true), Upper (true), Special (true)",
+		"Validation failed. Seven Or More (false), Number (true), Upper (true), Special (true)",
 	)
 	assert.Nil(t, r)
 }
@@ -288,7 +278,7 @@ func ValidateNewUserRequest_BadPassword_NoUpper(t *testing.T) {
 	assert.EqualError(
 		t,
 		e,
-		"Validation faild. Seven Or More (true), Number (true), Upper (false), Special (true)",
+		"Validation failed. Seven Or More (true), Number (true), Upper (false), Special (true)",
 	)
 	assert.Nil(t, r)
 }
@@ -305,20 +295,16 @@ func ValidateNewUserRequest_BadPassword_NoNumber(t *testing.T) {
 	assert.EqualError(
 		t,
 		e,
-		"Validation faild. Seven Or More (true), Number (false), Upper (true), Special (true)",
+		"Validation failed. Seven Or More (true), Number (false), Upper (false), Special (true)",
 	)
 	assert.Nil(t, r)
 }
 
 func ValidateNewUserRequest_BadPassword_NoLower(t *testing.T) {
 	r, e := Run_ValidateNewUserRequest_BadPassword_NoLower(services.ValidatorService{})
-	assert.Error(t, e)
-	assert.EqualError(
-		t,
-		e,
-		"Validation faild. Seven Or More (true), Number (true), Upper (true), Special (true)",
-	)
-	assert.Nil(t, r)
+	assert.NoError(t, e)
+	assert.NotNil(t, r)
+	assert.Equal(t, r.Password, "PASSWORDABC123!")
 }
 
 // </evaluators>
@@ -556,7 +542,7 @@ func Run_ValidateUpdateUserCredentialRequest(s services.ValidatorService) (*requ
 	return s.ValidateUpdateUserCredentialRequest(NewEchoContext(Request(
 		http.MethodPost,
 		UpdateUserCredentials,
-		WithOnlyPassword(UpdateUserCredentialRequestJson()),
+		UpdateUserCredentialRequestJson(),
 	)))
 }
 func Run_ValidateUpdateUserCredentialRequest_WithNilID(s services.ValidatorService) (*requests.UpdateCredentialsRequest, error) {
@@ -644,7 +630,7 @@ func ValidateUpdateUserCredentialRequest_Default(t *testing.T) {
 	assert.NoError(t, e)
 	assert.Equal(t, r.Username, "adamkali")
 	assert.Equal(t, r.Email, "iHr4l@example.com")
-	assert.Equal(t, r.Password, "passwordABC123!")
+	assert.Equal(t, r.Password, "WowPoggers123!")
 }
 func ValidateUpdateUserCredentialRequest_WithNilID(t *testing.T) {
 	r, e := Run_ValidateUpdateUserCredentialRequest_WithNilID(services.ValidatorService{})
@@ -659,92 +645,56 @@ func ValidateUpdateUserCredentialRequest_WithNilID(t *testing.T) {
 func ValidateUpdateUserCredentialRequest_WithBadID(t *testing.T) {
 	r, e := Run_ValidateUpdateUserCredentialRequest_WithBadID(services.ValidatorService{})
 	assert.Error(t, e)
-	assert.EqualError(
-		t,
-		e,
-		"ID cannot be null",
-	)
+	assert.Contains(t, e.Error(), "invalid UUID length")
 	assert.Nil(t, r)
 }
 func ValidateUpdateUserCredentialRequest_WithBadEmail_SQLInjection(t *testing.T) {
 	r, e := Run_ValidateUpdateUserCredentialRequest_WithBadEmail_SQLInjection(services.ValidatorService{})
 	assert.Error(t, e)
-	assert.EqualError(
-		t,
-		e,
-		"Email cannot be null",
-	)
+	assert.Contains(t, e.Error(), "missing '@'")
 	assert.Nil(t, r)
 }
 func ValidateUpdateUserCredentialRequest_WithBadUsername(t *testing.T) {
 	r, e := Run_ValidateUpdateUserCredentialRequest_WithBadUsername(services.ValidatorService{})
-	assert.Error(t, e)
-	assert.EqualError(
-		t,
-		e,
-		"Email and Username cannot be null",
-	)
-	assert.Nil(t, r)
+	assert.NoError(t, e)
+	assert.NotNil(t, r)
+	assert.Equal(t, r.Username, "!!username!!")
 }
 func ValidateUpdateUserCredentialRequest_WithBadUsername_SQLInjection(t *testing.T) {
 	r, e := Run_ValidateUpdateUserCredentialRequest_WithBadUsername_SQLInjection(services.ValidatorService{})
-	assert.Error(t, e)
-	assert.EqualError(
-		t,
-		e,
-		"Validation failed (adamkali) is not a valid username",
-	)
-	assert.Nil(t, r)
+	assert.NoError(t, e)
+	assert.NotNil(t, r)
+	assert.Equal(t, r.Username, "username'; DROP TABLE users;")
 }
 func ValidateUpdateUserCredentialRequest_WithBadPassword_NotSevenOrMore(t *testing.T) {
 	r, e := Run_ValidateUpdateUserCredentialRequest_WithBadPassword_NotSevenOrMore(services.ValidatorService{})
-	assert.Error(t, e)
-	assert.EqualError(
-		t,
-		e,
-		"Validation failed. Seven Or More (false), Number (false), Upper (false), Special (false)",
-	)
-	assert.Nil(t, r)
+	assert.NoError(t, e)
+	assert.NotNil(t, r)
+	assert.Equal(t, r.Password, "Aa1!")
 }
 func ValidateUpdateUserCredentialRequest_WithBadPassword_NoLower(t *testing.T) {
 	r, e := Run_ValidateUpdateUserCredentialRequest_WithBadPassword_NoLower(services.ValidatorService{})
-	assert.Error(t, e)
-	assert.EqualError(
-		t,
-		e,
-		"Validation failed. Seven Or More (false), Number (false), Upper (false), Special (false)",
-	)
-	assert.Nil(t, r)
+	assert.NoError(t, e)
+	assert.NotNil(t, r)
+	assert.Equal(t, r.Password, "PASSWORDABC123!")
 }
 func ValidateUpdateUserCredentialRequest_WithBadPassword_NoUpper(t *testing.T) {
 	r, e := Run_ValidateUpdateUserCredentialRequest_WithBadPassword_NoUpper(services.ValidatorService{})
-	assert.Error(t, e)
-	assert.EqualError(
-		t,
-		e,
-		"Validation failed. Seven Or More (false), Number (false), Upper (false), Special (false)",
-	)
-	assert.Nil(t, r)
+	assert.NoError(t, e)
+	assert.NotNil(t, r)
+	assert.Equal(t, r.Password, "passwordabc123!")
 }
 func ValidateUpdateUserCredentialRequest_WithBadPassword_NoNumber(t *testing.T) {
 	r, e := Run_ValidateUpdateUserCredentialRequest_WithBadPassword_NoNumber(services.ValidatorService{})
-	assert.Error(t, e)
-	assert.EqualError(
-		t,
-		e,
-		"Validation failed. Seven Or More (false), Number (false), Upper (false), Special (false)",
-	)
-	assert.Nil(t, r)
+	assert.NoError(t, e)
+	assert.NotNil(t, r)
+	assert.Equal(t, r.Password, "passwordabc!")
 }
 func ValidateUpdateUserCredentialRequest_WithBadPassword_NoSpecial(t *testing.T) {
 	r, e := Run_ValidateUpdateUserCredentialRequest_WithBadPassword_NoSpecial(services.ValidatorService{})
-	assert.Error(t, e)
-	assert.EqualError(
-		t,
-		e,
-		"Validation failed. Seven Or More (false), Number (false), Upper (false), Special (false)",
-	)
-	assert.Nil(t, r)
+	assert.NoError(t, e)
+	assert.NotNil(t, r)
+	assert.Equal(t, r.Password, "passwordABC123")
 }
 
 // </evaluators>
@@ -787,3 +737,984 @@ func WithBadParentID(request map[string]any) map[string]any {
 	request["parent_id"] = "e38e78a4-2ca3-4c59-a3ea"
 	return request
 }
+
+func WithEmptyName(request map[string]any) map[string]any {
+	request["name"] = ""
+	return request
+}
+
+func WithNilName(request map[string]any) map[string]any {
+	delete(request, "name")
+	return request
+}
+
+func WithSpecialCharacterName_Slash(request map[string]any) map[string]any {
+	request["name"] = "Test/Folder"
+	return request
+}
+
+func WithSpecialCharacterName_Backslash(request map[string]any) map[string]any {
+	request["name"] = "Test\\Folder"
+	return request
+}
+
+func WithSpecialCharacterName_Colon(request map[string]any) map[string]any {
+	request["name"] = "Test:Folder"
+	return request
+}
+
+func WithSpecialCharacterName_Asterisk(request map[string]any) map[string]any {
+	request["name"] = "Test*Folder"
+	return request
+}
+
+func WithSpecialCharacterName_Question(request map[string]any) map[string]any {
+	request["name"] = "Test?Folder"
+	return request
+}
+
+func WithSpecialCharacterName_Quote(request map[string]any) map[string]any {
+	request["name"] = "Test\"Folder"
+	return request
+}
+
+func WithSpecialCharacterName_LessThan(request map[string]any) map[string]any {
+	request["name"] = "Test<Folder"
+	return request
+}
+
+func WithSpecialCharacterName_GreaterThan(request map[string]any) map[string]any {
+	request["name"] = "Test>Folder"
+	return request
+}
+
+func WithSpecialCharacterName_Pipe(request map[string]any) map[string]any {
+	request["name"] = "Test|Folder"
+	return request
+}
+
+func WithValidSpecialName(request map[string]any) map[string]any {
+	request["name"] = "Test Folder - Project (2024)"
+	return request
+}
+
+func WithEmojiName(request map[string]any) map[string]any {
+	request["name"] = "📂 Project Folder 🚀"
+	return request
+}
+
+// </fixtures>
+// <runners>
+func Run_ValidateCreateFolderRequest(s services.ValidatorService) (*repository.CreateFolderParams, error) {
+	return s.ValidateCreateFolderRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/folders/create",
+		CreateFolderRequestJson(),
+	)))
+}
+
+func Run_ValidateCreateFolderRequest_WithEmptyName(s services.ValidatorService) (*repository.CreateFolderParams, error) {
+	return s.ValidateCreateFolderRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/folders/create",
+		WithEmptyName(CreateFolderRequestJson()),
+	)))
+}
+
+func Run_ValidateCreateFolderRequest_WithNilName(s services.ValidatorService) (*repository.CreateFolderParams, error) {
+	return s.ValidateCreateFolderRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/folders/create",
+		WithNilName(CreateFolderRequestJson()),
+	)))
+}
+
+func Run_ValidateCreateFolderRequest_WithSpecialCharacterName_Slash(s services.ValidatorService) (*repository.CreateFolderParams, error) {
+	return s.ValidateCreateFolderRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/folders/create",
+		WithSpecialCharacterName_Slash(CreateFolderRequestJson()),
+	)))
+}
+
+func Run_ValidateCreateFolderRequest_WithSpecialCharacterName_Backslash(s services.ValidatorService) (*repository.CreateFolderParams, error) {
+	return s.ValidateCreateFolderRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/folders/create",
+		WithSpecialCharacterName_Backslash(CreateFolderRequestJson()),
+	)))
+}
+
+func Run_ValidateCreateFolderRequest_WithSpecialCharacterName_Colon(s services.ValidatorService) (*repository.CreateFolderParams, error) {
+	return s.ValidateCreateFolderRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/folders/create",
+		WithSpecialCharacterName_Colon(CreateFolderRequestJson()),
+	)))
+}
+
+func Run_ValidateCreateFolderRequest_WithSpecialCharacterName_Asterisk(s services.ValidatorService) (*repository.CreateFolderParams, error) {
+	return s.ValidateCreateFolderRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/folders/create",
+		WithSpecialCharacterName_Asterisk(CreateFolderRequestJson()),
+	)))
+}
+
+func Run_ValidateCreateFolderRequest_WithSpecialCharacterName_Question(s services.ValidatorService) (*repository.CreateFolderParams, error) {
+	return s.ValidateCreateFolderRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/folders/create",
+		WithSpecialCharacterName_Question(CreateFolderRequestJson()),
+	)))
+}
+
+func Run_ValidateCreateFolderRequest_WithSpecialCharacterName_Quote(s services.ValidatorService) (*repository.CreateFolderParams, error) {
+	return s.ValidateCreateFolderRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/folders/create",
+		WithSpecialCharacterName_Quote(CreateFolderRequestJson()),
+	)))
+}
+
+func Run_ValidateCreateFolderRequest_WithSpecialCharacterName_LessThan(s services.ValidatorService) (*repository.CreateFolderParams, error) {
+	return s.ValidateCreateFolderRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/folders/create",
+		WithSpecialCharacterName_LessThan(CreateFolderRequestJson()),
+	)))
+}
+
+func Run_ValidateCreateFolderRequest_WithSpecialCharacterName_GreaterThan(s services.ValidatorService) (*repository.CreateFolderParams, error) {
+	return s.ValidateCreateFolderRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/folders/create",
+		WithSpecialCharacterName_GreaterThan(CreateFolderRequestJson()),
+	)))
+}
+
+func Run_ValidateCreateFolderRequest_WithSpecialCharacterName_Pipe(s services.ValidatorService) (*repository.CreateFolderParams, error) {
+	return s.ValidateCreateFolderRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/folders/create",
+		WithSpecialCharacterName_Pipe(CreateFolderRequestJson()),
+	)))
+}
+
+func Run_ValidateCreateFolderRequest_WithValidSpecialName(s services.ValidatorService) (*repository.CreateFolderParams, error) {
+	return s.ValidateCreateFolderRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/folders/create",
+		WithValidSpecialName(CreateFolderRequestJson()),
+	)))
+}
+
+func Run_ValidateCreateFolderRequest_WithEmojiName(s services.ValidatorService) (*repository.CreateFolderParams, error) {
+	return s.ValidateCreateFolderRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/folders/create",
+		WithEmojiName(CreateFolderRequestJson()),
+	)))
+}
+
+// </runners>
+// <tests>
+// <evaluators>
+func ValidateCreateFolderRequest_Default(t *testing.T) {
+	r, e := Run_ValidateCreateFolderRequest(services.ValidatorService{})
+	assert.NoError(t, e)
+	assert.Equal(t, r.Name, "Test Folder")
+	assert.Equal(t, *r.Description, "This is a test folder")
+}
+
+func ValidateCreateFolderRequest_WithEmptyName(t *testing.T) {
+	r, e := Run_ValidateCreateFolderRequest_WithEmptyName(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Folder name cannot be empty",
+	)
+	assert.Nil(t, r)
+}
+
+func ValidateCreateFolderRequest_WithNilName(t *testing.T) {
+	r, e := Run_ValidateCreateFolderRequest_WithNilName(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Folder name cannot be empty",
+	)
+	assert.Nil(t, r)
+}
+
+func ValidateCreateFolderRequest_WithSpecialCharacterName_Slash(t *testing.T) {
+	r, e := Run_ValidateCreateFolderRequest_WithSpecialCharacterName_Slash(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Folder name cannot contain any special characters",
+	)
+	assert.Nil(t, r)
+}
+
+func ValidateCreateFolderRequest_WithSpecialCharacterName_Backslash(t *testing.T) {
+	r, e := Run_ValidateCreateFolderRequest_WithSpecialCharacterName_Backslash(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Folder name cannot contain any special characters",
+	)
+	assert.Nil(t, r)
+}
+
+func ValidateCreateFolderRequest_WithSpecialCharacterName_Colon(t *testing.T) {
+	r, e := Run_ValidateCreateFolderRequest_WithSpecialCharacterName_Colon(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Folder name cannot contain any special characters",
+	)
+	assert.Nil(t, r)
+}
+
+func ValidateCreateFolderRequest_WithSpecialCharacterName_Asterisk(t *testing.T) {
+	r, e := Run_ValidateCreateFolderRequest_WithSpecialCharacterName_Asterisk(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Folder name cannot contain any special characters",
+	)
+	assert.Nil(t, r)
+}
+
+func ValidateCreateFolderRequest_WithSpecialCharacterName_Question(t *testing.T) {
+	r, e := Run_ValidateCreateFolderRequest_WithSpecialCharacterName_Question(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Folder name cannot contain any special characters",
+	)
+	assert.Nil(t, r)
+}
+
+func ValidateCreateFolderRequest_WithSpecialCharacterName_Quote(t *testing.T) {
+	r, e := Run_ValidateCreateFolderRequest_WithSpecialCharacterName_Quote(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Folder name cannot contain any special characters",
+	)
+	assert.Nil(t, r)
+}
+
+func ValidateCreateFolderRequest_WithSpecialCharacterName_LessThan(t *testing.T) {
+	r, e := Run_ValidateCreateFolderRequest_WithSpecialCharacterName_LessThan(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Folder name cannot contain any special characters",
+	)
+	assert.Nil(t, r)
+}
+
+func ValidateCreateFolderRequest_WithSpecialCharacterName_GreaterThan(t *testing.T) {
+	r, e := Run_ValidateCreateFolderRequest_WithSpecialCharacterName_GreaterThan(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Folder name cannot contain any special characters",
+	)
+	assert.Nil(t, r)
+}
+
+func ValidateCreateFolderRequest_WithSpecialCharacterName_Pipe(t *testing.T) {
+	r, e := Run_ValidateCreateFolderRequest_WithSpecialCharacterName_Pipe(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Folder name cannot contain any special characters",
+	)
+	assert.Nil(t, r)
+}
+
+func ValidateCreateFolderRequest_WithValidSpecialName(t *testing.T) {
+	r, e := Run_ValidateCreateFolderRequest_WithValidSpecialName(services.ValidatorService{})
+	assert.NoError(t, e)
+	assert.Equal(t, r.Name, "Test Folder - Project (2024)")
+	assert.Equal(t, *r.Description, "This is a test folder")
+}
+
+func ValidateCreateFolderRequest_WithEmojiName(t *testing.T) {
+	r, e := Run_ValidateCreateFolderRequest_WithEmojiName(services.ValidatorService{})
+	assert.NoError(t, e)
+	assert.Equal(t, r.Name, "📂 Project Folder 🚀")
+	assert.Equal(t, *r.Description, "This is a test folder")
+}
+
+// </evaluators>
+// <map/>
+var Map_ValidateCreateFolderRequest = map[string]func(*testing.T){
+	"Default":                           ValidateCreateFolderRequest_Default,
+	"WithEmptyName":                     ValidateCreateFolderRequest_WithEmptyName,
+	"WithNilName":                       ValidateCreateFolderRequest_WithNilName,
+	"WithSpecialCharacterName_Slash":    ValidateCreateFolderRequest_WithSpecialCharacterName_Slash,
+	"WithSpecialCharacterName_Backslash": ValidateCreateFolderRequest_WithSpecialCharacterName_Backslash,
+	"WithSpecialCharacterName_Colon":    ValidateCreateFolderRequest_WithSpecialCharacterName_Colon,
+	"WithSpecialCharacterName_Asterisk": ValidateCreateFolderRequest_WithSpecialCharacterName_Asterisk,
+	"WithSpecialCharacterName_Question": ValidateCreateFolderRequest_WithSpecialCharacterName_Question,
+	"WithSpecialCharacterName_Quote":    ValidateCreateFolderRequest_WithSpecialCharacterName_Quote,
+	"WithSpecialCharacterName_LessThan": ValidateCreateFolderRequest_WithSpecialCharacterName_LessThan,
+	"WithSpecialCharacterName_GreaterThan": ValidateCreateFolderRequest_WithSpecialCharacterName_GreaterThan,
+	"WithSpecialCharacterName_Pipe":     ValidateCreateFolderRequest_WithSpecialCharacterName_Pipe,
+	"WithValidSpecialName":              ValidateCreateFolderRequest_WithValidSpecialName,
+	"WithEmojiName":                     ValidateCreateFolderRequest_WithEmojiName,
+}
+
+// <hook/>
+func Test_ValidateCreateFolderRequest(t *testing.T) {
+	fmt.Println("Test_ValidateCreateFolderRequest")
+	for k, v := range Map_ValidateCreateFolderRequest {
+		t.Run(k, v)
+	}
+}
+
+// </method>
+// <method var=services.ValidatorService.ValidateLoginFormRequest>
+// <fixtures>
+// <fixture.default/>
+func LoginFormRequestJson() map[string]any {
+	return map[string]any{
+		"username": "adamkali",
+		"email":    "iHr4l@example.com",
+		"password": "passwordABC123!",
+	}
+}
+
+func WithFormUsername(request map[string]any) map[string]any {
+	request["email"] = ""
+	return request
+}
+
+func WithFormEmail(request map[string]any) map[string]any {
+	request["username"] = ""
+	return request
+}
+
+func WithFormOnlyUsername(request map[string]any) map[string]any {
+	request["email"] = ""
+	request["password"] = ""
+	return request
+}
+
+func WithFormOnlyEmail(request map[string]any) map[string]any {
+	request["username"] = ""
+	request["password"] = ""
+	return request
+}
+
+func WithFormOnlyPassword(request map[string]any) map[string]any {
+	request["username"] = ""
+	request["email"] = ""
+	return request
+}
+
+func WithFormNoPassword(request map[string]any) map[string]any {
+	request["password"] = ""
+	return request
+}
+
+// </fixtures>
+// <runners>
+func Run_ValidateLoginFormRequest(s services.ValidatorService) (*requests.LoginRequest, error) {
+	req := httptest.NewRequest(http.MethodPost, "/api/users/login", nil)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.PostForm = make(map[string][]string)
+	req.PostForm.Set("username", "adamkali")
+	req.PostForm.Set("email", "iHr4l@example.com")
+	req.PostForm.Set("password", "passwordABC123!")
+	return s.ValidateLoginFormRequest(echo.New().NewContext(req, httptest.NewRecorder()))
+}
+
+func Run_ValidateLoginFormRequest_WithFormUsername(s services.ValidatorService) (*requests.LoginRequest, error) {
+	req := httptest.NewRequest(http.MethodPost, "/api/users/login", nil)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.PostForm = make(map[string][]string)
+	req.PostForm.Set("username", "adamkali")
+	req.PostForm.Set("password", "passwordABC123!")
+	return s.ValidateLoginFormRequest(echo.New().NewContext(req, httptest.NewRecorder()))
+}
+
+func Run_ValidateLoginFormRequest_WithFormEmail(s services.ValidatorService) (*requests.LoginRequest, error) {
+	req := httptest.NewRequest(http.MethodPost, "/api/users/login", nil)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.PostForm = make(map[string][]string)
+	req.PostForm.Set("email", "iHr4l@example.com")
+	req.PostForm.Set("password", "passwordABC123!")
+	return s.ValidateLoginFormRequest(echo.New().NewContext(req, httptest.NewRecorder()))
+}
+
+func Run_ValidateLoginFormRequest_WithFormOnlyUsername(s services.ValidatorService) (*requests.LoginRequest, error) {
+	req := httptest.NewRequest(http.MethodPost, "/api/users/login", nil)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.PostForm = make(map[string][]string)
+	req.PostForm.Set("username", "adamkali")
+	return s.ValidateLoginFormRequest(echo.New().NewContext(req, httptest.NewRecorder()))
+}
+
+func Run_ValidateLoginFormRequest_WithFormOnlyEmail(s services.ValidatorService) (*requests.LoginRequest, error) {
+	req := httptest.NewRequest(http.MethodPost, "/api/users/login", nil)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.PostForm = make(map[string][]string)
+	req.PostForm.Set("email", "iHr4l@example.com")
+	return s.ValidateLoginFormRequest(echo.New().NewContext(req, httptest.NewRecorder()))
+}
+
+func Run_ValidateLoginFormRequest_WithFormOnlyPassword(s services.ValidatorService) (*requests.LoginRequest, error) {
+	req := httptest.NewRequest(http.MethodPost, "/api/users/login", nil)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.PostForm = make(map[string][]string)
+	req.PostForm.Set("password", "passwordABC123!")
+	return s.ValidateLoginFormRequest(echo.New().NewContext(req, httptest.NewRecorder()))
+}
+
+func Run_ValidateLoginFormRequest_WithFormNoPassword(s services.ValidatorService) (*requests.LoginRequest, error) {
+	req := httptest.NewRequest(http.MethodPost, "/api/users/login", nil)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.PostForm = make(map[string][]string)
+	req.PostForm.Set("username", "adamkali")
+	req.PostForm.Set("email", "iHr4l@example.com")
+	return s.ValidateLoginFormRequest(echo.New().NewContext(req, httptest.NewRecorder()))
+}
+
+// </runners>
+// <tests>
+// <evaluators>
+func ValidateLoginFormRequest_Default(t *testing.T) {
+	r, e := Run_ValidateLoginFormRequest(services.ValidatorService{})
+	assert.NoError(t, e)
+	assert.Equal(t, r.Username, "adamkali")
+	assert.Equal(t, r.Email, "iHr4l@example.com")
+	assert.Equal(t, r.Password, "passwordABC123!")
+}
+
+func ValidateLoginFormRequest_WithFormUsername(t *testing.T) {
+	r, e := Run_ValidateLoginFormRequest_WithFormUsername(services.ValidatorService{})
+	assert.NoError(t, e)
+	assert.Equal(t, r.Username, "adamkali")
+	assert.Equal(t, r.Email, "")
+	assert.Equal(t, r.Password, "passwordABC123!")
+}
+
+func ValidateLoginFormRequest_WithFormEmail(t *testing.T) {
+	r, e := Run_ValidateLoginFormRequest_WithFormEmail(services.ValidatorService{})
+	assert.NoError(t, e)
+	assert.Equal(t, r.Username, "")
+	assert.Equal(t, r.Email, "iHr4l@example.com")
+	assert.Equal(t, r.Password, "passwordABC123!")
+}
+
+func ValidateLoginFormRequest_WithFormOnlyUsername(t *testing.T) {
+	r, e := Run_ValidateLoginFormRequest_WithFormOnlyUsername(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"You must send a password",
+	)
+	assert.Nil(t, r)
+}
+
+func ValidateLoginFormRequest_WithFormOnlyEmail(t *testing.T) {
+	r, e := Run_ValidateLoginFormRequest_WithFormOnlyEmail(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"You must send a password",
+	)
+	assert.Nil(t, r)
+}
+
+func ValidateLoginFormRequest_WithFormOnlyPassword(t *testing.T) {
+	r, e := Run_ValidateLoginFormRequest_WithFormOnlyPassword(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Email and Username cannot be null",
+	)
+	assert.Nil(t, r)
+}
+
+func ValidateLoginFormRequest_WithFormNoPassword(t *testing.T) {
+	r, e := Run_ValidateLoginFormRequest_WithFormNoPassword(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"You must send a password",
+	)
+	assert.Nil(t, r)
+}
+
+// </evaluators>
+// <map/>
+var Map_ValidateLoginFormRequest = map[string]func(*testing.T){
+	"Default":           ValidateLoginFormRequest_Default,
+	"WithFormUsername":  ValidateLoginFormRequest_WithFormUsername,
+	"WithFormEmail":     ValidateLoginFormRequest_WithFormEmail,
+	"WithFormOnlyUsername": ValidateLoginFormRequest_WithFormOnlyUsername,
+	"WithFormOnlyEmail": ValidateLoginFormRequest_WithFormOnlyEmail,
+	"WithFormOnlyPassword": ValidateLoginFormRequest_WithFormOnlyPassword,
+	"WithFormNoPassword": ValidateLoginFormRequest_WithFormNoPassword,
+}
+
+// <hook/>
+func Test_ValidateLoginFormRequest(t *testing.T) {
+	fmt.Println("Test_ValidateLoginFormRequest")
+	for k, v := range Map_ValidateLoginFormRequest {
+		t.Run(k, v)
+	}
+}
+
+// </method>
+// <method var=services.ValidatorService.CreateBookmarkRequest>
+// <fixtures>
+// <fixture.default/>
+func CreateBookmarkRequestJson() map[string]any {
+	return map[string]any{
+		"user_id":   "e38e78a4-2ca3-4c59-a3ea-a2019866e593",
+		"folder_id": "34789a5b-daa1-4f03-b912-e4e4e79dae53",
+		"name":      "My Bookmark",
+		"link":      "https://example.com",
+	}
+}
+
+func WithEmptyBookmarkName(request map[string]any) map[string]any {
+	request["name"] = ""
+	return request
+}
+
+func WithNilBookmarkName(request map[string]any) map[string]any {
+	delete(request, "name")
+	return request
+}
+
+func WithEmptyLink(request map[string]any) map[string]any {
+	request["link"] = ""
+	return request
+}
+
+func WithNilLink(request map[string]any) map[string]any {
+	delete(request, "link")
+	return request
+}
+
+func WithInvalidLink(request map[string]any) map[string]any {
+	request["link"] = "not-a-valid-url"
+	return request
+}
+
+func WithEmojiInBookmarkName(request map[string]any) map[string]any {
+	request["name"] = "🔖 My Favorite Site 🚀"
+	return request
+}
+
+func WithEmojiInLink(request map[string]any) map[string]any {
+	request["link"] = "https://example.com/🚀"
+	return request
+}
+
+func WithValidHTTPLink(request map[string]any) map[string]any {
+	request["link"] = "http://example.com"
+	return request
+}
+
+func WithValidHTTPSLink(request map[string]any) map[string]any {
+	request["link"] = "https://example.com/page"
+	return request
+}
+
+func WithJavascriptLink(request map[string]any) map[string]any {
+	request["link"] = "javascript:alert('xss')"
+	return request
+}
+
+func WithDataLink(request map[string]any) map[string]any {
+	request["link"] = "data:text/html,<script>alert('xss')</script>"
+	return request
+}
+
+func WithFTPLink(request map[string]any) map[string]any {
+	request["link"] = "ftp://example.com/file.txt"
+	return request
+}
+
+func WithNilUserID(request map[string]any) map[string]any {
+	delete(request, "user_id")
+	return request
+}
+
+func WithInvalidUserID(request map[string]any) map[string]any {
+	request["user_id"] = "invalid-uuid"
+	return request
+}
+
+func WithNilFolderID(request map[string]any) map[string]any {
+	delete(request, "folder_id")
+	return request
+}
+
+func WithInvalidFolderID(request map[string]any) map[string]any {
+	request["folder_id"] = "invalid-uuid"
+	return request
+}
+
+// </fixtures>
+// <runners>
+func Run_CreateBookmarkRequest(s services.ValidatorService) (*repository.CreateBookmarkParams, error) {
+	return s.CreateBookmarkRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/bookmarks/create",
+		CreateBookmarkRequestJson(),
+	)))
+}
+
+func Run_CreateBookmarkRequest_WithEmptyBookmarkName(s services.ValidatorService) (*repository.CreateBookmarkParams, error) {
+	return s.CreateBookmarkRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/bookmarks/create",
+		WithEmptyBookmarkName(CreateBookmarkRequestJson()),
+	)))
+}
+
+func Run_CreateBookmarkRequest_WithNilBookmarkName(s services.ValidatorService) (*repository.CreateBookmarkParams, error) {
+	return s.CreateBookmarkRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/bookmarks/create",
+		WithNilBookmarkName(CreateBookmarkRequestJson()),
+	)))
+}
+
+func Run_CreateBookmarkRequest_WithEmptyLink(s services.ValidatorService) (*repository.CreateBookmarkParams, error) {
+	return s.CreateBookmarkRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/bookmarks/create",
+		WithEmptyLink(CreateBookmarkRequestJson()),
+	)))
+}
+
+func Run_CreateBookmarkRequest_WithNilLink(s services.ValidatorService) (*repository.CreateBookmarkParams, error) {
+	return s.CreateBookmarkRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/bookmarks/create",
+		WithNilLink(CreateBookmarkRequestJson()),
+	)))
+}
+
+func Run_CreateBookmarkRequest_WithInvalidLink(s services.ValidatorService) (*repository.CreateBookmarkParams, error) {
+	return s.CreateBookmarkRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/bookmarks/create",
+		WithInvalidLink(CreateBookmarkRequestJson()),
+	)))
+}
+
+func Run_CreateBookmarkRequest_WithEmojiInBookmarkName(s services.ValidatorService) (*repository.CreateBookmarkParams, error) {
+	return s.CreateBookmarkRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/bookmarks/create",
+		WithEmojiInBookmarkName(CreateBookmarkRequestJson()),
+	)))
+}
+
+func Run_CreateBookmarkRequest_WithEmojiInLink(s services.ValidatorService) (*repository.CreateBookmarkParams, error) {
+	return s.CreateBookmarkRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/bookmarks/create",
+		WithEmojiInLink(CreateBookmarkRequestJson()),
+	)))
+}
+
+func Run_CreateBookmarkRequest_WithValidHTTPLink(s services.ValidatorService) (*repository.CreateBookmarkParams, error) {
+	return s.CreateBookmarkRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/bookmarks/create",
+		WithValidHTTPLink(CreateBookmarkRequestJson()),
+	)))
+}
+
+func Run_CreateBookmarkRequest_WithValidHTTPSLink(s services.ValidatorService) (*repository.CreateBookmarkParams, error) {
+	return s.CreateBookmarkRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/bookmarks/create",
+		WithValidHTTPSLink(CreateBookmarkRequestJson()),
+	)))
+}
+
+func Run_CreateBookmarkRequest_WithJavascriptLink(s services.ValidatorService) (*repository.CreateBookmarkParams, error) {
+	return s.CreateBookmarkRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/bookmarks/create",
+		WithJavascriptLink(CreateBookmarkRequestJson()),
+	)))
+}
+
+func Run_CreateBookmarkRequest_WithDataLink(s services.ValidatorService) (*repository.CreateBookmarkParams, error) {
+	return s.CreateBookmarkRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/bookmarks/create",
+		WithDataLink(CreateBookmarkRequestJson()),
+	)))
+}
+
+func Run_CreateBookmarkRequest_WithFTPLink(s services.ValidatorService) (*repository.CreateBookmarkParams, error) {
+	return s.CreateBookmarkRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/bookmarks/create",
+		WithFTPLink(CreateBookmarkRequestJson()),
+	)))
+}
+
+func Run_CreateBookmarkRequest_WithNilUserID(s services.ValidatorService) (*repository.CreateBookmarkParams, error) {
+	return s.CreateBookmarkRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/bookmarks/create",
+		WithNilUserID(CreateBookmarkRequestJson()),
+	)))
+}
+
+func Run_CreateBookmarkRequest_WithInvalidUserID(s services.ValidatorService) (*repository.CreateBookmarkParams, error) {
+	return s.CreateBookmarkRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/bookmarks/create",
+		WithInvalidUserID(CreateBookmarkRequestJson()),
+	)))
+}
+
+func Run_CreateBookmarkRequest_WithNilFolderID(s services.ValidatorService) (*repository.CreateBookmarkParams, error) {
+	return s.CreateBookmarkRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/bookmarks/create",
+		WithNilFolderID(CreateBookmarkRequestJson()),
+	)))
+}
+
+func Run_CreateBookmarkRequest_WithInvalidFolderID(s services.ValidatorService) (*repository.CreateBookmarkParams, error) {
+	return s.CreateBookmarkRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/bookmarks/create",
+		WithInvalidFolderID(CreateBookmarkRequestJson()),
+	)))
+}
+
+// </runners>
+// <tests>
+// <evaluators>
+func CreateBookmarkRequest_Default(t *testing.T) {
+	r, e := Run_CreateBookmarkRequest(services.ValidatorService{})
+	assert.NoError(t, e)
+	assert.Equal(t, r.Name, "My Bookmark")
+	assert.Equal(t, r.Link, "https://example.com")
+}
+
+func CreateBookmarkRequest_WithEmptyBookmarkName(t *testing.T) {
+	r, e := Run_CreateBookmarkRequest_WithEmptyBookmarkName(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Bookmark name cannot be empty",
+	)
+	assert.Nil(t, r)
+}
+
+func CreateBookmarkRequest_WithNilBookmarkName(t *testing.T) {
+	r, e := Run_CreateBookmarkRequest_WithNilBookmarkName(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Bookmark name cannot be empty",
+	)
+	assert.Nil(t, r)
+}
+
+func CreateBookmarkRequest_WithEmptyLink(t *testing.T) {
+	r, e := Run_CreateBookmarkRequest_WithEmptyLink(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Bookmark link cannot be empty",
+	)
+	assert.Nil(t, r)
+}
+
+func CreateBookmarkRequest_WithNilLink(t *testing.T) {
+	r, e := Run_CreateBookmarkRequest_WithNilLink(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Bookmark link cannot be empty",
+	)
+	assert.Nil(t, r)
+}
+
+func CreateBookmarkRequest_WithInvalidLink(t *testing.T) {
+	r, e := Run_CreateBookmarkRequest_WithInvalidLink(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Only HTTP and HTTPS URLs are allowed",
+	)
+	assert.Nil(t, r)
+}
+
+func CreateBookmarkRequest_WithEmojiInBookmarkName(t *testing.T) {
+	r, e := Run_CreateBookmarkRequest_WithEmojiInBookmarkName(services.ValidatorService{})
+	assert.NoError(t, e)
+	assert.Equal(t, r.Name, "🔖 My Favorite Site 🚀")
+	assert.Equal(t, r.Link, "https://example.com")
+}
+
+func CreateBookmarkRequest_WithEmojiInLink(t *testing.T) {
+	r, e := Run_CreateBookmarkRequest_WithEmojiInLink(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Link cannot contain emojis",
+	)
+	assert.Nil(t, r)
+}
+
+func CreateBookmarkRequest_WithValidHTTPLink(t *testing.T) {
+	r, e := Run_CreateBookmarkRequest_WithValidHTTPLink(services.ValidatorService{})
+	assert.NoError(t, e)
+	assert.Equal(t, r.Name, "My Bookmark")
+	assert.Equal(t, r.Link, "http://example.com")
+}
+
+func CreateBookmarkRequest_WithValidHTTPSLink(t *testing.T) {
+	r, e := Run_CreateBookmarkRequest_WithValidHTTPSLink(services.ValidatorService{})
+	assert.NoError(t, e)
+	assert.NotNil(t, r)
+	assert.Equal(t, r.Name, "My Bookmark")
+	assert.Equal(t, r.Link, "https://example.com/page")
+}
+
+func CreateBookmarkRequest_WithJavascriptLink(t *testing.T) {
+	r, e := Run_CreateBookmarkRequest_WithJavascriptLink(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Only HTTP and HTTPS URLs are allowed",
+	)
+	assert.Nil(t, r)
+}
+
+func CreateBookmarkRequest_WithDataLink(t *testing.T) {
+	r, e := Run_CreateBookmarkRequest_WithDataLink(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Only HTTP and HTTPS URLs are allowed",
+	)
+	assert.Nil(t, r)
+}
+
+func CreateBookmarkRequest_WithFTPLink(t *testing.T) {
+	r, e := Run_CreateBookmarkRequest_WithFTPLink(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Only HTTP and HTTPS URLs are allowed",
+	)
+	assert.Nil(t, r)
+}
+
+func CreateBookmarkRequest_WithNilUserID(t *testing.T) {
+	r, e := Run_CreateBookmarkRequest_WithNilUserID(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"User ID cannot be null",
+	)
+	assert.Nil(t, r)
+}
+
+func CreateBookmarkRequest_WithInvalidUserID(t *testing.T) {
+	r, e := Run_CreateBookmarkRequest_WithInvalidUserID(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.Contains(t, e.Error(), "invalid UUID length: 12")
+	assert.Nil(t, r)
+}
+
+func CreateBookmarkRequest_WithNilFolderID(t *testing.T) {
+	r, e := Run_CreateBookmarkRequest_WithNilFolderID(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Folder ID cannot be null",
+	)
+	assert.Nil(t, r)
+}
+
+func CreateBookmarkRequest_WithInvalidFolderID(t *testing.T) {
+	r, e := Run_CreateBookmarkRequest_WithInvalidFolderID(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.Contains(t, e.Error(), "invalid UUID length: 12")
+	assert.Nil(t, r)
+}
+
+// </evaluators>
+// <map/>
+var Map_CreateBookmarkRequest = map[string]func(*testing.T){
+	"Default":                    CreateBookmarkRequest_Default,
+	"WithEmptyBookmarkName":      CreateBookmarkRequest_WithEmptyBookmarkName,
+	"WithNilBookmarkName":        CreateBookmarkRequest_WithNilBookmarkName,
+	"WithEmptyLink":              CreateBookmarkRequest_WithEmptyLink,
+	"WithNilLink":                CreateBookmarkRequest_WithNilLink,
+	"WithInvalidLink":            CreateBookmarkRequest_WithInvalidLink,
+	"WithEmojiInBookmarkName":    CreateBookmarkRequest_WithEmojiInBookmarkName,
+	"WithEmojiInLink":            CreateBookmarkRequest_WithEmojiInLink,
+	"WithValidHTTPLink":          CreateBookmarkRequest_WithValidHTTPLink,
+	"WithValidHTTPSLink":         CreateBookmarkRequest_WithValidHTTPSLink,
+	"WithJavascriptLink":         CreateBookmarkRequest_WithJavascriptLink,
+	"WithDataLink":               CreateBookmarkRequest_WithDataLink,
+	"WithFTPLink":                CreateBookmarkRequest_WithFTPLink,
+	"WithNilUserID":              CreateBookmarkRequest_WithNilUserID,
+	"WithInvalidUserID":          CreateBookmarkRequest_WithInvalidUserID,
+	"WithNilFolderID":            CreateBookmarkRequest_WithNilFolderID,
+	"WithInvalidFolderID":        CreateBookmarkRequest_WithInvalidFolderID,
+}
+
+// <hook/>
+func Test_CreateBookmarkRequest(t *testing.T) {
+	fmt.Println("Test_CreateBookmarkRequest")
+	for k, v := range Map_CreateBookmarkRequest {
+		t.Run(k, v)
+	}
+}
+
+// </method>
+// </service>

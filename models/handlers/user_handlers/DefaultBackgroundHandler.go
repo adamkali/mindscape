@@ -77,3 +77,15 @@ func (h *DefaultBackgroundHandler) SetCode(code int) handlers.IHandler {
 	h.code = code
 	return h
 }
+
+func (h *DefaultBackgroundHandler) Code() int {
+	return h.code
+}
+
+func (h *DefaultBackgroundHandler) Data() any {
+	return h.url
+}
+
+func (h *DefaultBackgroundHandler) Error() error {
+	return h.err
+}

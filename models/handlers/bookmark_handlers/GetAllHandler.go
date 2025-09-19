@@ -13,7 +13,7 @@ import (
 )
 
 type GetByFolderHandler struct {
-	Data         []repository.Bookmark
+	data         []repository.Bookmark
 	err          error
 	code         int
 	ctx          echo.Context
@@ -46,10 +46,10 @@ func (h *GetByFolderHandler) Handle() handlers.IHandler {
 	if parentID, err = uuid.Parse(h.ctx.Param("parent_id")); err != nil {
 		return handlers.Lock(h, 400, err)
 	}
-	if h.Data, err = h.BookmarkService.GetByFolder(parentID); err != nil {
+	if h.data, err = h.BookmarkService.GetByFolder(parentID); err != nil {
 		return handlers.Lock(h, 404, err)
 	}
-	for _, bookmark := range h.Data {
+	for _, bookmark := range h.data {
 		if bookmark.UserID != userID {
 			return handlers.Lock(h, 403, fmt.Errorf("unauthorized access to bookmark"))
 		}
@@ -61,12 +61,24 @@ func (h *GetByFolderHandler) JSON() error {
 	if h.err != nil {
 		return responses.NewBookmarksResponse().Fail(h.ctx, h.code, h.err)
 	}
-	return responses.NewBookmarksResponse().Successful(h.ctx, h.Data)
+	return responses.NewBookmarksResponse().Successful(h.ctx, h.data)
 }
 
 func (h *GetByFolderHandler) SetCode(code int) handlers.IHandler {
 	h.code = code
 	return h
+}
+
+func (h *GetByFolderHandler) Code() int {
+	return h.code
+}
+
+func (h *GetByFolderHandler) Data() any {
+	return h.data
+}
+
+func (h *GetByFolderHandler) Error() error {
+	return h.err
 }
 
 func (h *GetByFolderHandler) SetError(err error) handlers.IHandler {

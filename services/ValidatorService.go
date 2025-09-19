@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/mail"
+	"net/url"
 	"regexp"
 	"strings"
 	"unicode"
@@ -104,8 +105,8 @@ func (ValidatorService ValidatorService) ValidateLoginRequest(e echo.Context) (*
 		err := errors.New("Email and Username cannot be null")
 		return nil, err
 	}
-	// validRequest.Username can be sql injection
-	if !validateUsername(validRequest.Username) {
+	// validRequest.Username can be sql injection, but only validate if username is provided
+	if validRequest.Username != "" && !validateUsername(validRequest.Username) {
 		return nil, fmt.Errorf("Validation failed (%s) is not a valid username", validRequest.Username)
 	}
 	if validRequest.Password == "" {
@@ -200,5 +201,44 @@ func (r ValidatorService) CreateBookmarkRequest(e echo.Context) (*repository.Cre
 	if err := e.Bind(&validRequest); err != nil {
 		return nil, err
 	}
+
+	// Validate User ID
+	if validRequest.UserID == uuid.Nil {
+		return nil, errors.New("User ID cannot be null")
+	}
+
+	// Validate Folder ID
+	if validRequest.FolderID == uuid.Nil {
+		return nil, errors.New("Folder ID cannot be null")
+	}
+
+	// Validate Name
+	if validRequest.Name == "" {
+		return nil, errors.New("Bookmark name cannot be empty")
+	}
+
+	// Validate Link
+	if validRequest.Link == "" {
+		return nil, errors.New("Bookmark link cannot be empty")
+	}
+
+	// Validate URL format
+	u, err := url.Parse(validRequest.Link)
+	if err != nil {
+		return nil, errors.New("Invalid URL format")
+	}
+
+	// Only allow HTTP and HTTPS
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return nil, errors.New("Only HTTP and HTTPS URLs are allowed")
+	}
+
+	// Check for emojis in link
+	for _, r := range validRequest.Link {
+		if unicode.Is(unicode.So, r) || unicode.Is(unicode.Sm, r) {
+			return nil, errors.New("Link cannot contain emojis")
+		}
+	}
+
 	return validRequest, nil
 }

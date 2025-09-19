@@ -13,7 +13,7 @@ import (
 )
 
 type DeleteFolderHandler struct {
-	Data          *repository.Folder
+	data          *repository.Folder
 	err           error
 	code          int
 	ctx           echo.Context
@@ -46,10 +46,10 @@ func (h *DeleteFolderHandler) Handle() handlers.IHandler {
 	if folderID, err = uuid.Parse(h.ctx.Param("folder_id")); err != nil {
 		return handlers.Lock(h, 400, err)
 	}
-	if h.Data, err = h.FolderService.Get(folderID); err != nil {
+	if h.data, err = h.FolderService.Get(folderID); err != nil {
 		return handlers.Lock(h, 404, err)
 	}
-	if h.Data.UserID != userID {
+	if h.data.UserID != userID {
 		return handlers.Lock(h, 403, fmt.Errorf("unauthorized access to folder"))
 	}
 	if err = h.FolderService.Remove(folderID); err != nil {
@@ -71,6 +71,18 @@ func (h *DeleteFolderHandler) JSON() error {
 func (h *DeleteFolderHandler) SetCode(code int) handlers.IHandler {
 	h.code = code
 	return h
+}
+
+func (h *DeleteFolderHandler) Code() int {
+	return h.code
+}
+
+func (h *DeleteFolderHandler) Data() any {
+	return h.data
+}
+
+func (h *DeleteFolderHandler) Error() error {
+	return h.err
 }
 
 func (h *DeleteFolderHandler) SetError(err error) handlers.IHandler {

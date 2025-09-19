@@ -1,8 +1,6 @@
 package bookmark_handlers
 
 import (
-	"fmt"
-
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
@@ -12,7 +10,7 @@ import (
 )
 
 type CreateHandler struct {
-	Data             *repository.Bookmark
+	data             *repository.Bookmark
 	err              error
 	code             int
 	ctx              echo.Context
@@ -46,7 +44,7 @@ func (h *CreateHandler) Handle() handlers.IHandler {
 	if request, err = h.ValidatorService.CreateBookmarkRequest(h.ctx); err != nil {
 		return handlers.Lock(h, 400, err)
 	}
-	if h.Data, err = h.BookmarkService.Create(request); err != nil {
+	if h.data, err = h.BookmarkService.Create(request); err != nil {
 		return handlers.Lock(h, 500, err)
 	}
 	return h
@@ -56,7 +54,7 @@ func (h *CreateHandler) JSON() error {
 	if h.err != nil {
 		return responses.NewBookmarkResponse().Fail(h.ctx, h.code, h.err)
 	}
-	return responses.NewBookmarkResponse().Successful(h.ctx, *h.Data)
+	return responses.NewBookmarkResponse().Successful(h.ctx, *h.data)
 }
 
 func (h *CreateHandler) SetCode(code int) handlers.IHandler {
@@ -65,6 +63,18 @@ func (h *CreateHandler) SetCode(code int) handlers.IHandler {
 }
 
 func (h *CreateHandler) SetError(err error) handlers.IHandler {
-	h.err = fmt.Errorf("%d Error: %s", h.code, err.Error())
+	h.err = err
 	return h
+}
+
+func (h *CreateHandler) Data() any {
+	return h.data
+}
+
+func (h *CreateHandler) Code() int {
+	return h.code
+}
+
+func (h *CreateHandler) Error() error {
+	return h.err
 }

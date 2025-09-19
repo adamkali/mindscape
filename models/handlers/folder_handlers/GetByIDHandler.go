@@ -13,7 +13,7 @@ import (
 )
 
 type GetFolderByIDHandler struct {
-	Data            *responses.FolderData
+	data            *responses.FolderData
 	err             error
 	code            int
 	ctx             echo.Context
@@ -69,7 +69,7 @@ func (h *GetFolderByIDHandler) Handle() handlers.IHandler {
 	if folderData.Children, err = h.FolderService.GetByParent(folderID); err != nil {
 		return handlers.Lock(h, 500, err)
 	}
-	h.Data = &folderData
+	h.data = &folderData
 	return h
 }
 
@@ -77,12 +77,24 @@ func (h *GetFolderByIDHandler) JSON() error {
 	if h.err != nil {
 		return responses.NewFolderResponse().Fail(h.ctx, h.code, h.err)
 	}
-	return h.ctx.JSON(200, responses.NewFolderResponseWithData(*h.Data, true, "OK"))
+	return h.ctx.JSON(200, responses.NewFolderResponseWithData(*h.data, true, "OK"))
 }
 
 func (h *GetFolderByIDHandler) SetCode(code int) handlers.IHandler {
 	h.code = code
 	return h
+}
+
+func (h *GetFolderByIDHandler) Code() int {
+	return h.code
+}
+
+func (h *GetFolderByIDHandler) Data() any {
+	return h.data
+}
+
+func (h *GetFolderByIDHandler) Error() error {
+	return h.err
 }
 
 func (h *GetFolderByIDHandler) SetError(err error) handlers.IHandler {
