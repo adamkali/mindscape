@@ -93,8 +93,8 @@ export class BookmarksApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get all Bookmarks by Authorization Header and by the ParentFolderId [parent_id]
-     * Get Bookmarks By Folder ID
+     * Delete a Bookmark by Authorization Header, and my a ParentFolderId [parent_id].
+     * Delete a Bookmark
      */
     async getBookmarksRaw(requestParameters: GetBookmarksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BookmarksResponse>> {
         if (requestParameters['authorization'] == null) {
@@ -130,8 +130,8 @@ export class BookmarksApi extends runtime.BaseAPI {
     }
 
     /**
-     * Get all Bookmarks by Authorization Header and by the ParentFolderId [parent_id]
-     * Get Bookmarks By Folder ID
+     * Delete a Bookmark by Authorization Header, and my a ParentFolderId [parent_id].
+     * Delete a Bookmark
      */
     async getBookmarks(requestParameters: GetBookmarksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BookmarksResponse> {
         const response = await this.getBookmarksRaw(requestParameters, initOverrides);

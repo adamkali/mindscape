@@ -359,8 +359,8 @@ paths:
       consumes:
       - application/json
       description: |-
-        Get all Bookmarks by Authorization Header and by the
-        ParentFolderId [parent_id]
+        Delete a Bookmark by Authorization Header, and my a
+        ParentFolderId [parent_id].
       operationId: GetBookmarks
       parameters:
       - default: '"Bearer token"'
@@ -394,7 +394,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/BookmarksResponse'
-      summary: Get Bookmarks By Folder ID
+      summary: Delete a Bookmark
       tags:
       - Bookmarks
   /folders:

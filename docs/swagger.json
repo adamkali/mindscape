@@ -146,7 +146,7 @@
         },
         "/bookmarks/folder/{parent_id}": {
             "get": {
-                "description": "Get all Bookmarks by Authorization Header and by the\nParentFolderId [parent_id]",
+                "description": "Delete a Bookmark by Authorization Header, and my a\nParentFolderId [parent_id].",
                 "consumes": [
                     "application/json"
                 ],
@@ -156,7 +156,7 @@
                 "tags": [
                     "Bookmarks"
                 ],
-                "summary": "Get Bookmarks By Folder ID",
+                "summary": "Delete a Bookmark",
                 "operationId": "GetBookmarks",
                 "parameters": [
                     {
