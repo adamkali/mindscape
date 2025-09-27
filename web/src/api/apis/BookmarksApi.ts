@@ -33,6 +33,11 @@ export interface CreateBookmarkRequest {
     createBookmarkRequest: RepositoryCreateBookmarkParams;
 }
 
+export interface DeleteBookmarkRequest {
+    authorization: string;
+    parentId: string;
+}
+
 export interface GetBookmarksRequest {
     authorization: string;
     parentId: string;
@@ -96,6 +101,52 @@ export class BookmarksApi extends runtime.BaseAPI {
      * Delete a Bookmark by Authorization Header, and my a ParentFolderId [parent_id].
      * Delete a Bookmark
      */
+    async deleteBookmarkRaw(requestParameters: DeleteBookmarkRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BookmarksResponse>> {
+        if (requestParameters['authorization'] == null) {
+            throw new runtime.RequiredError(
+                'authorization',
+                'Required parameter "authorization" was null or undefined when calling deleteBookmark().'
+            );
+        }
+
+        if (requestParameters['parentId'] == null) {
+            throw new runtime.RequiredError(
+                'parentId',
+                'Required parameter "parentId" was null or undefined when calling deleteBookmark().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        }
+
+        const response = await this.request({
+            path: `/bookmarks/folder/{parent_id}`.replace(`{${"parent_id"}}`, encodeURIComponent(String(requestParameters['parentId']))),
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BookmarksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Delete a Bookmark by Authorization Header, and my a ParentFolderId [parent_id].
+     * Delete a Bookmark
+     */
+    async deleteBookmark(requestParameters: DeleteBookmarkRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BookmarksResponse> {
+        const response = await this.deleteBookmarkRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get all Bookmarks by Authorization Header and by the ParentFolderId [parent_id]
+     * Get Bookmarks By Folder ID
+     */
     async getBookmarksRaw(requestParameters: GetBookmarksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BookmarksResponse>> {
         if (requestParameters['authorization'] == null) {
             throw new runtime.RequiredError(
@@ -130,8 +181,8 @@ export class BookmarksApi extends runtime.BaseAPI {
     }
 
     /**
-     * Delete a Bookmark by Authorization Header, and my a ParentFolderId [parent_id].
-     * Delete a Bookmark
+     * Get all Bookmarks by Authorization Header and by the ParentFolderId [parent_id]
+     * Get Bookmarks By Folder ID
      */
     async getBookmarks(requestParameters: GetBookmarksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BookmarksResponse> {
         const response = await this.getBookmarksRaw(requestParameters, initOverrides);

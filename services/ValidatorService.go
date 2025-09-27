@@ -156,7 +156,7 @@ func (vs ValidatorService) ValidateUpdateUserCredentialRequest(e echo.Context) (
 	if !validateUsername(validRequest.Username) {
 		return nil, fmt.Errorf("Validation failed (%s) is not a valid username", validRequest.Username)
 	}
-	
+
 	_, err := mail.ParseAddress(validRequest.Email)
 	if err != nil {
 		return nil, err
@@ -241,4 +241,31 @@ func (r ValidatorService) CreateBookmarkRequest(e echo.Context) (*repository.Cre
 	}
 
 	return validRequest, nil
+}
+
+func (r ValidatorService) ValidateBacgroundImageChange(e echo.Context) (*requests.UploadUserBackgroundRequest, error) {
+	var err error
+	validRequest := new(requests.UploadUserBackgroundRequest)
+	user_id := e.FormValue("user_id")
+	formFile, err := e.FormFile("file")
+	if err != nil {
+		return nil, err
+	}
+	validRequest.UserId, err = uuid.Parse(user_id)
+	if err != nil {
+		return nil, err
+	}
+	// check to make sure file is not empty
+	validRequest.File = formFile
+	if validRequest.File.Size == 0 {
+		return nil, errors.New("File is empty")
+	}
+	//check to make sure file is an image
+	if validRequest.File.Header.Get("Content-Type") != "image/jpeg" &&
+		validRequest.File.Header.Get("Content-Type") != "image/png" &&
+		validRequest.File.Header.Get("Content-Type") != "image/gif" {
+		return nil, errors.New("File is not an image")
+	}
+	return validRequest, nil
+
 }

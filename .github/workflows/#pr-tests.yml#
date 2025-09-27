@@ -1,0 +1,44 @@
+name: Pull Request Tests
+
+
+on:
+  pull_request:
+    branches: [ main, nightly ]
+    types: [ opened, synchronize, reopened ]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Cache Go modules
+      uses: actions/cache@v3
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Download dependencies
+      run: go mod download
+
+    - name: Run tests
+      run: go test ./...
+
+    - name: Check test results
+      run: |
+        if ! go test ./...; then
+          echo "Tests failed. Pull request cannot be merged."
+          exit 1
+        else
+          echo "All tests passed successfully!"
+        fi

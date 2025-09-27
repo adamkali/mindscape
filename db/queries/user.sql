@@ -50,3 +50,11 @@ WHERE id = $2;
 UPDATE users
 SET b_crypt_hash = $1, username = $2, email = $3, updated_datetime = now()
 WHERE id = $4 AND b_crypt_hash = $5;
+
+
+-- name: UpdateUserBacground :one
+UPDATE users
+SET background = $1
+WHERE id = $2
+RETURNING *;
+

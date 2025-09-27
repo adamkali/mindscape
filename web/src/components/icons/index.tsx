@@ -1,2 +1,3 @@
 import AddFolder from './AddIcon.tsx'; 
-export { AddFolder }
+import DeleteIcon from './DeleteIcon.tsx';
+export { AddFolder, DeleteIcon }

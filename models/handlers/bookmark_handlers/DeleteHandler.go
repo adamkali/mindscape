@@ -20,7 +20,6 @@ type DeleteHandler struct {
 	AuthService     services.IAuthService
 	BookmarkService services.IBookmarkService
 }
-
 func NewDeleteHandler(
 	ctx echo.Context,
 	BookmarkService services.IBookmarkService,

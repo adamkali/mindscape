@@ -1,6 +1,6 @@
 import { A } from '@solidjs/router';
 import { createResource, createEffect, createSignal, Show } from 'solid-js';
-import { BackgroundApi, FoldersApi, type ResponsesFolderData } from '@/api';
+import { BackgroundApi, FoldersApi, BookmarksApi, type ResponsesFolderData } from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Header } from '@/components/Header';
 import CreateFolderComponent from '@/components/CreateFolderComponent';
@@ -91,6 +91,26 @@ const Home = () => {
 		}
 	};
 
+	const deleteBookmark = async (bookmarkId: string, parentFolderId: string) => {
+		if (!auth.token() || !bookmarkId || !parentFolderId) return;
+
+		try {
+			const bookmarksApi = new BookmarksApi();
+			const response = await bookmarksApi.deleteBookmark({
+				parentId: parentFolderId,
+				authorization: `Bearer ${auth.token()}`,
+			});
+			
+			if (response.success) {
+				await fetchRootFolders(); // Refresh the data
+			} else {
+				console.error('Failed to delete bookmark:', response.message);
+			}
+		} catch (error) {
+			console.error('Failed to delete bookmark:', error);
+		}
+	};
+
 	if (!auth.isAuthenticated() || !user) {
 		return (
 			<div class="min-h-screen flex items-center justify-center">
@@ -134,7 +154,7 @@ const Home = () => {
 			{/* Main content */}
 			<div class="flex h-screen">
 				{/* Sidebar with tree */}
-				<div class="m-2 p-1 rounded-2xl overflow-y-auto">
+				<div class="m-2 p-1 rounded-2xl overflow-y-auto bg-white/10 backdrop-blur-md border border-white/20">
 					<div class="p-2">
 						<div class="flex items-center justify-between mb-4">
 							<Button
@@ -191,6 +211,7 @@ const Home = () => {
 											selectedFolder={focusedNodeId}
 											setSelectedFolder={setFocusedNodeId}
 											deleteFolder={deleteFolder}
+											deleteBookmark={deleteBookmark}
 											showCreateFolder={openCreateBookmarkComponent}
 											indent={0}
 										/>

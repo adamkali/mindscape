@@ -150,6 +150,64 @@ const docTemplate = `{
         },
         "/bookmarks/folder/{parent_id}": {
             "get": {
+                "description": "Get all Bookmarks by Authorization Header and by the\nParentFolderId [parent_id]",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Get Bookmarks By Folder ID",
+                "operationId": "GetBookmarks",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\"Bearer token\"",
+                        "description": "Authorization Header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Parent Folder ID",
+                        "name": "parent_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
                 "description": "Delete a Bookmark by Authorization Header, and my a\nParentFolderId [parent_id].",
                 "consumes": [
                     "application/json"
@@ -161,7 +219,7 @@ const docTemplate = `{
                     "Bookmarks"
                 ],
                 "summary": "Delete a Bookmark",
-                "operationId": "GetBookmarks",
+                "operationId": "DeleteBookmark",
                 "parameters": [
                     {
                         "type": "string",

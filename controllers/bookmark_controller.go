@@ -86,7 +86,7 @@ func (c BookmarkController) GetByFolder(e echo.Context) error {
 // @Description Delete a Bookmark by Authorization Header, and my a 
 // @Description ParentFolderId [parent_id]. 
 //
-// @ID          GetBookmarks
+// @ID          DeleteBookmark 
 // @Tags        Bookmarks
 // @Accept      json
 // @Produce     json
@@ -96,7 +96,7 @@ func (c BookmarkController) GetByFolder(e echo.Context) error {
 // @Failure     401                 {object}     BookmarksResponse
 // @Failure     404                 {object}     BookmarksResponse
 // @Failure     500                 {object}     BookmarksResponse
-// @Router      /bookmarks/folder/{parent_id} [get]
+// @Router      /bookmarks/folder/{parent_id} [delete]
 func (c BookmarkController) Delete(e echo.Context) error {
 	return bookmark_handlers.NewDeleteHandler(
 		e,

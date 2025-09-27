@@ -60,4 +60,5 @@ type User struct {
 	ProfilePicUrl   *string    `json:"profile_pic_url"`
 	BCryptHash      string     `json:"b_crypt_hash"`
 	Admin           bool       `json:"admin"`
+	Background      *string    `json:"background"`
 }

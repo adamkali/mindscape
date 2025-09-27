@@ -15,12 +15,14 @@ import {
 } from 'solid-js';
 import { Button } from './atoms';
 import BookmarkComponent from './BookmarkComponent';
+import { DeleteIcon } from './icons';
 
 interface FolderComponentProps extends ComponentProps<'div'> {
 	folder: ResponsesFolderData;
 	selectedFolder: () => string;
 	setSelectedFolder: (id: string) => void;
 	deleteFolder: (id: string) => void;
+	deleteBookmark?: (bookmarkId: string, parentFolderId: string) => void;
 	showCreateFolder: (folderBookmarkRefresh?: () => void) => void;
 	indent: number;
 }
@@ -82,7 +84,7 @@ export default function FolderComponent(props: FolderComponentProps) {
 	};
 
 	const refreshBookmarks = async () => {
-		const response = await new BookmarksApi().getBookmarks({
+		const response = await new BookmarksApi().align({
 			parentId: folder.id || '',
 			authorization: `Bearer ${auth.token()}`,
 		});
@@ -110,6 +112,7 @@ export default function FolderComponent(props: FolderComponentProps) {
 								selectedFolder={selectedFolder}
 								setSelectedFolder={setSelectedFolder}
 								deleteFolder={deleteFolder}
+								deleteBookmark={props.deleteBookmark}
 								indent={indentNext()}
 								showCreateFolder={props.showCreateFolder}
 							/>
@@ -122,6 +125,7 @@ export default function FolderComponent(props: FolderComponentProps) {
 								selected={selectedFolder}
 								setSelected={setSelectedFolder}
 								indent={indentNext()}
+								deleteBookmark={props.deleteBookmark}
 							/>
 						)}
 					</For>
@@ -145,10 +149,10 @@ export default function FolderComponent(props: FolderComponentProps) {
 	const childClassName = (): string => {
 		let isFolder = '';
 		if (folder.id === selectedFolder()) {
-			isFolder = 'bg-secondary text-secondary-foreground hover:bg-secondary/80';
+			isFolder = 'bg-white/40 backdrop-blur-md border-white/50';
 		}
 		return cn(
-			`flex flex-row items-center py-1 px-2 cursor-pointer bg-primary text-primary-foreground hover:bg-primary/80 rounded-lg
+			`flex flex-row items-center py-1 px-2 cursor-pointer bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30 rounded-lg
 		shadow-md hover:shadow-lg transition-all duration-200 shadow-slate-900/80 ease-in-out space-x-1 justify-between w-64`,
 			isFolder,
 		);
@@ -167,6 +171,19 @@ export default function FolderComponent(props: FolderComponentProps) {
 				<div>
 					<span class="mr-2 text-base font-bold">{folder.name}</span>
 				</div>
+				<Button
+					variant="danger"
+					class="p-1 text-xs"
+					onClick={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+						if (folder.id) {
+							deleteFolder(folder.id);
+						}
+					}}
+				>
+					<DeleteIcon />
+				</Button>
 			</div>
 			{isFolderOpen() && renderChildren()}
 		</>

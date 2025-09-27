@@ -1,6 +1,6 @@
 import { A, useNavigate } from '@solidjs/router';
-import { createSignal } from 'solid-js';
-import { UsersApi } from '@/api';
+import { createSignal, createResource } from 'solid-js';
+import { UsersApi, BackgroundApi } from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
 
 const Signup = () => {
@@ -14,6 +14,16 @@ const Signup = () => {
 	const auth = useAuth();
 	const navigate = useNavigate();
 	const api = new UsersApi();
+
+	const [defaultBackground] = createResource(async () => {
+		const api = new BackgroundApi();
+		const response = await api.getDefaultBackground();
+		if (response.success && response.data) {
+			return response.data;
+		} else {
+			throw new Error('Failed to fetch default background: ' + response.message);
+		}
+	});
 
 	const handleSubmit = async (e: Event) => {
 		e.preventDefault();
@@ -55,17 +65,20 @@ const Signup = () => {
 	};
 
 	return (
-		<div class="min-h-screen flex items-center justify-center px-4">
-			<div class="max-w-md w-full space-y-8">
+		<div 
+			class="min-h-screen flex items-center justify-center px-4"
+			style={{ "background-image": `url(${defaultBackground()})` }}
+		>
+			<div class="max-w-md w-full space-y-8 bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-8 shadow-lg">
 				<div class="text-center">
-					<h2 class="text-3xl font-bold text-gray-900 dark:text-white">
+					<h2 class="text-3xl font-bold text-white">
 						Create your account
 					</h2>
-					<p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+					<p class="mt-2 text-sm text-white/80">
 						Already have an account?{' '}
 						<A
 							href="/login"
-							class="font-medium text-blue-600 hover:text-blue-500"
+							class="font-medium text-blue-300 hover:text-blue-200"
 						>
 							Sign in
 						</A>
