@@ -74,7 +74,6 @@ func (UserService *UserService) addNewUser(
 	var user repository.User
 	fmt.Println("Starting Connection")
 	tx, err := UserService.pool.Begin(UserService.ctx)
-	fmt.Println(err.Error())
 	if err != nil {
 		return nil, err
 	}

@@ -89,3 +89,4 @@ func (h *DefaultBackgroundHandler) Data() any {
 func (h *DefaultBackgroundHandler) Error() error {
 	return h.err
 }
+

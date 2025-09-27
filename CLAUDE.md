@@ -286,28 +286,28 @@ pnpm format
 pnpm check
 ```
 
-### Testing
+### Testing Commands
 ```bash
 # All tests
 go test ./...
 
-# Service tests specifically  
+# Run with coverage report
+make test-coverage
+
+# Run with race detection
+make test-race
+
+# Service layer tests
 go test ./services -v
 
-# Validator service tests
+# Specific validation tests
 go test ./services -run Test_Validate -v
-go test ./services -run Test_ValidateNewUserRequest -v
 
-# UserService tests with MockUserService
+# Mock service tests  
 go test ./services -run Test_MockUserService -v
-go test ./services -run Test_MockUserService_Create -v
 
 # Handler layer tests
 go test ./models/handlers/user_handlers -v
-go test ./models/handlers/user_handlers -run Test_LoginHandler -v
-go test ./models/handlers/user_handlers -run Test_RegisterHandler -v
-
-# Folder handler tests
 go test ./models/handlers/folder_handlers -v
 go test ./models/handlers/folder_handlers -run Test_CreateFolderHandler -v
 go test ./models/handlers/folder_handlers -run Test_GetRootHandler -v
@@ -316,6 +316,46 @@ go test ./models/handlers/folder_handlers -run Test_GetRootHandler -v
 make test-coverage
 make test-race
 ```
+
+### Database Operations
+```bash
+# Run migrations up
+go run main.go migrate up
+
+# Run migrations down  
+go run main.go migrate down
+
+# Generate database code from queries (after schema changes)
+sqlc generate
+```
+
+## SQLC Database Code Generation
+
+This project uses SQLC for type-safe database queries. Key configuration:
+
+- **Schema location**: `db/migrations/` (SQL migration files)
+- **Queries location**: `db/queries/` (SQL query files) 
+- **Generated code**: `db/repository/` (Go structs and query functions)
+- **Configuration**: `sqlc.yml` with PostgreSQL engine and pgx/v5 driver
+
+After making schema or query changes, regenerate code with `sqlc generate`.
+
+## Egg Framework Context
+
+Mindscape is built on the **Egg Framework** - a Go framework optimized for solo developers to rapidly build full-stack applications. Key characteristics:
+
+- **Rapid Development**: Pre-configured with common patterns and dependencies
+- **Solo Developer Focus**: Minimal boilerplate, fast iteration cycles  
+- **Hot Reload**: Uses `air` for automatic rebuilds during development
+- **Docker Ready**: Multiple Dockerfiles for different deployment scenarios
+- **CI/CD Ready**: Coolify deployment configuration included
+
+## Prerequisites & Setup
+
+- **PostgreSQL database** running with connection string configured in `config/development.yaml`
+- **S3-compatible storage** (MinIO) configured in development config
+- **Go 1.24.5+** and **pnpm** for frontend development
+- Run `air` for hot reload development or `go run main.go` for standard server start
 
 ## Configuration
 
