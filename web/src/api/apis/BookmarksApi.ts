@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   BookmarkResponse,
   BookmarksResponse,
+  MoveBookmarkRequest,
   RepositoryCreateBookmarkParams,
 } from '../models/index';
 import {
@@ -24,6 +25,8 @@ import {
     BookmarkResponseToJSON,
     BookmarksResponseFromJSON,
     BookmarksResponseToJSON,
+    MoveBookmarkRequestFromJSON,
+    MoveBookmarkRequestToJSON,
     RepositoryCreateBookmarkParamsFromJSON,
     RepositoryCreateBookmarkParamsToJSON,
 } from '../models/index';
@@ -35,12 +38,17 @@ export interface CreateBookmarkRequest {
 
 export interface DeleteBookmarkRequest {
     authorization: string;
-    parentId: string;
+    bookmarkId: string;
 }
 
 export interface GetBookmarksRequest {
     authorization: string;
     parentId: string;
+}
+
+export interface MoveBookmarkOperationRequest {
+    authorization: string;
+    moveBookmarkRequest: MoveBookmarkRequest;
 }
 
 /**
@@ -109,10 +117,10 @@ export class BookmarksApi extends runtime.BaseAPI {
             );
         }
 
-        if (requestParameters['parentId'] == null) {
+        if (requestParameters['bookmarkId'] == null) {
             throw new runtime.RequiredError(
-                'parentId',
-                'Required parameter "parentId" was null or undefined when calling deleteBookmark().'
+                'bookmarkId',
+                'Required parameter "bookmarkId" was null or undefined when calling deleteBookmark().'
             );
         }
 
@@ -125,7 +133,7 @@ export class BookmarksApi extends runtime.BaseAPI {
         }
 
         const response = await this.request({
-            path: `/bookmarks/folder/{parent_id}`.replace(`{${"parent_id"}}`, encodeURIComponent(String(requestParameters['parentId']))),
+            path: `/bookmarks/folder/{bookmark_id}`.replace(`{${"bookmark_id"}}`, encodeURIComponent(String(requestParameters['bookmarkId']))),
             method: 'DELETE',
             headers: headerParameters,
             query: queryParameters,
@@ -186,6 +194,55 @@ export class BookmarksApi extends runtime.BaseAPI {
      */
     async getBookmarks(requestParameters: GetBookmarksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BookmarksResponse> {
         const response = await this.getBookmarksRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Move a Bookmark by Authorization Header, and my a ParentFolderId [parent_id].
+     * Move a Bookmark
+     */
+    async moveBookmarkRaw(requestParameters: MoveBookmarkOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BookmarksResponse>> {
+        if (requestParameters['authorization'] == null) {
+            throw new runtime.RequiredError(
+                'authorization',
+                'Required parameter "authorization" was null or undefined when calling moveBookmark().'
+            );
+        }
+
+        if (requestParameters['moveBookmarkRequest'] == null) {
+            throw new runtime.RequiredError(
+                'moveBookmarkRequest',
+                'Required parameter "moveBookmarkRequest" was null or undefined when calling moveBookmark().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        }
+
+        const response = await this.request({
+            path: `/bookmarks`,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: MoveBookmarkRequestToJSON(requestParameters['moveBookmarkRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BookmarksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Move a Bookmark by Authorization Header, and my a ParentFolderId [parent_id].
+     * Move a Bookmark
+     */
+    async moveBookmark(requestParameters: MoveBookmarkOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BookmarksResponse> {
+        const response = await this.moveBookmarkRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

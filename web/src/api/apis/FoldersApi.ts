@@ -16,12 +16,15 @@
 import * as runtime from '../runtime';
 import type {
   RepositoryCreateFolderParams,
+  RequestsMoveFolderRequest,
   ResponsesFolderResponse,
   ResponsesFoldersResponse,
 } from '../models/index';
 import {
     RepositoryCreateFolderParamsFromJSON,
     RepositoryCreateFolderParamsToJSON,
+    RequestsMoveFolderRequestFromJSON,
+    RequestsMoveFolderRequestToJSON,
     ResponsesFolderResponseFromJSON,
     ResponsesFolderResponseToJSON,
     ResponsesFoldersResponseFromJSON,
@@ -45,6 +48,11 @@ export interface GetFoldersRequest {
 
 export interface GetRootFoldersRequest {
     authorization: string;
+}
+
+export interface MoveFolderRequest {
+    authorization: string;
+    moveFolderRequest: RequestsMoveFolderRequest;
 }
 
 /**
@@ -229,6 +237,55 @@ export class FoldersApi extends runtime.BaseAPI {
      */
     async getRootFolders(requestParameters: GetRootFoldersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ResponsesFoldersResponse> {
         const response = await this.getRootFoldersRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Move a Folder by Authorization Header
+     * Move a Folder
+     */
+    async moveFolderRaw(requestParameters: MoveFolderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesFolderResponse>> {
+        if (requestParameters['authorization'] == null) {
+            throw new runtime.RequiredError(
+                'authorization',
+                'Required parameter "authorization" was null or undefined when calling moveFolder().'
+            );
+        }
+
+        if (requestParameters['moveFolderRequest'] == null) {
+            throw new runtime.RequiredError(
+                'moveFolderRequest',
+                'Required parameter "moveFolderRequest" was null or undefined when calling moveFolder().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        }
+
+        const response = await this.request({
+            path: `/folders`,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+            body: RequestsMoveFolderRequestToJSON(requestParameters['moveFolderRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ResponsesFolderResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Move a Folder by Authorization Header
+     * Move a Folder
+     */
+    async moveFolder(requestParameters: MoveFolderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ResponsesFolderResponse> {
+        const response = await this.moveFolderRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

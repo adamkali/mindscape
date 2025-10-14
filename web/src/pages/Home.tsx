@@ -1,6 +1,11 @@
 import { A } from '@solidjs/router';
 import { createResource, createEffect, createSignal, Show } from 'solid-js';
-import { BackgroundApi, FoldersApi, BookmarksApi, type ResponsesFolderData } from '@/api';
+import {
+	BackgroundApi,
+	FoldersApi,
+	BookmarksApi,
+	type ResponsesFolderData,
+} from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Header } from '@/components/Header';
 import CreateFolderComponent from '@/components/CreateFolderComponent';
@@ -17,9 +22,9 @@ const Home = () => {
 	const [isLoadingFolders, setIsLoadingFolders] = createSignal(false);
 	const [showCreateFolder, setShowCreateFolder] = createSignal(false);
 	const [showCreateBookmark, setShowCreateBookmark] = createSignal(false);
+	const [isDragOverRoot, setIsDragOverRoot] = createSignal(false);
 	const foldersApi = new FoldersApi();
 	const user = auth.user();
-
 
 	createEffect(() => {
 		fetchRootFolders();
@@ -31,7 +36,9 @@ const Home = () => {
 		if (response.success && response.data) {
 			return response.data;
 		} else {
-			throw new Error('Failed to fetch default background: ' + response.message);
+			throw new Error(
+				'Failed to fetch default background: ' + response.message,
+			);
 		}
 	});
 
@@ -45,9 +52,13 @@ const Home = () => {
 		if (showCreateBookmark()) {
 			setShowCreateFolder(false);
 		}
-
 	});
 
+	// Debug effect to track selected node ID changes
+	createEffect(() => {
+		const currentId = focusedNodeId();
+		console.log(`id_change::selected_node: ${currentId || 'none'}`);
+	});
 
 	const fetchRootFolders = async () => {
 		if (!auth.token()) return;
@@ -60,9 +71,7 @@ const Home = () => {
 				const folders = response.data;
 				folders.sort((a, b) => a.name!.localeCompare(b.name!));
 
-				if (folders.length > 0 && !focusedNodeId()) {
-					setFocusedNodeId(folders[0].id!);
-				}
+				// Removed auto-selection to ensure no node is selected on page load
 				setFolders(folders);
 			}
 		} catch (error) {
@@ -91,16 +100,16 @@ const Home = () => {
 		}
 	};
 
-	const deleteBookmark = async (bookmarkId: string, parentFolderId: string) => {
-		if (!auth.token() || !bookmarkId || !parentFolderId) return;
+	const deleteBookmark = async (bookmarkId: string) => {
+		if (!auth.token() || !bookmarkId) return;
 
 		try {
 			const bookmarksApi = new BookmarksApi();
 			const response = await bookmarksApi.deleteBookmark({
-				parentId: parentFolderId,
+				bookmarkId: bookmarkId,
 				authorization: `Bearer ${auth.token()}`,
 			});
-			
+
 			if (response.success) {
 				await fetchRootFolders(); // Refresh the data
 			} else {
@@ -126,9 +135,8 @@ const Home = () => {
 		);
 	}
 
-
-	// set overwritable callback for create bookmark component 
-	let bookmarkRefresh: () => void = () => { };
+	// set overwritable callback for create bookmark component
+	let bookmarkRefresh: () => void = () => {};
 	const openCreateBookmarkComponent = (folderBookmarkRefresh?: () => void) => {
 		setShowCreateBookmark(true);
 		setShowCreateFolder(false);
@@ -140,21 +148,114 @@ const Home = () => {
 	const closeCreateBookmarkComponent = () => {
 		setShowCreateBookmark(false);
 		bookmarkRefresh();
-		bookmarkRefresh = () => { };
+		bookmarkRefresh = () => {};
 	};
 
+	const handleRootDragOver = (e: DragEvent) => {
+		// Only handle if the target is the root container or empty space, not folder cards
+		const target = e.target as HTMLElement;
+		const isOverFolderCard = target.closest('[draggable="true"]') !== null;
+		
+		if (!isOverFolderCard) {
+			e.preventDefault();
+			e.dataTransfer!.dropEffect = 'move';
+			setIsDragOverRoot(true);
+		}
+	};
+
+	const handleRootDragLeave = (e: DragEvent) => {
+		// Only clear the root drag state if we're actually leaving the root container
+		const target = e.target as HTMLElement;
+		const relatedTarget = e.relatedTarget as HTMLElement;
+		
+		// If we're moving to a child element, don't clear the drag state
+		if (relatedTarget && target.contains(relatedTarget)) {
+			return;
+		}
+		
+		setIsDragOverRoot(false);
+	};
+
+	const handleRootDrop = async (e: DragEvent) => {
+		// Only handle if the target is actually the root container or empty space
+		const target = e.target as HTMLElement;
+		const isOverFolderCard = target.closest('[draggable="true"]') !== null;
+		
+		if (isOverFolderCard) {
+			// Let the folder card handle this drop
+			return;
+		}
+		
+		e.preventDefault();
+		setIsDragOverRoot(false);
+		try {
+			const data = JSON.parse(e.dataTransfer!.getData('text/plain'));
+			console.log('Drop data to root:', data);
+			console.log(`id_change::dragged_in_node: ${data.id} (${data.type}) -> root`);
+			
+			if (data.type === 'folder' && data.id) {
+				try {
+					const response = await foldersApi.moveFolder({
+						moveFolderRequest: {
+							userId: user?.id,
+							folderId: data.id,
+							newParentId: undefined, // Moving to root
+						},
+						authorization: `Bearer ${auth.token()}`,
+					});
+					
+					if (response.success) {
+						console.log('Folder moved to root successfully:', response.data);
+						// Refresh root folders to show the moved item
+						await fetchRootFolders();
+					} else {
+						console.error('Failed to move folder to root:', response.message);
+						alert(`Failed to move folder to root: ${response.message}`);
+					}
+				} catch (error) {
+					console.error('Error moving folder to root:', error);
+					alert(`Error moving folder to root: ${error}`);
+				}
+			}
+		} catch (error) {
+			console.error('Error parsing drop data:', error);
+		}
+	};
 
 	return (
 		<div
 			class="min-h-screen bg-background"
-			style={{ "background-image": `url(${defaultBackground()})` }}
+			style={{ 
+				'background-image': `url(${defaultBackground()})`,
+				'background-size': 'cover',
+				'background-position': 'center center',
+				'background-repeat': 'no-repeat',
+				'background-attachment': 'fixed'
+			}}
+			onClick={(e) => {
+				// Deselect node when clicking on background areas
+				const target = e.target as HTMLElement;
+				if (
+					target.classList.contains('bg-background') ||
+					target.closest('.treeview-container') === null
+				) {
+					setFocusedNodeId('');
+				}
+			}}
 		>
 			<Header />
 
 			{/* Main content */}
 			<div class="flex h-screen">
 				{/* Sidebar with tree */}
-				<div class="m-2 p-1 rounded-2xl overflow-y-auto bg-white/10 backdrop-blur-md border border-white/20">
+				<div 
+					class={`treeview-container m-2 p-4 rounded-3xl overflow-y-auto bg-white/10 backdrop-blur-lg border border-white/20 max-h-[calc(100vh-2rem)] min-w-80 shadow-2xl shadow-slate-900/30 ${
+						isDragOverRoot() ? 'ring-2 ring-blue-400 bg-blue-100/20' : ''
+					}`}
+					onDragOver={handleRootDragOver}
+					onDragLeave={handleRootDragLeave}
+					onDrop={handleRootDrop}
+				>
 					<div class="p-2">
 						<div class="flex items-center justify-between mb-4">
 							<Button

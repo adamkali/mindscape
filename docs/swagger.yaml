@@ -49,6 +49,16 @@ definitions:
       success:
         type: boolean
     type: object
+  MoveBookmarkRequest:
+    properties:
+      bookmarkId:
+        type: string
+      newParentId:
+        description: The parent folder to move the bookmark to cannot be null
+        type: string
+      userId:
+        type: string
+    type: object
   NewUserRequest:
     properties:
       email:
@@ -192,6 +202,15 @@ definitions:
       user_id:
         type: string
     type: object
+  requests.MoveFolderRequest:
+    properties:
+      folderId:
+        type: string
+      newParentId:
+        type: string
+      userId:
+        type: string
+    type: object
   responses.FolderData:
     properties:
       bookmarks:
@@ -314,6 +333,48 @@ paths:
       tags:
       - Background
   /bookmarks:
+    patch:
+      consumes:
+      - application/json
+      description: |-
+        Move a Bookmark by Authorization Header, and my a
+        ParentFolderId [parent_id].
+      operationId: MoveBookmark
+      parameters:
+      - description: Move Bookmark Request
+        in: body
+        name: MoveBookmarkRequest
+        required: true
+        schema:
+          $ref: '#/definitions/MoveBookmarkRequest'
+      - default: '"Bearer token"'
+        description: Authorization Header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/BookmarksResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/BookmarksResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/BookmarksResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/BookmarksResponse'
+      summary: Move a Bookmark
+      tags:
+      - Bookmarks
     post:
       consumes:
       - application/json
@@ -354,7 +415,7 @@ paths:
       summary: Create a new Bookmark
       tags:
       - Bookmarks
-  /bookmarks/folder/{parent_id}:
+  /bookmarks/folder/{bookmark_id}:
     delete:
       consumes:
       - application/json
@@ -372,7 +433,7 @@ paths:
       - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
         description: Parent Folder ID
         in: path
-        name: parent_id
+        name: bookmark_id
         required: true
         type: string
       produces:
@@ -397,6 +458,7 @@ paths:
       summary: Delete a Bookmark
       tags:
       - Bookmarks
+  /bookmarks/folder/{parent_id}:
     get:
       consumes:
       - application/json
@@ -474,6 +536,50 @@ paths:
           schema:
             $ref: '#/definitions/responses.FoldersResponse'
       summary: Get the Root Folders associated with the user
+      tags:
+      - Folders
+    patch:
+      consumes:
+      - application/json
+      description: Move a Folder by Authorization Header
+      operationId: MoveFolder
+      parameters:
+      - description: Move Folder Request
+        in: body
+        name: MoveFolderRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.MoveFolderRequest'
+      - default: '"Bearer token"'
+        description: Authorization Header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+      summary: Move a Folder
       tags:
       - Folders
     post:
@@ -595,6 +701,28 @@ paths:
       summary: Get the Folders associated with the user under A Parent Folder
       tags:
       - Folders
+  /user/background:
+    put:
+      description: Get Background Choices
+      operationId: UploadBackground
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/StringResponse'
+      summary: Get Background Choices
+      tags:
+      - Background
   /users/:
     get:
       description: Get All Users. Must be Admin using the new mediator pattern

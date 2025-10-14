@@ -1,7 +1,7 @@
 import { A, useNavigate } from '@solidjs/router';
 import { createSignal, createResource } from 'solid-js';
-import { UsersApi, BackgroundApi } from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePublicApi } from '@/utils/useApi';
 
 const Login = () => {
 	const [emailOrUsername, setEmailOrUsername] = createSignal('');
@@ -11,15 +11,16 @@ const Login = () => {
 
 	const auth = useAuth();
 	const navigate = useNavigate();
-	const api = new UsersApi();
+	const api = usePublicApi();
 
 	const [defaultBackground] = createResource(async () => {
-		const api = new BackgroundApi();
-		const response = await api.getDefaultBackground();
+		const response = await api.background.getDefaultBackground();
 		if (response.success && response.data) {
 			return response.data;
 		} else {
-			throw new Error('Failed to fetch default background: ' + response.message);
+			throw new Error(
+				'Failed to fetch default background: ' + response.message,
+			);
 		}
 	});
 
@@ -39,7 +40,7 @@ const Login = () => {
 				? { email: emailOrUsername(), password: password() }
 				: { username: emailOrUsername(), password: password() };
 
-			const response = await api.login({
+			const response = await api.users.login({
 				loginRequest,
 			});
 
@@ -57,15 +58,13 @@ const Login = () => {
 	};
 
 	return (
-		<div 
+		<div
 			class="min-h-screen flex items-center justify-center px-4"
-			style={{ "background-image": `url(${defaultBackground()})` }}
+			style={{ 'background-image': `url(${defaultBackground()})` }}
 		>
 			<div class="max-w-md w-full space-y-8 bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-8 shadow-lg">
 				<div class="text-center">
-					<h2 class="text-3xl font-bold text-white">
-						Sign in to your account
-					</h2>
+					<h2 class="text-3xl font-bold text-white">Sign in to your account</h2>
 					<p class="mt-2 text-sm text-white/80">
 						Don't have an account?{' '}
 						<A
@@ -119,7 +118,9 @@ const Login = () => {
 					</div>
 
 					{error() && (
-						<div class="text-red-300 text-sm text-center bg-red-500/20 backdrop-blur-sm border border-red-400/30 rounded-md p-2">{error()}</div>
+						<div class="text-red-300 text-sm text-center bg-red-500/20 backdrop-blur-sm border border-red-400/30 rounded-md p-2">
+							{error()}
+						</div>
 					)}
 
 					<div>

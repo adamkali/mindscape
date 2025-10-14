@@ -30,9 +30,9 @@ install: ## Install all dependencies
 	@echo "$(YELLOW)Installing Go dependencies...$(NC)"
 	go mod download
 	go mod tidy
-	@if [ -d "./frontend" ]; then \
+	@if [ -d "./web" ]; then \
 		echo "$(YELLOW)Installing frontend dependencies...$(NC)"; \
-		cd ./frontend && pnpm install; \
+		cd ./web && pnpm install; \
 	fi
 
 setup: install ## Setup development environment
@@ -42,19 +42,25 @@ setup: install ## Setup development environment
 	@echo "$(GREEN)Development environment ready!$(NC)"
 
 # Build
-build-backend: ## Build backend binary
+build-backend: build-frontend ## Build backend binary
 	@echo "$(YELLOW)Building backend...$(NC)"
 	@mkdir -p $(BINARY_DIR)
 	go build -ldflags="-s -w" -o $(BINARY_PATH) .
 	@echo "$(GREEN)Backend built successfully: $(BINARY_PATH)$(NC)"
 
+build-debug: build-frontend ## Build backend binary with debug symbols for delve
+	@echo "$(YELLOW)Building backend with debug symbols...$(NC)"
+	@mkdir -p $(BINARY_DIR)
+	go build -gcflags="all=-N -l" -o $(BINARY_PATH) .
+	@echo "$(GREEN)Debug backend built successfully: $(BINARY_PATH)$(NC)"
+
 build-frontend: ## Build frontend
-	@if [ -d "./frontend" ]; then \
+	@if [ -d "./web" ]; then \
 		echo "$(YELLOW)Building frontend...$(NC)"; \
-		cd ./frontend && pnpm format && pnpm build; \
+		cd ./web && pnpm build; \
 		echo "$(GREEN)Frontend built successfully$(NC)"; \
 	else \
-		echo "$(YELLOW)No frontend directory found, skipping...$(NC)"; \
+		echo "$(YELLOW)No web directory found, skipping...$(NC)"; \
 	fi
 
 build: build-backend build-frontend ## Build all components

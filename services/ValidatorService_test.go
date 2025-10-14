@@ -1717,4 +1717,190 @@ func Test_CreateBookmarkRequest(t *testing.T) {
 }
 
 // </method>
+
+// <method var=services.ValidatorService.ValidateMoveBookmarkRequest>
+// <fixtures>
+// <fixture.default/>
+func MoveBookmarkRequestJson() map[string]any {
+	return map[string]any{
+		"userId":      "e38e78a4-2ca3-4c59-a3ea-a2019866e593",
+		"bookmarkId": "f47f89c5-ebb2-4f04-c913-f5f5f80eaf64",
+		"newParentId": "34789a5b-daa1-4f03-b912-e4e4e79dae53",
+	}
+}
+
+func WithNilMoveUserID(request map[string]any) map[string]any {
+	delete(request, "userId")
+	return request
+}
+
+func WithNilMoveBookmarkID(request map[string]any) map[string]any {
+	delete(request, "bookmarkId")
+	return request
+}
+
+func WithNilMoveParentID(request map[string]any) map[string]any {
+	delete(request, "newParentId")
+	return request
+}
+
+func WithInvalidMoveUserID(request map[string]any) map[string]any {
+	request["userId"] = "invalid-uuid"
+	return request
+}
+
+func WithInvalidMoveBookmarkID(request map[string]any) map[string]any {
+	request["bookmarkId"] = "invalid-uuid"
+	return request
+}
+
+func WithInvalidMoveParentID(request map[string]any) map[string]any {
+	request["newParentId"] = "invalid-uuid"
+	return request
+}
+
+// </fixtures>
+// <runners>
+func Run_ValidateMoveBookmarkRequest(s services.ValidatorService) (*requests.MoveBookmarkRequest, error) {
+	return s.ValidateMoveBookmarkRequest(NewEchoContext(Request(
+		http.MethodPatch,
+		"/api/bookmarks/move",
+		MoveBookmarkRequestJson(),
+	)))
+}
+
+func Run_ValidateMoveBookmarkRequest_WithNilMoveUserID(s services.ValidatorService) (*requests.MoveBookmarkRequest, error) {
+	return s.ValidateMoveBookmarkRequest(NewEchoContext(Request(
+		http.MethodPatch,
+		"/api/bookmarks/move",
+		WithNilMoveUserID(MoveBookmarkRequestJson()),
+	)))
+}
+
+func Run_ValidateMoveBookmarkRequest_WithNilMoveBookmarkID(s services.ValidatorService) (*requests.MoveBookmarkRequest, error) {
+	return s.ValidateMoveBookmarkRequest(NewEchoContext(Request(
+		http.MethodPatch,
+		"/api/bookmarks/move",
+		WithNilMoveBookmarkID(MoveBookmarkRequestJson()),
+	)))
+}
+
+func Run_ValidateMoveBookmarkRequest_WithNilMoveParentID(s services.ValidatorService) (*requests.MoveBookmarkRequest, error) {
+	return s.ValidateMoveBookmarkRequest(NewEchoContext(Request(
+		http.MethodPatch,
+		"/api/bookmarks/move",
+		WithNilMoveParentID(MoveBookmarkRequestJson()),
+	)))
+}
+
+func Run_ValidateMoveBookmarkRequest_WithInvalidMoveUserID(s services.ValidatorService) (*requests.MoveBookmarkRequest, error) {
+	return s.ValidateMoveBookmarkRequest(NewEchoContext(Request(
+		http.MethodPatch,
+		"/api/bookmarks/move",
+		WithInvalidMoveUserID(MoveBookmarkRequestJson()),
+	)))
+}
+
+func Run_ValidateMoveBookmarkRequest_WithInvalidMoveBookmarkID(s services.ValidatorService) (*requests.MoveBookmarkRequest, error) {
+	return s.ValidateMoveBookmarkRequest(NewEchoContext(Request(
+		http.MethodPatch,
+		"/api/bookmarks/move",
+		WithInvalidMoveBookmarkID(MoveBookmarkRequestJson()),
+	)))
+}
+
+func Run_ValidateMoveBookmarkRequest_WithInvalidMoveParentID(s services.ValidatorService) (*requests.MoveBookmarkRequest, error) {
+	return s.ValidateMoveBookmarkRequest(NewEchoContext(Request(
+		http.MethodPatch,
+		"/api/bookmarks/move",
+		WithInvalidMoveParentID(MoveBookmarkRequestJson()),
+	)))
+}
+
+// </runners>
+// <tests>
+// <evaluators>
+func ValidateMoveBookmarkRequest_Default(t *testing.T) {
+	r, e := Run_ValidateMoveBookmarkRequest(services.ValidatorService{})
+	assert.NoError(t, e)
+	assert.Equal(t, r.UserID.String(), "e38e78a4-2ca3-4c59-a3ea-a2019866e593")
+	assert.Equal(t, r.BookmarkID.String(), "f47f89c5-ebb2-4f04-c913-f5f5f80eaf64")
+	assert.Equal(t, r.NewParentID.String(), "34789a5b-daa1-4f03-b912-e4e4e79dae53")
+}
+
+func ValidateMoveBookmarkRequest_WithNilMoveUserID(t *testing.T) {
+	r, e := Run_ValidateMoveBookmarkRequest_WithNilMoveUserID(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"User ID cannot be null",
+	)
+	assert.Nil(t, r)
+}
+
+func ValidateMoveBookmarkRequest_WithNilMoveBookmarkID(t *testing.T) {
+	r, e := Run_ValidateMoveBookmarkRequest_WithNilMoveBookmarkID(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"Bookmark ID cannot be null",
+	)
+	assert.Nil(t, r)
+}
+
+func ValidateMoveBookmarkRequest_WithNilMoveParentID(t *testing.T) {
+	r, e := Run_ValidateMoveBookmarkRequest_WithNilMoveParentID(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.EqualError(
+		t,
+		e,
+		"New parent folder ID cannot be null - bookmarks must belong to a folder",
+	)
+	assert.Nil(t, r)
+}
+
+func ValidateMoveBookmarkRequest_WithInvalidMoveUserID(t *testing.T) {
+	r, e := Run_ValidateMoveBookmarkRequest_WithInvalidMoveUserID(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.Contains(t, e.Error(), "invalid UUID length: 12")
+	assert.Nil(t, r)
+}
+
+func ValidateMoveBookmarkRequest_WithInvalidMoveBookmarkID(t *testing.T) {
+	r, e := Run_ValidateMoveBookmarkRequest_WithInvalidMoveBookmarkID(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.Contains(t, e.Error(), "invalid UUID length: 12")
+	assert.Nil(t, r)
+}
+
+func ValidateMoveBookmarkRequest_WithInvalidMoveParentID(t *testing.T) {
+	r, e := Run_ValidateMoveBookmarkRequest_WithInvalidMoveParentID(services.ValidatorService{})
+	assert.Error(t, e)
+	assert.Contains(t, e.Error(), "invalid UUID length: 12")
+	assert.Nil(t, r)
+}
+
+// </evaluators>
+// <map/>
+var Map_ValidateMoveBookmarkRequest = map[string]func(*testing.T){
+	"Default":                      ValidateMoveBookmarkRequest_Default,
+	"WithNilMoveUserID":           ValidateMoveBookmarkRequest_WithNilMoveUserID,
+	"WithNilMoveBookmarkID":       ValidateMoveBookmarkRequest_WithNilMoveBookmarkID,
+	"WithNilMoveParentID":         ValidateMoveBookmarkRequest_WithNilMoveParentID,
+	"WithInvalidMoveUserID":       ValidateMoveBookmarkRequest_WithInvalidMoveUserID,
+	"WithInvalidMoveBookmarkID":   ValidateMoveBookmarkRequest_WithInvalidMoveBookmarkID,
+	"WithInvalidMoveParentID":     ValidateMoveBookmarkRequest_WithInvalidMoveParentID,
+}
+
+// <hook/>
+func Test_ValidateMoveBookmarkRequest(t *testing.T) {
+	fmt.Println("Test_ValidateMoveBookmarkRequest")
+	for k, v := range Map_ValidateMoveBookmarkRequest {
+		t.Run(k, v)
+	}
+}
+
+// </method>
 // </service>

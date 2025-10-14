@@ -249,7 +249,7 @@ func (uc *UserController) GetBackgroundChoices(ctx echo.Context) error {
 // @Summary Get Background Choices
 // @Description Get Background Choices
 //
-// @ID          GetBackgroundChoices
+// @ID          UploadBackground 
 // @Tags        Background
 // @Produce     json
 // @Success     200                 {object}     responses.StringResponse

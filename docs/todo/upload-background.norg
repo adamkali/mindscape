@@ -1,0 +1,25 @@
+@document.meta
+title: upload-background
+description: 
+authors: Adam Kalinowski
+categories: [
+	planning
+	architecture
+	widgets
+]
+created: 2025-10-02T17:22:42-0500
+updated: 2025-10-02T17:27:31-0500
+version: 1.1.1
+@end
+
+* upload-background
+** Overview
+   This endpoint allows users to upload a custom background image for their profile.
+   The user wants to add something to their profile, so they add a background to their mindscape.
+   The user uploads a picture of their choice, but right now it does not get saved to the database.
+** ( ) Fix
+   - ( ) Need to allow for any one to upload a background image. and have that be saved to their user table and their bucket. 
+   - ( ) Need to have it show up as a choices in the edit profile page. 
+   - ( ) Need to have the ability to delete a background image.
+   - ( ) Need to look into optimizing speed of the loading on the frontend.
+

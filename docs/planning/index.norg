@@ -3,7 +3,7 @@ title: index
 description: This page is meant to do all the planning and organization of the project.
 authors: Adam Kalinowski
 created: 2025-09-26T16:07:46-0500
-updated: 2025-09-26T16:18:50-0500
+updated: 2025-10-10T15:03:36-0500
 version: 1.1.1
 @end
 
@@ -13,20 +13,40 @@ version: 1.1.1
 
 ** Treeview Functionality
    - ( ) Treeview
-   -- ( ) Allow for movement of nodes with in the treeview
-   --- (=) allow for dragging of nodes
+   -- (x) Allow for movement of nodes with in the treeview
+   --- (x) Folders
+   --- ( ) Bookmarks
    -- ( ) Allow for deletion of nodes with in the treeview
+   --- ( ) Folders
+   --- (x) Bookmarks
    -- ( ) Allow for creation of new nodes with in the treeview
+   --- ( ) At root (id is null)
+   ---- ( ) Folders
+   --- (x) At node (id is not null)
+   ---- (x) Folders
+   ---- (x) Bookmarks
    -- ( ) Make sure that no node is selected when page is loaded
    -- ( ) Make sure that when clicking outside of the treeview, selected node is deselected
-   -- ( ) Have Favicons rendered on the bookmark nodes 
-** ( ) UI Goodies
-   - ( ) Make sure that the treeview is scrollable
-   - ( ) Finalize the UI design language with repeatable desgins
-   - ( ) Allow connecting of searching the web in the navbar
-   -- ( ) Brave bar
-   -- ( ) Youtube bar
-   -- ( ) Github bar
-   -- ( ) SearXNG bar
+   -- (x) Have Favicons rendered on the bookmark nodes 
+   - ( ) {** WebP Conversion Plan}[WebP Conversion Plan]
+   - ( ) {** Widget System Architecture}[Widget System Architecture]
+** (x) UI Goodies
+   - (=) Make sure that the treeview is scrollable
+   - (x) Finalize the UI design language with repeatable desgins
+   - (x) Allow connecting of searching the web in the navbar
+   -- (x) Brave bar
+   -- (x) Youtube bar
+   -- (x) Github bar
+   -- (x) SearXNG bar
+
+
+* Refernces
+** WebP Conversion Plan
+   - [WebP Conversion Plan]{:./webp-conversion-plan.norg:}
+** Widget System Architecture
+   - [Widget System Architecture]{:./widget-system-architecture.norg:}
+
+
+
 
 

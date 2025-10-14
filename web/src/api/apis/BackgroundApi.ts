@@ -83,4 +83,32 @@ export class BackgroundApi extends runtime.BaseAPI {
         return await response.value();
     }
 
+    /**
+     * Get Background Choices
+     * Get Background Choices
+     */
+    async uploadBackgroundRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StringResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/user/background`,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => StringResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Background Choices
+     * Get Background Choices
+     */
+    async uploadBackground(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StringResponse> {
+        const response = await this.uploadBackgroundRaw(initOverrides);
+        return await response.value();
+    }
+
 }

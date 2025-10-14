@@ -35,6 +35,8 @@ func RegisterRoutes(e *echo.Echo, config *configuration.Configuration) {
 	e.Static("/assets", "assets")
 	e.Static("/public", "public")
 
+	e.File("/favicon.ico", "assets/svgs/icon.svg")
+	e.File("/banner.svg", "assets/svgs/banner-logo.svg")
 	e.GET("/api/_health", func(ctx echo.Context) error {
 		return ctx.JSON(http.StatusOK, map[string]any{"ok": true})
 	})

@@ -1,4 +1,6 @@
-# CLAUDE.md - Mindscape Project Architecture
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
@@ -309,14 +311,44 @@ go test ./models/handlers/user_handlers -run Test_RegisterHandler -v
 go test ./models/handlers/folder_handlers -v
 go test ./models/handlers/folder_handlers -run Test_CreateFolderHandler -v
 go test ./models/handlers/folder_handlers -run Test_GetRootHandler -v
+
+# Test with coverage (use Makefile commands)
+make test-coverage
+make test-race
 ```
 
 ## Configuration
 
-- **Environment-specific configs**: `config/development.yaml`, etc.
-- **Database**: PostgreSQL connection configuration
-- **Storage**: MinIO/S3 configuration  
+- **Environment-specific configs**: `config/development.yaml`, `config/production.yaml`
+- **Database**: PostgreSQL connection configuration with SQLC for type-safe queries
+- **Storage**: MinIO/S3 configuration for file uploads
+- **Cache**: Redis configuration for session management
 - **Server**: Configurable host/port (default: 0.0.0.0:60000)
+- **JWT**: Authentication token configuration
+- **API Generation**: Auto-generated TypeScript client in `web/src/api/`
+
+## Development Workflow
+
+### Database Operations
+```bash
+# Run database migrations
+go run main.go migrate up
+go run main.go migrate down
+
+# Generate SQLC code from SQL queries
+sqlc generate
+```
+
+### Frontend API Client Generation
+The frontend API client is auto-generated from OpenAPI specs. After backend changes:
+```bash
+# Generate new Swagger docs
+make swagger
+go run main.go swag
+
+# Frontend will automatically regenerate API client on next build
+cd web && pnpm build
+```
 
 ## Deployment
 

@@ -19,7 +19,7 @@ type FolderController struct {
 }
 
 func (uc FolderController) ControllerName() string {
-	return uc.Name	
+	return uc.Name
 }
 
 func BuildFolderController(p *Registrar) FolderController {
@@ -128,10 +128,35 @@ func (folderController FolderController) DeleteFolder(e echo.Context) error {
 	).Handle().JSON()
 }
 
+// @Summary Move a Folder
+// @Description Move a Folder by Authorization Header
+//
+// @ID          MoveFolder
+// @Tags        Folders
+// @Accept      json
+// @Produce     json
+// @Param       MoveFolderRequest body         requests.MoveFolderRequest true "Move Folder Request"
+// @Param       Authorization       header       string                         true "Authorization Header"     default("Bearer token")
+// @Success     200                 {object}     responses.FolderResponse
+// @Failure     401                 {object}     responses.FolderResponse
+// @Failure     403                 {object}     responses.FolderResponse
+// @Failure     404                 {object}     responses.FolderResponse
+// @Failure     500                 {object}     responses.FolderResponse
+// @Router      /folders [patch]
+func (folderController FolderController) MoveFolder(e echo.Context) error {
+	return folder_handlers.NewMoveHandler(
+		e,
+		*folderController.ValidatorService,
+		folderController.FolderService,
+		folderController.AuthService,
+	).Handle().JSON()
+}
+
 func (folderController FolderController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	api := e.Group("/api" + folderController.Name)
 	api.GET("", folderController.GetRootFolders, authMiddleware)
 	api.GET("/:folder_id", folderController.GetFolderByID, authMiddleware)
 	api.POST("", folderController.CreateFolder, authMiddleware)
+	api.PATCH("", folderController.MoveFolder, authMiddleware)
 	api.DELETE("/:folder_id", folderController.DeleteFolder, authMiddleware)
 }

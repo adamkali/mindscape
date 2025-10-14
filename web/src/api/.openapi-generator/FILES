@@ -9,12 +9,14 @@ models/BookmarksResponse.ts
 models/DeleteUserResponse.ts
 models/LoginRequest.ts
 models/LoginResponse.ts
+models/MoveBookmarkRequest.ts
 models/NewUserRequest.ts
 models/RepositoryBookmark.ts
 models/RepositoryCreateBookmarkParams.ts
 models/RepositoryCreateFolderParams.ts
 models/RepositoryFolder.ts
 models/RepositoryNote.ts
+models/RequestsMoveFolderRequest.ts
 models/ResponsesFolderData.ts
 models/ResponsesFolderResponse.ts
 models/ResponsesFoldersResponse.ts

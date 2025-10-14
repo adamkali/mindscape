@@ -15,5 +15,8 @@ type IHandler interface {
 func Lock(h IHandler, code int, err error) IHandler {
 	h.SetCode(code)
 	h.SetError(fmt.Errorf("%d Error: %s", code, err.Error()))
+	// get the handler name
+	typeName := fmt.Sprintf("%T", h)
+	fmt.Printf("[ERROR] %s.Lock{ err: %v }\n", typeName, err)
 	return h
 }

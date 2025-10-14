@@ -1,7 +1,6 @@
 import { cn } from '@/utils/cn';
 import { type ComponentProps, type JSX } from 'solid-js';
 
-
 interface InputProps extends ComponentProps<'input'> {
 	variant: 'primary' | 'secondary' | 'tertiary' | 'danger';
 	label: JSX.Element;

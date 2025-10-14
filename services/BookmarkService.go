@@ -165,16 +165,11 @@ func (bookmarkService BookmarkService) Move(params *repository.MoveBookmarkParam
 	}
 	defer tx.Rollback(bookmarkService.ctx)
 	repo := repository.New(tx)
-	err = repo.MoveBookmark(bookmarkService.ctx, *params)
+	bookmark, err := repo.MoveBookmark(bookmarkService.ctx, *params)
 	if err != nil {
 		return nil, err
 	}
 	tx.Commit(bookmarkService.ctx)
-
-	bookmark, err := repo.FindBookmarkById(bookmarkService.ctx, params.ID)
-	if err != nil {
-		return nil, err
-	}
 	return &bookmark, nil
 }
 func (bookmarkService BookmarkService) Remove(id uuid.UUID) error {

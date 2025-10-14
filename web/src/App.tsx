@@ -1,10 +1,5 @@
 import { Route, Router } from '@solidjs/router';
-import {
-	Home,
-	EditProfile,
-	Login,
-	Signup,
-} from '@/pages';
+import { Home, EditProfile, Login, Signup } from '@/pages';
 import { Showcase } from './pages/admin';
 
 import ProtectedRoute from '@/components/ProtectedRoute';

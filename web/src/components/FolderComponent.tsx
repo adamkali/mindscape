@@ -1,11 +1,6 @@
-import {
-	FoldersApi,
-	type ResponsesFolderData,
-	type RepositoryBookmark,
-	BookmarksApi,
-} from '@/api';
+import { type ResponsesFolderData, type RepositoryBookmark } from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { cn } from '@/utils/cn';
+import { useAuthenticatedApi } from '@/utils/useApi';
 import {
 	createMemo,
 	createSignal,
@@ -15,14 +10,14 @@ import {
 } from 'solid-js';
 import { Button } from './atoms';
 import BookmarkComponent from './BookmarkComponent';
-import { DeleteIcon } from './icons';
+import FolderCard from './FolderCard';
 
 interface FolderComponentProps extends ComponentProps<'div'> {
 	folder: ResponsesFolderData;
 	selectedFolder: () => string;
 	setSelectedFolder: (id: string) => void;
 	deleteFolder: (id: string) => void;
-	deleteBookmark?: (bookmarkId: string, parentFolderId: string) => void;
+	deleteBookmark?: (bookmarkId: string) => void;
 	showCreateFolder: (folderBookmarkRefresh?: () => void) => void;
 	indent: number;
 }
@@ -31,7 +26,7 @@ export default function FolderComponent(props: FolderComponentProps) {
 	const { folder, selectedFolder, setSelectedFolder, deleteFolder, indent } =
 		props;
 
-	const foldersApi = new FoldersApi();
+	const api = useAuthenticatedApi();
 	const auth = useAuth();
 
 	const [isFolderOpen, setIsFolderOpen] = createSignal(false);
@@ -65,12 +60,13 @@ export default function FolderComponent(props: FolderComponentProps) {
 		} else {
 			setIsFolderOpen(true);
 			// try to get the folder content from the server
-			const response = await foldersApi.getFolders({
+			const response = await api.folders.getFolders({
 				folderId: folder.id || '',
 				authorization: `Bearer ${auth.token()}`,
 			});
-			if (response.success && response.data?.children) {
+			if (response.success && response.data) {
 				setChildren(response.data.children || []);
+				setBookmarks(response.data.bookmarks || []);
 				setIsFolderOpen(true);
 			} else {
 				console.error(
@@ -84,7 +80,7 @@ export default function FolderComponent(props: FolderComponentProps) {
 	};
 
 	const refreshBookmarks = async () => {
-		const response = await new BookmarksApi().align({
+		const response = await api.bookmarks.align({
 			parentId: folder.id || '',
 			authorization: `Bearer ${auth.token()}`,
 		});
@@ -103,6 +99,11 @@ export default function FolderComponent(props: FolderComponentProps) {
 
 	const renderChildren = () =>
 		createMemo(() => {
+			console.log({
+				'Rendering children for folder:': folder.id,
+				'Children:': children(),
+				'Bookmarks:': bookmarks(),
+			});
 			return (
 				<div class="space-y-4">
 					<For each={children()}>
@@ -146,44 +147,84 @@ export default function FolderComponent(props: FolderComponentProps) {
 			);
 		}, [children]);
 
-	const childClassName = (): string => {
-		let isFolder = '';
-		if (folder.id === selectedFolder()) {
-			isFolder = 'bg-white/40 backdrop-blur-md border-white/50';
+
+	const handleDrop = async (data: any) => {
+		console.log('Drop data:', data, 'into folder:', folder.id);
+		console.log(`id_change::dragged_in_node: ${data.id} (${data.type}) -> ${folder.id}`);
+		
+		if (data.type === 'folder' && data.id && folder.id) {
+			// Prevent dropping folder into itself
+			if (data.id === folder.id) {
+				alert('Cannot move folder into itself');
+				return;
+			}
+			
+			try {
+				const response = await api.folders.moveFolder({
+					moveFolderRequest: {
+						userId: auth.user()?.id,
+						folderId: data.id,
+						newParentId: folder.id,
+					},
+					authorization: `Bearer ${auth.token()}`,
+				});
+				
+				if (response.success) {
+					console.log('Folder moved successfully:', response.data);
+					// Refresh the folder to show the moved item
+					await openFolder();
+				} else {
+					console.error('Failed to move folder:', response.message);
+					alert(`Failed to move folder: ${response.message}`);
+				}
+			} catch (error) {
+				console.error('Error moving folder:', error);
+				alert(`Error moving folder: ${error}`);
+			}
+		} else if (data.type === 'bookmark' && data.id && folder.id) {
+			try {
+				const response = await api.bookmarks.moveBookmark({
+					moveBookmarkRequest: {
+						userId: auth.user()?.id,
+						bookmarkId: data.id,
+						newParentId: folder.id,
+					},
+					authorization: `Bearer ${auth.token()}`,
+				});
+				
+				if (response.success) {
+					console.log('Bookmark moved successfully:', response.data);
+					// Refresh the folder to show the moved item
+					await openFolder();
+					// Also refresh bookmarks to update the display
+					await refreshBookmarks();
+				} else {
+					console.error('Failed to move bookmark:', response.message);
+					alert(`Failed to move bookmark: ${response.message}`);
+				}
+			} catch (error) {
+				console.error('Error moving bookmark:', error);
+				alert(`Error moving bookmark: ${error}`);
+			}
+		} else {
+			console.warn('Invalid drop data or missing IDs:', data);
 		}
-		return cn(
-			`flex flex-row items-center py-1 px-2 cursor-pointer bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30 rounded-lg
-		shadow-md hover:shadow-lg transition-all duration-200 shadow-slate-900/80 ease-in-out space-x-1 justify-between w-64`,
-			isFolder,
-		);
 	};
 
 	return (
 		<>
-			<div
-				class={childClassName()}
-				style={{ 'margin-left': indentNowCN() }}
-				onClick={() => {
-					setSelectedFolder(folder.id || '');
-					openFolder();
-				}}
-			>
-				<div>
-					<span class="mr-2 text-base font-bold">{folder.name}</span>
-				</div>
-				<Button
-					variant="danger"
-					class="p-1 text-xs"
-					onClick={(e) => {
-						e.preventDefault();
-						e.stopPropagation();
-						if (folder.id) {
-							deleteFolder(folder.id);
-						}
+			<div style={{ 'margin-left': indentNowCN() }}>
+				<FolderCard
+					folder={folder}
+					isSelected={folder.id === selectedFolder()}
+					onSelect={(folderId) => {
+						setSelectedFolder(folderId);
+						openFolder();
 					}}
-				>
-					<DeleteIcon />
-				</Button>
+					onDelete={deleteFolder}
+					onDrop={handleDrop}
+					draggable={true}
+				/>
 			</div>
 			{isFolderOpen() && renderChildren()}
 		</>

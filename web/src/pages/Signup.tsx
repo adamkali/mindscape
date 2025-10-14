@@ -21,7 +21,9 @@ const Signup = () => {
 		if (response.success && response.data) {
 			return response.data;
 		} else {
-			throw new Error('Failed to fetch default background: ' + response.message);
+			throw new Error(
+				'Failed to fetch default background: ' + response.message,
+			);
 		}
 	});
 
@@ -65,15 +67,13 @@ const Signup = () => {
 	};
 
 	return (
-		<div 
+		<div
 			class="min-h-screen flex items-center justify-center px-4"
-			style={{ "background-image": `url(${defaultBackground()})` }}
+			style={{ 'background-image': `url(${defaultBackground()})` }}
 		>
 			<div class="max-w-md w-full space-y-8 bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-8 shadow-lg">
 				<div class="text-center">
-					<h2 class="text-3xl font-bold text-white">
-						Create your account
-					</h2>
+					<h2 class="text-3xl font-bold text-white">Create your account</h2>
 					<p class="mt-2 text-sm text-white/80">
 						Already have an account?{' '}
 						<A

@@ -76,3 +76,28 @@
 		@apply bg-background text-foreground;
 	}
 }
+
+/* Custom scrollbar styling for treeview */
+.treeview-container {
+	/* Firefox */
+	scrollbar-width: thin;
+	scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.treeview-container::-webkit-scrollbar {
+	width: 8px;
+}
+
+.treeview-container::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.treeview-container::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.3);
+	border-radius: 4px;
+	backdrop-filter: blur(8px);
+}
+
+.treeview-container::-webkit-scrollbar-thumb:hover {
+	background: rgba(255, 255, 255, 0.4);
+}

@@ -269,3 +269,52 @@ func (r ValidatorService) ValidateBacgroundImageChange(e echo.Context) (*request
 	return validRequest, nil
 
 }
+
+func (r ValidatorService) ValidateMoveFolderRequest(e echo.Context) (*requests.MoveFolderRequest, error) {
+	validRequest := new(requests.MoveFolderRequest)
+	if err := e.Bind(&validRequest); err != nil {
+		return nil, err
+	}
+	
+	// Validate User ID
+	if validRequest.UserID == uuid.Nil {
+		return nil, errors.New("User ID cannot be null")
+	}
+	
+	// Validate Folder ID
+	if validRequest.FolderID == uuid.Nil {
+		return nil, errors.New("Folder ID cannot be null")
+	}
+	
+	// Validate that folder is not being moved to itself
+	if validRequest.NewParentID != nil && *validRequest.NewParentID == validRequest.FolderID {
+		return nil, errors.New("Cannot move folder to itself")
+	}
+	
+	return validRequest, nil
+}
+
+func (r ValidatorService) ValidateMoveBookmarkRequest(e echo.Context) (*requests.MoveBookmarkRequest, error) {
+	validRequest := new(requests.MoveBookmarkRequest)
+	if err := e.Bind(&validRequest); err != nil {
+		return nil, err
+	}
+	fmt.Printf("[INFO] ValidatorService.ValidateMoveBookmarkRequest{ validRequest: %v }\n", validRequest)
+	
+	// Validate User ID
+	if validRequest.UserID == uuid.Nil {
+		return nil, errors.New("User ID cannot be null")
+	}
+	
+	// Validate Bookmark ID
+	if validRequest.BookmarkID == uuid.Nil {
+		return nil, errors.New("Bookmark ID cannot be null")
+	}
+	
+	// Validate New Parent ID (bookmarks cannot be moved to root, must have a parent folder)
+	if validRequest.NewParentID == uuid.Nil {
+		return nil, errors.New("New parent folder ID cannot be null - bookmarks must belong to a folder")
+	}
+	
+	return validRequest, nil
+}

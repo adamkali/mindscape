@@ -1,7 +1,26 @@
-import { type Component, createEffect, createSignal, onMount } from 'solid-js';
+import {
+	type Component,
+	createEffect,
+	createSignal,
+	onMount,
+	For,
+} from 'solid-js';
 import { useAuth } from '../contexts/AuthContext';
 import { A } from '@solidjs/router';
 import { UsersApi } from '@/api';
+
+interface SearchEngine {
+	name: string;
+	placeholder: string;
+	searchUrl: (query: string) => string;
+}
+
+const searchEngine: SearchEngine = {
+	name: 'SearXNG',
+	placeholder: 'Search SearXNG...',
+	searchUrl: (query: string) =>
+		`https://search.kalilarosa.xyz/?q=${encodeURIComponent(query)}`,
+};
 
 export const Header: Component = () => {
 	const usersApi = new UsersApi();
@@ -44,6 +63,9 @@ export const Header: Component = () => {
 	const [profilePicture, setProfilePicture] = createSignal<string>('');
 	const [isLoadingPicture, setIsLoadingPicture] = createSignal(false);
 	const [darkMode, setDarkMode] = createSignal(false);
+	const [searchQueries, setSearchQueries] = createSignal<
+		Record<string, string>
+	>({});
 	const toggleDarkMode = () => {
 		const newDarkMode = !darkMode();
 		setDarkMode(newDarkMode);
@@ -54,16 +76,50 @@ export const Header: Component = () => {
 			document.documentElement.classList.remove('dark');
 		}
 	};
+
+	const handleSearch = (engine: SearchEngine, query: string) => {
+		if (query.trim()) {
+			window.open(engine.searchUrl(query.trim()), '_blank');
+		}
+	};
+
+	const updateSearchQuery = (engineName: string, query: string) => {
+		setSearchQueries((prev) => ({ ...prev, [engineName]: query }));
+	};
 	return (
-		<div class="border-b border-card-foreground/20 bg-card">
-			<div class="flex items-center justify-between p-4">
-				<h1 class="text-2xl font-bold text-foreground">Mindscape</h1>
+		<div class="border-b border-white/20 bg-white/10 backdrop-blur-lg shadow-lg shadow-slate-900/20">
+			<div class="flex items-center justify-between p-1">
+				{/* Logo */}
+				<a href="/">
+					<img width={200} src={'banner.svg'} alt="Mindscape" />
+				</a>
+
+				{/* Search Bars */}
+				<div class="flex items-center space-x-2">
+					<div class="flex items-center w-full">
+						<input
+							type="text"
+							placeholder={searchEngine.placeholder}
+							value={searchQueries()[searchEngine.name] || ''}
+							onInput={(e) =>
+								updateSearchQuery(searchEngine.name, e.currentTarget.value)
+							}
+							onKeyPress={(e) => {
+								if (e.key === 'Enter') {
+									handleSearch(searchEngine, e.currentTarget.value);
+									updateSearchQuery(searchEngine.name, '');
+								}
+							}}
+							class="px-3 py-1.5 text-xs bg-white/20 backdrop-blur-md border border-white/30 rounded-lg text-white placeholder:text-white/60 focus:outline-none focus:border-white/50 focus:bg-white/25 w-32 transition-all duration-200 shadow-sm hover:shadow-md"
+						/>
+					</div>
+				</div>
 
 				<div class="flex items-center space-x-4">
 					{/* Dark mode toggle */}
 					<button
 						onClick={toggleDarkMode}
-						class="p-2 rounded-lg bg-background hover:bg-background/80 text-foreground transition-colors"
+						class="p-2 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white/30 text-white transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
 						title="Toggle dark mode"
 					>
 						{darkMode() ? '☀' : '🌙'}
@@ -71,7 +127,7 @@ export const Header: Component = () => {
 
 					{/* Profile section */}
 					<div class="flex items-center space-x-3">
-						<div class="w-8 h-8 rounded-full overflow-hidden bg-card-foreground/20 flex items-center justify-center">
+						<div class="w-8 h-8 rounded-full overflow-hidden bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-lg">
 							{isLoadingPicture() ? (
 								<div class="text-xs text-foreground/60">...</div>
 							) : profilePicture() ? (
@@ -91,21 +147,21 @@ export const Header: Component = () => {
 
 						<A
 							href="/admin/showcase"
-							class="text-xs px-2 py-1 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 transition-colors"
+							class="text-xs px-3 py-1.5 bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-lg hover:bg-white/30 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
 						>
-							Dev Showcase	
+							Dev Showcase
 						</A>
 
 						<A
 							href="/edit-profile"
-							class="text-xs px-2 py-1 bg-secondary text-secondary-foreground rounded hover:bg-secondary/80 transition-colors"
+							class="text-xs px-3 py-1.5 bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-lg hover:bg-white/30 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
 						>
 							Edit
 						</A>
 
 						<button
 							onClick={handleLogout}
-							class="text-xs px-2 py-1 bg-background text-foreground rounded border border-card-foreground/20 hover:bg-background/80 transition-colors"
+							class="text-xs px-3 py-1.5 bg-white/15 backdrop-blur-md border border-white/25 text-white rounded-lg hover:bg-white/25 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
 						>
 							Logout
 						</button>

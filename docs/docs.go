@@ -146,11 +146,9 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/bookmarks/folder/{parent_id}": {
-            "get": {
-                "description": "Get all Bookmarks by Authorization Header and by the\nParentFolderId [parent_id]",
+            },
+            "patch": {
+                "description": "Move a Bookmark by Authorization Header, and my a\nParentFolderId [parent_id].",
                 "consumes": [
                     "application/json"
                 ],
@@ -160,8 +158,69 @@ const docTemplate = `{
                 "tags": [
                     "Bookmarks"
                 ],
-                "summary": "Get Bookmarks By Folder ID",
-                "operationId": "GetBookmarks",
+                "summary": "Move a Bookmark",
+                "operationId": "MoveBookmark",
+                "parameters": [
+                    {
+                        "description": "Move Bookmark Request",
+                        "name": "MoveBookmarkRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/MoveBookmarkRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"Bearer token\"",
+                        "description": "Authorization Header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/bookmarks/folder/{bookmark_id}": {
+            "delete": {
+                "description": "Delete a Bookmark by Authorization Header, and my a\nParentFolderId [parent_id].",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Delete a Bookmark",
+                "operationId": "DeleteBookmark",
                 "parameters": [
                     {
                         "type": "string",
@@ -175,7 +234,7 @@ const docTemplate = `{
                         "type": "string",
                         "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
                         "description": "Parent Folder ID",
-                        "name": "parent_id",
+                        "name": "bookmark_id",
                         "in": "path",
                         "required": true
                     }
@@ -206,9 +265,11 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "delete": {
-                "description": "Delete a Bookmark by Authorization Header, and my a\nParentFolderId [parent_id].",
+            }
+        },
+        "/bookmarks/folder/{parent_id}": {
+            "get": {
+                "description": "Get all Bookmarks by Authorization Header and by the\nParentFolderId [parent_id]",
                 "consumes": [
                     "application/json"
                 ],
@@ -218,8 +279,8 @@ const docTemplate = `{
                 "tags": [
                     "Bookmarks"
                 ],
-                "summary": "Delete a Bookmark",
-                "operationId": "DeleteBookmark",
+                "summary": "Get Bookmarks By Folder ID",
+                "operationId": "GetBookmarks",
                 "parameters": [
                     {
                         "type": "string",
@@ -375,6 +436,71 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "patch": {
+                "description": "Move a Folder by Authorization Header",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Folders"
+                ],
+                "summary": "Move a Folder",
+                "operationId": "MoveFolder",
+                "parameters": [
+                    {
+                        "description": "Move Folder Request",
+                        "name": "MoveFolderRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.MoveFolderRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"Bearer token\"",
+                        "description": "Authorization Header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    }
+                }
             }
         },
         "/folders/{folder_id}": {
@@ -484,6 +610,39 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/background": {
+            "put": {
+                "description": "Get Background Choices",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Background"
+                ],
+                "summary": "Get Background Choices",
+                "operationId": "UploadBackground",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
                         }
                     }
                 }
@@ -959,6 +1118,21 @@ const docTemplate = `{
                 }
             }
         },
+        "MoveBookmarkRequest": {
+            "type": "object",
+            "properties": {
+                "bookmarkId": {
+                    "type": "string"
+                },
+                "newParentId": {
+                    "description": "The parent folder to move the bookmark to cannot be null",
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
         "NewUserRequest": {
             "type": "object",
             "properties": {
@@ -1175,6 +1349,20 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.MoveFolderRequest": {
+            "type": "object",
+            "properties": {
+                "folderId": {
+                    "type": "string"
+                },
+                "newParentId": {
+                    "type": "string"
+                },
+                "userId": {
                     "type": "string"
                 }
             }

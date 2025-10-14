@@ -11,9 +11,9 @@ interface CardBodyProps extends ComponentProps<'div'> {
 	/** Body content */
 	children?: JSX.Element;
 	/** Padding variant for different content types */
-	padding?: CardPadding; 
-	yspacing?: CardSpacing; 
-	xspacing?: CardSpacing; 
+	padding?: CardPadding;
+	yspacing?: CardSpacing;
+	xspacing?: CardSpacing;
 }
 
 /**
@@ -76,7 +76,14 @@ export default function CardBody(props: CardBodyProps): JSX.Element {
 	};
 
 	return (
-		<div class={cn(cn(getPaddingClasses(), className), getSpacingClasses('y'), getSpacingClasses('x') )} {...bodyProps}>
+		<div
+			class={cn(
+				cn(getPaddingClasses(), className),
+				getSpacingClasses('y'),
+				getSpacingClasses('x'),
+			)}
+			{...bodyProps}
+		>
 			{children}
 		</div>
 	);

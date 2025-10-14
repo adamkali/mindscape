@@ -74,7 +74,9 @@ func (h *DeleteHandler) Handle() handlers.IHandler {
 		return handlers.Lock(h, 401, err)
 	}
 	var bookmarkID uuid.UUID
-	if bookmarkID, err = uuid.Parse(h.ctx.Param("bookmark_id")); err != nil {
+	bookmarkStringID := h.ctx.Param("bookmark_id")
+	fmt.Printf("[INFO] bookmarkStringID: %v\n", bookmarkStringID)
+	if bookmarkID, err = uuid.Parse(bookmarkStringID); err != nil {
 		return handlers.Lock(h, 400, err)
 	}
 	if h.data, err = h.BookmarkService.Get(bookmarkID); err != nil {

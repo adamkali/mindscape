@@ -1,9 +1,6 @@
 package user_handlers
 
 import (
-	"strings"
-	"time"
-
 	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
@@ -42,21 +39,7 @@ func (h *BackgroundChoicesHandler) Lock(code int, err error) *BackgroundChoicesH
 }
 
 func (h *BackgroundChoicesHandler) Handle() handlers.IHandler {
-	var urlstring string
-	urlstring, h.err = h.RedisService.Get("background_choices")
-	if h.err == nil {
-		h.urls = strings.Split(urlstring, ",")
-		return h
-	}
 	h.urls , h.err = h.MinioService.GetBackgroundChoices()
-	if h.err != nil {
-		return handlers.Lock(h,500, h.err)
-	}
-	h.err = h.RedisService.SetWithExpiration(
-		"background_choices",
-		strings.Join(h.urls, ","),
-		time.Hour*24*7,
-	)
 	if h.err != nil {
 		return handlers.Lock(h,500, h.err)
 	}
