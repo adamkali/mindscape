@@ -4,6 +4,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/url"
 	"time"
@@ -165,4 +166,38 @@ func (m *MinioService) GetBackgroundChoices() ([]string, error) {
 	}
 
 	return bakcgroundUrls, nil
+}
+
+func (m *MinioService) GetUserBackgroundChoices(user uuid.UUID) ([]string, error) {
+	reqParams := make(url.Values)
+	backgrounds := make([]minio.ObjectInfo, 0)
+	for objects := range m.client.ListObjects(m.ctx, user.String(), minio.ListObjectsOptions{
+		Recursive: false,
+	}) {
+		if err := objects.Err; err != nil {
+			return nil, err
+		}
+		backgrounds = append(backgrounds, objects)
+	}
+	reqParams.Set("response-content-disposition", "attachment; filename=\"beach.jpeg\"")
+
+	bakcgroundUrls := make([]string, len(backgrounds))
+	for i, background := range backgrounds {
+		presigedUrl, err := m.client.PresignedGetObject(m.ctx, user.String(), background.Key, time.Hour*24*7, reqParams)
+		if err != nil {
+			return nil, err
+		}
+		bakcgroundUrls[i] = presigedUrl.String()
+	}
+	return bakcgroundUrls, nil
+}
+
+func (m *MinioService) GetDefaultChoice(choice string) (string, error) {
+	reqParams := make(url.Values)
+	reqParams.Set("response-content-disposition", fmt.Sprintf("attachment; filename=\"%s\"", choice))
+	presigedUrl, err := m.client.PresignedGetObject(m.ctx, "mindspace", choice, time.Hour*24*7, reqParams)
+	if err != nil {
+		return "", err
+	}
+	return presigedUrl.String(), nil
 }

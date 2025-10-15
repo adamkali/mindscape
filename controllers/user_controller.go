@@ -267,6 +267,48 @@ func (uc UserController) UploadBackgound(ctx echo.Context) error{
 	).Handle().JSON()
 }
 
+// @Summary Get User Background Choice
+// @Description Get User Background Choice
+//
+// @ID          GetUserBackground 
+// @Tags        User 
+// @Param       Authorization       header       string                         true "admin header"     default(Bearer token)
+// @Param       bacgkround          query        string                         true "background"
+// @Produce     json
+// @Success     200                 {object}     responses.StringResponse
+// @Failure     404                 {object}     responses.StringResponse
+// @Failure     500                 {object}     responses.StringResponse
+// @Router      /user/background   [get]
+func (uc UserController) GetBackground(ctx echo.Context) error {
+	return handlers.NewBackgroundHandler(
+		ctx,
+		*uc.ValidatorService,
+		uc.AuthService,
+		uc.MinioService,
+	).Handle().JSON()
+	
+} 
+
+// @Summary Get User Background Choices
+// @Description Get User Backgrounds Uploaded to the server
+//
+// @ID          GetUserBackgroundChoices 
+// @Tags        User 
+// @Param       Authorization       header       string                         true "admin header"     default(Bearer token)
+// @Produce     json 
+// @Success     200                 {object}     responses.StringResponse
+// @Failure     404                 {object}     responses.StringResponse
+// @Failure     500                 {object}     responses.StringResponse
+// @Router      /user/background/choices   [get]
+func (uc UserController) GetUserBackgroundChoices(ctx echo.Context) error {
+	return handlers.NewUserBackgroundChoicesHandler(
+		ctx,
+		*uc.ValidatorService,
+		uc.AuthService,
+		uc.MinioService,
+	).Handle().JSON()
+}
+
 func (uc UserController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	// Register the namespaces for the endopoints
 	e.GET("/api/background", uc.GetDefaultBackground)
@@ -281,5 +323,7 @@ func (uc UserController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFun
 	api.POST("/creds", uc.UpdateUser, authMiddleware)
 	api.GET("/profile", uc.GetProfile, authMiddleware)
 	api.PUT("/backgound", uc.UploadBackgound, authMiddleware)
+	api.GET("/background", uc.GetBackground, authMiddleware)
+	api.GET("/background/choices", uc.GetUserBackgroundChoices, authMiddleware)
 	api.DELETE("/:user_id", uc.DeleteUser, authMiddleware)
 }

@@ -12,6 +12,8 @@ type IMinioService interface {
 	Upload(uploaderID uuid.UUID, uploadName string, uploadFile io.Reader, size int64) error
 	Get(uploaderID uuid.UUID, uploadName string) ([]byte, error)
 	GetPresigned(uploaderID uuid.UUID, uploadName string) (string, error)
+	GetUserBackgroundChoices(user uuid.UUID) ([]string, error)
 	GetDefault() (string, error)
 	GetBackgroundChoices() ([]string, error)
+	GetDefaultChoice(choice string) (string, error)
 }

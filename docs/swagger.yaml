@@ -702,6 +702,39 @@ paths:
       tags:
       - Folders
   /user/background:
+    get:
+      description: Get User Background Choice
+      operationId: GetUserBackground
+      parameters:
+      - default: Bearer token
+        description: admin header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: background
+        in: query
+        name: bacgkround
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/StringResponse'
+      summary: Get User Background Choice
+      tags:
+      - User
     put:
       description: Get Background Choices
       operationId: UploadBackground
@@ -723,6 +756,35 @@ paths:
       summary: Get Background Choices
       tags:
       - Background
+  /user/background/choices:
+    get:
+      description: Get User Backgrounds Uploaded to the server
+      operationId: GetUserBackgroundChoices
+      parameters:
+      - default: Bearer token
+        description: admin header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/StringResponse'
+      summary: Get User Background Choices
+      tags:
+      - User
   /users/:
     get:
       description: Get All Users. Must be Admin using the new mediator pattern

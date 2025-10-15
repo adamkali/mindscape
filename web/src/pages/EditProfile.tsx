@@ -1,6 +1,6 @@
 import { useNavigate } from '@solidjs/router';
 import { createEffect, createSignal, createResource, For, Show } from 'solid-js';
-import { UsersApi, BackgroundApi, type UpdateCredentialsRequest } from '@/api';
+import { UsersApi, BackgroundApi, UserApi, type UpdateCredentialsRequest } from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { EmptyGuid } from '@/utils';
 import { Header } from '@/components/Header';
@@ -34,30 +34,62 @@ const EditProfile = () => {
 
 	const [backgroundChoices] = createResource(async () => {
 		const backgroundApi = new BackgroundApi();
-		const response = await backgroundApi.getBackgroundChoices();
-		if (response.success && response.data) {
-			// Check if the response is already an array or needs JSON parsing
+		const userApi = new UserApi();
+
+		// Fetch global background choices
+		const globalResponse = await backgroundApi.getBackgroundChoices();
+		let globalChoices: string[] = [];
+
+		if (globalResponse.success && globalResponse.data) {
 			try {
-				// If it's a string, try to parse it as JSON
-				if (typeof response.data === 'string') {
-					return JSON.parse(response.data);
+				if (typeof globalResponse.data === 'string') {
+					globalChoices = JSON.parse(globalResponse.data);
+				} else {
+					globalChoices = globalResponse.data;
 				}
-				// If it's already an object/array, return it directly
-				return response.data;
 			} catch (error) {
-				// If JSON parsing fails, treat as a single URL or comma-separated URLs
-				console.warn('Failed to parse background choices as JSON, treating as string:', error);
-				if (typeof response.data === 'string') {
-					// Split by comma or newline in case it's a list of URLs
-					return response.data.split(/[,\n]/).map(url => url.trim()).filter(url => url);
+				console.warn('Failed to parse global background choices as JSON, treating as string:', error);
+				if (typeof globalResponse.data === 'string') {
+					globalChoices = globalResponse.data.split(/[,\n]/).map(url => url.trim()).filter(url => url);
+				} else {
+					globalChoices = [globalResponse.data];
 				}
-				return [response.data];
 			}
-		} else {
-			throw new Error(
-				'Failed to fetch background choices: ' + response.message,
-			);
 		}
+
+		// Fetch user-specific background choices if authenticated
+		let userChoices: string[] = [];
+		if (auth.token()) {
+			try {
+				const userResponse = await userApi.getUserBackgroundChoices({
+					authorization: `Bearer ${auth.token()}`,
+				});
+
+				if (userResponse.success && userResponse.data) {
+					try {
+						if (typeof userResponse.data === 'string') {
+							userChoices = JSON.parse(userResponse.data);
+						} else {
+							userChoices = userResponse.data;
+						}
+					} catch (error) {
+						console.warn('Failed to parse user background choices as JSON, treating as string:', error);
+						if (typeof userResponse.data === 'string') {
+							userChoices = userResponse.data.split(/[,\n]/).map(url => url.trim()).filter(url => url);
+						} else {
+							userChoices = [userResponse.data];
+						}
+					}
+				}
+			} catch (error) {
+				console.warn('Failed to fetch user background choices:', error);
+				// Continue with just global choices if user choices fail
+			}
+		}
+
+		// Combine both global and user-specific choices, removing duplicates
+		const allChoices = [...globalChoices, ...userChoices];
+		return [...new Set(allChoices)]; // Remove duplicates using Set
 	});
 
 	const [updateCredentialsRequest, setUpdateCredentialsRequest] = createSignal({
