@@ -43,6 +43,7 @@ func (h *BackgroundHandler) Handle() handlers.IHandler {
 	if err != nil {
 		return handlers.Lock(h, 401, err)
 	}
+
 	h.Query = h.ctx.QueryParam("url")
 	if h.Query == "" {
 		h.url, h.err = h.MinioService.GetDefault()

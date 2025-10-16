@@ -1,7 +1,8 @@
 import { useNavigate } from '@solidjs/router';
-import { createEffect, createSignal, createResource, For, Show } from 'solid-js';
-import { UsersApi, BackgroundApi, UserApi, type UpdateCredentialsRequest } from '@/api';
+import { createEffect, createSignal, For, Show } from 'solid-js';
+import { UsersApi, UserApi, type UpdateCredentialsRequest, ResponseError } from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { useBackground, useBackgroundStyle } from '@/hooks/useBackground';
 import { EmptyGuid } from '@/utils';
 import { Header } from '@/components/Header';
 import {
@@ -17,80 +18,15 @@ const EditProfile = () => {
 	const auth = useAuth();
 	const navigate = useNavigate();
 	const api = new UsersApi();
+	const { 
+		setUserBackground, 
+		currentBackground, 
+		backgroundChoices, 
+		isLoadingChoices 
+	} = useBackground();
+	const backgroundStyle = useBackgroundStyle();
 
 	const user = auth.user();
-
-	const [defaultBackground] = createResource(async () => {
-		const backgroundApi = new BackgroundApi();
-		const response = await backgroundApi.getDefaultBackground();
-		if (response.success && response.data) {
-			return response.data;
-		} else {
-			throw new Error(
-				'Failed to fetch default background: ' + response.message,
-			);
-		}
-	});
-
-	const [backgroundChoices] = createResource(async () => {
-		const backgroundApi = new BackgroundApi();
-		const userApi = new UserApi();
-
-		// Fetch global background choices
-		const globalResponse = await backgroundApi.getBackgroundChoices();
-		let globalChoices: string[] = [];
-
-		if (globalResponse.success && globalResponse.data) {
-			try {
-				if (typeof globalResponse.data === 'string') {
-					globalChoices = JSON.parse(globalResponse.data);
-				} else {
-					globalChoices = globalResponse.data;
-				}
-			} catch (error) {
-				console.warn('Failed to parse global background choices as JSON, treating as string:', error);
-				if (typeof globalResponse.data === 'string') {
-					globalChoices = globalResponse.data.split(/[,\n]/).map(url => url.trim()).filter(url => url);
-				} else {
-					globalChoices = [globalResponse.data];
-				}
-			}
-		}
-
-		// Fetch user-specific background choices if authenticated
-		let userChoices: string[] = [];
-		if (auth.token()) {
-			try {
-				const userResponse = await userApi.getUserBackgroundChoices({
-					authorization: `Bearer ${auth.token()}`,
-				});
-
-				if (userResponse.success && userResponse.data) {
-					try {
-						if (typeof userResponse.data === 'string') {
-							userChoices = JSON.parse(userResponse.data);
-						} else {
-							userChoices = userResponse.data;
-						}
-					} catch (error) {
-						console.warn('Failed to parse user background choices as JSON, treating as string:', error);
-						if (typeof userResponse.data === 'string') {
-							userChoices = userResponse.data.split(/[,\n]/).map(url => url.trim()).filter(url => url);
-						} else {
-							userChoices = [userResponse.data];
-						}
-					}
-				}
-			} catch (error) {
-				console.warn('Failed to fetch user background choices:', error);
-				// Continue with just global choices if user choices fail
-			}
-		}
-
-		// Combine both global and user-specific choices, removing duplicates
-		const allChoices = [...globalChoices, ...userChoices];
-		return [...new Set(allChoices)]; // Remove duplicates using Set
-	});
 
 	const [updateCredentialsRequest, setUpdateCredentialsRequest] = createSignal({
 		username: '',
@@ -106,7 +42,6 @@ const EditProfile = () => {
 	const [selectedFile, setSelectedFile] = createSignal<File | null>(null);
 	const [isLoading, setIsLoading] = createSignal(false);
 	const [isLoadingPicture, setIsLoadingPicture] = createSignal(false);
-	const [selectedBackground, setSelectedBackground] = createSignal<string>('');
 	const [customBackgroundFile, setCustomBackgroundFile] = createSignal<File | null>(null);
 	const [error, setError] = createSignal('');
 	const [success, setSuccess] = createSignal('');
@@ -126,12 +61,6 @@ const EditProfile = () => {
 		}
 	});
 
-	createEffect(() => {
-		// Set the initial selected background to the current default background
-		if (defaultBackground()) {
-			setSelectedBackground(defaultBackground()!);
-		}
-	});
 
 	const fetchProfilePicture = async () => {
 		if (!auth.token()) return;
@@ -265,10 +194,17 @@ const EditProfile = () => {
 		navigate('/');
 	};
 
-	const handleBackgroundSelect = (backgroundUrl: string) => {
-		setSelectedBackground(backgroundUrl);
-		setSuccess('Background updated! Changes are applied immediately.');
-		setError('');
+	const handleBackgroundSelect = async (backgroundUrl: string) => {
+		try {
+			await setUserBackground(backgroundUrl);
+			setSuccess('Background updated! Changes are applied immediately.');
+			setError('');
+		} catch (error: any) {
+			setError(error.message || 'Failed to update background');
+			if ((error as ResponseError).response?.status === 401) {
+				auth.logout();
+			}
+		}
 	};
 
 	const handleCustomBackgroundFileSelect = (e: Event) => {
@@ -276,10 +212,8 @@ const EditProfile = () => {
 		const file = target.files?.[0];
 		if (file) {
 			setCustomBackgroundFile(file);
-			// Create a local URL for immediate preview
-			const previewUrl = URL.createObjectURL(file);
-			setSelectedBackground(previewUrl);
-			setSuccess('Custom background selected! Upload to save permanently.');
+			// Note: Custom background upload functionality would need backend support
+			setSuccess('Custom background selected! Upload feature coming soon.');
 			setError('');
 		}
 	};
@@ -312,13 +246,7 @@ const EditProfile = () => {
 	return (
 		<div 
 			class="min-h-screen bg-background"
-			style={{ 
-				'background-image': `url(${selectedBackground() || defaultBackground()})`,
-				'background-size': 'cover',
-				'background-position': 'center center',
-				'background-repeat': 'no-repeat',
-				'background-attachment': 'fixed'
-			}}
+			style={backgroundStyle()}
 		>
 			<Header />
 			<div class="max-w-2xl mx-auto mt-4 space-y-4">
@@ -374,75 +302,82 @@ const EditProfile = () => {
 					</form>
 				</Card>
 				<Card variant="glass">
-					<CardHeader title="Update Credentials Data" subtitle="Update your credentials information. You do not need to change your password, just leave it blank." />
+					<CardHeader title="Account Credentials" subtitle="Update your account information and change your password" />
 					<form class="space-y-6" onSubmit={handleCredentialsSubmit}>
 						<CardBody padding="lg">
-							<div class="space-x-4 flex flex-row">
-								<div class="flex-1">
-									<Input
-										id="username"
-										name="username"
-										type="text"
-										required
-										placeholder="Enter your username"
-										value={updateCredentialsRequest().username}
-										onInput={(e) => handleUsernameChange(e)}
-										label="Username"
-										variant="primary"
-									/>
+							<div class="space-y-6">
+								{/* Account Information */}
+								<div>
+									<h3 class="text-lg font-medium text-white mb-4">Account Information</h3>
+									<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+										<Input
+											id="username"
+											name="username"
+											type="text"
+											required
+											placeholder="Enter your username"
+											value={updateCredentialsRequest().username}
+											onInput={(e) => handleUsernameChange(e)}
+											label="Username"
+										/>
+										<Input
+											id="email"
+											name="email"
+											type="email"
+											required
+											placeholder="Enter your email"
+											value={updateCredentialsRequest().email}
+											onInput={(e) => handleEmailChange(e)}
+											label="Email"
+										/>
+									</div>
 								</div>
 
-								<div class="flex-1">
-									<Input
-										id="email"
-										name="email"
-										type="email"
-										required
-										placeholder="Enter your email"
-										value={updateCredentialsRequest().email}
-										onInput={(e) => handleEmailChange(e)}
-										label="Email"
-										variant="primary"
-									/>
+								{/* Password Section */}
+								<div>
+									<h3 class="text-lg font-medium text-white mb-4">Change Password</h3>
+									<div class="space-y-4">
+										<Input
+											id="currentPassword"
+											name="currentPassword"
+											type="password"
+											placeholder="Enter your current password"
+											value={updateCredentialsRequest().oldPassword}
+											onInput={(e) => handleOldPasswordChange(e)}
+											label="Current Password"
+										/>
+										<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+											<Input
+												id="newPassword"
+												name="newPassword"
+												type="password"
+												placeholder="Enter your new password"
+												value={updateCredentialsRequest().password}
+												onInput={(e) => handlePasswordChange(e)}
+												label="New Password"
+											/>
+											<Input
+												id="confirmPassword"
+												name="confirmPassword"
+												type="password"
+												placeholder="Confirm your new password"
+												value={confirmPassword()}
+												onInput={(e) => handleConfirmPasswordChange(e)}
+												label="Confirm New Password"
+											/>
+										</div>
+										{!passwordMatch() && (
+											<div class="text-red-400 text-sm mt-2">Passwords do not match</div>
+										)}
+										<div class="text-sm text-white/70">
+											Leave password fields blank if you don't want to change your password.
+										</div>
+									</div>
 								</div>
 							</div>
-
-							<Input
-								id="password"
-								name="password"
-								type="password"
-								placeholder="Enter your Current Password"
-								value={updateCredentialsRequest().oldPassword}
-								onInput={(e) => handleOldPasswordChange(e)}
-								label="Current Password"
-								variant="primary"
-							/>
-							<Input
-								id="newPassword"
-								name="newPassword"
-								type="password"
-								placeholder="Enter your New Password"
-								value={updateCredentialsRequest().password}
-								onInput={(e) => handlePasswordChange(e)}
-								variant="primary"
-								label="New Password"
-							/>
-							<Input
-								id="confirmPassword"
-								name="confirmPassword"
-								type="password"
-								placeholder="Confirm your New Password"
-								value={confirmPassword()}
-								onInput={(e) => handleConfirmPasswordChange(e)}
-								variant="primary"
-								label="Confirm Password"
-							/>
-							{!passwordMatch() && (
-								<div class="text-red-400 text-sm">Passwords do not match</div>
-							)}
 						</CardBody>
 						<CardFooter>
-							<Button type="submit" disabled={isLoading()} variant="secondary">
+							<Button type="submit" disabled={isLoading() || !passwordMatch()} variant="secondary">
 								{isLoading() ? 'Updating...' : 'Update Credentials'}
 							</Button>
 							<Button type="button" onClick={handleCancel}>Cancel</Button>
@@ -483,11 +418,8 @@ const EditProfile = () => {
 							<label class="block text-sm font-medium text-white mb-4">
 								Choose from Available Backgrounds
 							</label>
-							<Show when={backgroundChoices.loading}>
+							<Show when={isLoadingChoices()}>
 								<div class="text-white/70">Loading backgrounds...</div>
-							</Show>
-							<Show when={backgroundChoices.error}>
-								<div class="text-red-400 text-sm">Failed to load background choices</div>
 							</Show>
 							<Show when={backgroundChoices()}>
 								<div class="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -495,7 +427,7 @@ const EditProfile = () => {
 										{(backgroundUrl) => (
 											<div 
 												class={`relative aspect-video rounded-lg overflow-hidden cursor-pointer border-2 transition-all duration-300 hover:scale-105 ${
-													selectedBackground() === backgroundUrl 
+													currentBackground() === backgroundUrl 
 														? 'border-white/70 ring-2 ring-white/50' 
 														: 'border-white/20 hover:border-white/40'
 												}`}
@@ -509,7 +441,7 @@ const EditProfile = () => {
 														(e.target as HTMLImageElement).style.display = 'none';
 													}}
 												/>
-												<Show when={selectedBackground() === backgroundUrl}>
+												<Show when={currentBackground() === backgroundUrl}>
 													<div class="absolute inset-0 bg-white/20 backdrop-blur-sm flex items-center justify-center">
 														<div class="text-white font-semibold">Selected</div>
 													</div>

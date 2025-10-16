@@ -75,6 +75,8 @@ swagger: ## Generate Swagger documentation
 		exit 1; \
 	fi
 
+swag: build-backend swagger
+
 # Development Servers
 dev: ## Start development server with hot reload
 	@echo "$(YELLOW)Starting development server with hot reload...$(NC)"

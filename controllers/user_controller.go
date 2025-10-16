@@ -249,16 +249,16 @@ func (uc *UserController) GetBackgroundChoices(ctx echo.Context) error {
 // @Summary Get Background Choices
 // @Description Get Background Choices
 //
-// @ID          UploadBackground 
+// @ID          UploadBackground
 // @Tags        Background
 // @Produce     json
 // @Success     200                 {object}     responses.StringResponse
 // @Failure     404                 {object}     responses.StringResponse
 // @Failure     500                 {object}     responses.StringResponse
 // @Router      /user/background   [put]
-func (uc UserController) UploadBackgound(ctx echo.Context) error{
+func (uc UserController) UploadBackgound(ctx echo.Context) error {
 	return handlers.NewUploadBackgroundHandler(
-		ctx, 
+		ctx,
 		*uc.ValidatorService,
 		uc.UserService,
 		uc.AuthService,
@@ -270,15 +270,15 @@ func (uc UserController) UploadBackgound(ctx echo.Context) error{
 // @Summary Get User Background Choice
 // @Description Get User Background Choice
 //
-// @ID          GetUserBackground 
-// @Tags        User 
+// @ID          GetUserBackground
+// @Tags        User
 // @Param       Authorization       header       string                         true "admin header"     default(Bearer token)
 // @Param       bacgkround          query        string                         true "background"
 // @Produce     json
 // @Success     200                 {object}     responses.StringResponse
 // @Failure     404                 {object}     responses.StringResponse
 // @Failure     500                 {object}     responses.StringResponse
-// @Router      /user/background   [get]
+// @Router      /users/background   [get]
 func (uc UserController) GetBackground(ctx echo.Context) error {
 	return handlers.NewBackgroundHandler(
 		ctx,
@@ -286,24 +286,46 @@ func (uc UserController) GetBackground(ctx echo.Context) error {
 		uc.AuthService,
 		uc.MinioService,
 	).Handle().JSON()
-	
-} 
+
+}
 
 // @Summary Get User Background Choices
 // @Description Get User Backgrounds Uploaded to the server
 //
-// @ID          GetUserBackgroundChoices 
-// @Tags        User 
+// @ID          GetUserBackgroundChoices
+// @Tags        User
 // @Param       Authorization       header       string                         true "admin header"     default(Bearer token)
-// @Produce     json 
+// @Produce     json
 // @Success     200                 {object}     responses.StringResponse
 // @Failure     404                 {object}     responses.StringResponse
 // @Failure     500                 {object}     responses.StringResponse
-// @Router      /user/background/choices   [get]
+// @Router      /users/background/choices   [get]
 func (uc UserController) GetUserBackgroundChoices(ctx echo.Context) error {
 	return handlers.NewUserBackgroundChoicesHandler(
 		ctx,
 		*uc.ValidatorService,
+		uc.AuthService,
+		uc.MinioService,
+	).Handle().JSON()
+}
+
+// @Summary Set User Background
+// @Description Set User Background Choice by background name
+// @Description by query param. 
+//
+// @ID          SetUserBackground
+// @Tags        User
+// @Param       Authorization       header       string                         true "admin header"     default(Bearer token)
+// @Param       background          query        string                         true "background"
+// @Produce     json
+// @Success     200                 {object}     responses.StringResponse
+// @Failure     404                 {object}     responses.StringResponse
+// @Failure     500                 {object}     responses.StringResponse
+// @Router      /users/background   [patch]
+func (uc UserController) SetBackground(ctx echo.Context) error {
+	return handlers.NewSetUserBackgroundHandler(
+		ctx,
+		uc.UserService,
 		uc.AuthService,
 		uc.MinioService,
 	).Handle().JSON()
@@ -323,6 +345,7 @@ func (uc UserController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFun
 	api.POST("/creds", uc.UpdateUser, authMiddleware)
 	api.GET("/profile", uc.GetProfile, authMiddleware)
 	api.PUT("/backgound", uc.UploadBackgound, authMiddleware)
+	api.PATCH("/background", uc.SetBackground, authMiddleware)
 	api.GET("/background", uc.GetBackground, authMiddleware)
 	api.GET("/background/choices", uc.GetUserBackgroundChoices, authMiddleware)
 	api.DELETE("/:user_id", uc.DeleteUser, authMiddleware)

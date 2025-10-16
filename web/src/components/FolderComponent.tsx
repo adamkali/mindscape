@@ -130,19 +130,6 @@ export default function FolderComponent(props: FolderComponentProps) {
 							/>
 						)}
 					</For>
-					<Show when={selectedFolder() === folder.id}>
-						<Button
-							style={{ 'margin-left': indentNextCN() }}
-							variant="secondary"
-							onClick={() => {
-								props.showCreateFolder(async () => {
-									await refreshBookmarks();
-								});
-							}}
-						>
-							Create Bookmark
-						</Button>
-					</Show>
 				</div>
 			);
 		}, [children]);
@@ -222,6 +209,12 @@ export default function FolderComponent(props: FolderComponentProps) {
 						openFolder();
 					}}
 					onDelete={deleteFolder}
+					onCreateBookmark={(folderId) => {
+						setSelectedFolder(folderId);
+						props.showCreateFolder(async () => {
+							await refreshBookmarks();
+						});
+					}}
 					onDrop={handleDrop}
 					draggable={true}
 				/>

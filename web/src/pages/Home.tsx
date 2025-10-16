@@ -1,12 +1,13 @@
 import { A } from '@solidjs/router';
-import { createResource, createEffect, createSignal, Show } from 'solid-js';
+import { createEffect, createSignal, Show } from 'solid-js';
 import {
-	BackgroundApi,
 	FoldersApi,
 	BookmarksApi,
 	type ResponsesFolderData,
+    ResponseError,
 } from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { useBackgroundStyle } from '@/hooks/useBackground';
 import { Header } from '@/components/Header';
 import CreateFolderComponent from '@/components/CreateFolderComponent';
 import { EmptyGuid } from '@/utils';
@@ -17,6 +18,7 @@ import { AddFolder } from '@/components/icons';
 
 const Home = () => {
 	const auth = useAuth();
+	const backgroundStyle = useBackgroundStyle();
 	const [folders, setFolders] = createSignal<ResponsesFolderData[]>([]);
 	const [focusedNodeId, setFocusedNodeId] = createSignal<string>('');
 	const [isLoadingFolders, setIsLoadingFolders] = createSignal(false);
@@ -28,18 +30,6 @@ const Home = () => {
 
 	createEffect(() => {
 		fetchRootFolders();
-	});
-
-	const [defaultBackground] = createResource(async () => {
-		const api = new BackgroundApi();
-		const response = await api.getDefaultBackground();
-		if (response.success && response.data) {
-			return response.data;
-		} else {
-			throw new Error(
-				'Failed to fetch default background: ' + response.message,
-			);
-		}
 	});
 
 	createEffect(() => {
@@ -76,6 +66,7 @@ const Home = () => {
 			}
 		} catch (error) {
 			console.error('Failed to fetch folders:', error);
+			(error as ResponseError).response.status === 401 && auth.logout();
 		} finally {
 			setIsLoadingFolders(false);
 		}
@@ -225,13 +216,7 @@ const Home = () => {
 	return (
 		<div
 			class="min-h-screen bg-background"
-			style={{ 
-				'background-image': `url(${defaultBackground()})`,
-				'background-size': 'cover',
-				'background-position': 'center center',
-				'background-repeat': 'no-repeat',
-				'background-attachment': 'fixed'
-			}}
+			style={backgroundStyle()}
 			onClick={(e) => {
 				// Deselect node when clicking on background areas
 				const target = e.target as HTMLElement;

@@ -31,6 +31,11 @@ export interface GetUserBackgroundChoicesRequest {
     authorization: string;
 }
 
+export interface SetUserBackgroundRequest {
+    authorization: string;
+    background: string;
+}
+
 /**
  * 
  */
@@ -68,7 +73,7 @@ export class UserApi extends runtime.BaseAPI {
         }
 
         const response = await this.request({
-            path: `/user/background`,
+            path: `/users/background`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -107,7 +112,7 @@ export class UserApi extends runtime.BaseAPI {
         }
 
         const response = await this.request({
-            path: `/user/background/choices`,
+            path: `/users/background/choices`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -122,6 +127,56 @@ export class UserApi extends runtime.BaseAPI {
      */
     async getUserBackgroundChoices(requestParameters: GetUserBackgroundChoicesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StringResponse> {
         const response = await this.getUserBackgroundChoicesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Set User Background Choice by background name by query param.
+     * Set User Background
+     */
+    async setUserBackgroundRaw(requestParameters: SetUserBackgroundRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StringResponse>> {
+        if (requestParameters['authorization'] == null) {
+            throw new runtime.RequiredError(
+                'authorization',
+                'Required parameter "authorization" was null or undefined when calling setUserBackground().'
+            );
+        }
+
+        if (requestParameters['background'] == null) {
+            throw new runtime.RequiredError(
+                'background',
+                'Required parameter "background" was null or undefined when calling setUserBackground().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['background'] != null) {
+            queryParameters['background'] = requestParameters['background'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        }
+
+        const response = await this.request({
+            path: `/users/background`,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => StringResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Set User Background Choice by background name by query param.
+     * Set User Background
+     */
+    async setUserBackground(requestParameters: SetUserBackgroundRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StringResponse> {
+        const response = await this.setUserBackgroundRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

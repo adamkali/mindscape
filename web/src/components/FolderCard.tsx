@@ -1,13 +1,14 @@
 import type { ResponsesFolderData } from '@/api';
 import { createSignal, type ComponentProps } from 'solid-js';
 import { Button, Card } from './atoms';
-import { DeleteIcon } from './icons';
+import { DeleteIcon, AddBookmarkIcon } from './icons';
 
 interface FolderCardProps extends ComponentProps<'div'> {
 	folder: ResponsesFolderData;
 	isSelected?: boolean;
 	onSelect?: (folderId: string) => void;
 	onDelete?: (folderId: string) => void;
+	onCreateBookmark?: (folderId: string) => void;
 	draggable?: boolean;
 	onDrop?: (dragData: any) => void;
 }
@@ -101,21 +102,48 @@ export default function FolderCard(props: FolderCardProps) {
 					<span class="text-base font-bold truncate">{props.folder.name}</span>
 				</div>
 				
-				{props.onDelete && (
-					<Button
-						variant="danger"
-						class="p-1 ml-2 text-xs flex-shrink-0"
-						onClick={(e) => {
-							e.preventDefault();
-							e.stopPropagation();
-							if (props.onDelete && props.folder.id) {
-								props.onDelete(props.folder.id);
-							}
-						}}
-					>
-						<DeleteIcon />
-					</Button>
-				)}
+				<div class="flex items-center space-x-1 flex-shrink-0">
+					{props.onCreateBookmark && (
+						<div class="relative group">
+							<Button
+								variant="secondary"
+								class="p-1 text-xs"
+								onClick={(e) => {
+									e.preventDefault();
+									e.stopPropagation();
+									if (props.onCreateBookmark && props.folder.id) {
+										props.onCreateBookmark(props.folder.id);
+									}
+								}}
+							>
+								<AddBookmarkIcon />
+							</Button>
+							<div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-black/80 backdrop-blur-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+								Create Bookmark
+							</div>
+						</div>
+					)}
+					{props.onDelete && (
+						<div class="relative group">
+							<Button
+								variant="danger"
+								class="p-1 text-xs"
+								onClick={(e) => {
+									e.preventDefault();
+									e.stopPropagation();
+									if (props.onDelete && props.folder.id) {
+										props.onDelete(props.folder.id);
+									}
+								}}
+							>
+								<DeleteIcon />
+							</Button>
+							<div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs text-white bg-black/80 backdrop-blur-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+								Delete Folder
+							</div>
+						</div>
+					)}
+				</div>
 			</div>
 		</Card>
 	);

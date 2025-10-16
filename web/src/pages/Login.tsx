@@ -1,6 +1,7 @@
 import { A, useNavigate } from '@solidjs/router';
-import { createSignal, createResource } from 'solid-js';
+import { createSignal } from 'solid-js';
 import { useAuth } from '@/contexts/AuthContext';
+import { useBackgroundStyle } from '@/hooks/useBackground';
 import { usePublicApi } from '@/utils/useApi';
 
 const Login = () => {
@@ -12,17 +13,7 @@ const Login = () => {
 	const auth = useAuth();
 	const navigate = useNavigate();
 	const api = usePublicApi();
-
-	const [defaultBackground] = createResource(async () => {
-		const response = await api.background.getDefaultBackground();
-		if (response.success && response.data) {
-			return response.data;
-		} else {
-			throw new Error(
-				'Failed to fetch default background: ' + response.message,
-			);
-		}
-	});
+	const backgroundStyle = useBackgroundStyle();
 
 	const handleSubmit = async (e: Event) => {
 		e.preventDefault();
@@ -60,7 +51,7 @@ const Login = () => {
 	return (
 		<div
 			class="min-h-screen flex items-center justify-center px-4"
-			style={{ 'background-image': `url(${defaultBackground()})` }}
+			style={backgroundStyle()}
 		>
 			<div class="max-w-md w-full space-y-8 bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-8 shadow-lg">
 				<div class="text-center">

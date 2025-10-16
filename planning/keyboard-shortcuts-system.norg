@@ -1,0 +1,459 @@
+@document.meta
+title: Keyboard Shortcuts System Implementation Plan
+description: Comprehensive plan for implementing customizable keyboard shortcuts in Mindscape
+authors: claude
+categories: [
+	Planning,
+	Architecture
+	Mindscape
+	Golang
+	Egg
+	SolidJS
+	Backend
+	UI/UX
+]
+created: 2025-01-15
+updated: 2025-10-15T11:53:47-0500
+version: 1.0.0
+tags: [
+	Planning,
+	Architecture
+	Mindscape
+	Golang
+	Egg
+	SolidJS
+	Backend
+	UI/UX
+]
+@end
+
+* Keyboard Shortcuts System Implementation Plan
+
+** Project Overview
+   This document outlines the complete implementation plan for a customizable keyboard shortcut system
+   in the Mindscape application. The system will allow users to navigate, select, and perform actions
+   using configurable keyboard combinations.
+
+** Goals and Requirements
+*** Primary Goals
+    - ( ) Enable keyboard-only navigation throughout the application
+    - ( ) Provide customizable key mappings for all major actions
+    - ( ) Support multiple default keymap profiles (Vim, Emacs, Arrow keys)
+    - ( ) Persist user customizations to S3 storage
+    - ( ) Provide intuitive keymap editor interface
+
+*** Technical Requirements
+    - ( ) Frontend keyboard event management system
+    - ( ) Backend API for keymap CRUD operations
+    - ( ) S3 integration for keymap persistence
+    - ( ) Context-aware action filtering
+    - ( ) Conflict detection and resolution
+    - ( ) Cross-browser compatibility
+
+** Architecture Design
+
+*** Frontend Architecture
+**** Core Components
+     @code typescript
+     // Keyboard Manager - Central event handling
+     class KeyboardManager {
+       private mappings: Map<string, KeyMapping>;
+       private listeners: Map<string, Function[]>;
+       private currentContext: string[];
+     }
+
+     // Action Registry - Available keyboard actions
+     interface KeyboardAction {
+       id: string;
+       name: string;
+       description: string;
+       category: 'navigation' | 'selection' | 'creation' | 'global';
+       defaultKeys: string[];
+       context?: string[];
+     }
+
+     // Keymap Schema - User configurations
+     interface KeymapSchema {
+       id: string;
+       name: string;
+       description: string;
+       version: string;
+       userId: string;
+       mappings: KeyMapping[];
+       createdAt: string;
+       updatedAt: string;
+     }
+     @end
+
+**** File Structure
+     ```
+     web/src/keyboard/
+     ├── KeyboardManager.ts     # Core event handling
+     ├── actions.ts             # Action definitions
+     ├── keymaps.ts            # Default keymap profiles
+     ├── useKeyboard.ts        # React/Solid hooks
+     ├── types.ts              # TypeScript interfaces
+     └── utils.ts              # Helper functions
+
+     web/src/contexts/
+     └── KeyboardContext.tsx   # Global state management
+
+     web/src/components/KeymapEditor/
+     ├── KeymapEditor.tsx      # Main editor component
+     ├── ActionList.tsx        # Available actions list
+     ├── KeyCapture.tsx        # Key combination capture
+     ├── KeymapPreview.tsx     # Current mappings preview
+     └── KeymapImportExport.tsx # Import/export functionality
+     ```
+
+*** Backend Architecture
+**** Database Schema
+     @code sql
+     CREATE TABLE user_keymaps (
+         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+         user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+         name VARCHAR(100) NOT NULL,
+         description TEXT,
+         keymap_data JSONB NOT NULL,
+         is_active BOOLEAN DEFAULT false,
+         created_at TIMESTAMP DEFAULT NOW(),
+         updated_at TIMESTAMP DEFAULT NOW()
+     );
+
+     CREATE INDEX idx_user_keymaps_user_id ON user_keymaps(user_id);
+     CREATE INDEX idx_user_keymaps_active ON user_keymaps(user_id, is_active);
+     @end
+
+**** API Endpoints
+     ```
+     GET    /api/keymaps              # Get user's keymaps
+     POST   /api/keymaps              # Create new keymap
+     PUT    /api/keymaps/:id          # Update keymap
+     DELETE /api/keymaps/:id          # Delete keymap
+     POST   /api/keymaps/:id/activate # Set as active keymap
+     GET    /api/keymaps/defaults     # Get default keymaps
+     POST   /api/keymaps/import       # Import keymap from file
+     GET    /api/keymaps/:id/export   # Export keymap to file
+     ```
+
+**** S3 Storage Structure
+     ```
+     mindscape-keymaps/
+     ├── users/
+     │   └── {userId}/
+     │       ├── keymaps/
+     │       │   ├── {keymapId}.json
+     │       │   └── backup_{timestamp}.json
+     │       └── metadata.json
+     └── defaults/
+         ├── vim.json
+         ├── emacs.json
+         └── arrows.json
+     ```
+
+** Implementation Phases
+
+*** Phase 1: Core Infrastructure (Week 1)
+**** Backend Development
+     - ( ) Create database migration for keymap storage
+     - ( ) Implement basic CRUD API endpoints
+     - ( ) Add S3 integration for keymap persistence
+     - ( ) Create keymap service layer
+     - ( ) Add API tests
+
+**** Frontend Core Module
+     - ( ) Implement KeyboardManager class
+     - ( ) Define default action registry
+     - ( ) Create basic event handling system
+     - ( ) Add TypeScript interfaces
+     - ( ) Implement keyboard context provider
+
+*** Phase 2: Integration & Context (Week 2)
+**** Component Integration
+     - ( ) Add keyboard hooks to Home component
+     - ( ) Integrate with Folder navigation
+     - ( ) Add bookmark navigation shortcuts
+     - ( ) Implement context-aware filtering
+     - ( ) Add global navigation shortcuts
+
+**** Default Keymaps
+     - ( ) Create Vim-style keymap profile
+     - ( ) Create Emacs-style keymap profile
+     - ( ) Create Arrow key navigation profile
+     - ( ) Add accessibility-focused profile
+     - ( ) Test cross-browser compatibility
+
+*** Phase 3: Editor UI (Week 3)
+**** Keymap Editor Development
+     - ( ) Create main editor interface
+     - ( ) Implement key combination capture
+     - ( ) Add action categorization and filtering
+     - ( ) Create conflict detection system
+     - ( ) Add visual feedback for key bindings
+
+**** Settings Integration
+     - ( ) Add keyboard settings page
+     - ( ) Implement keymap switching interface
+     - ( ) Create import/export functionality
+     - ( ) Add reset to defaults option
+     - ( ) Integrate with user profile
+
+*** Phase 4: Polish & Testing (Week 4)
+**** Advanced Features
+     - ( ) Multi-key sequence support
+     - ( ) Context help and tooltips
+     - ( ) Keymap sharing between users
+     - ( ) Performance optimization
+     - ( ) Mobile device considerations
+
+**** Testing & Quality Assurance
+     - ( ) Cross-browser testing
+     - ( ) Accessibility testing
+     - ( ) Performance benchmarking
+     - ( ) User experience testing
+     - ( ) Documentation creation
+
+** Default Action Definitions
+
+*** Navigation Actions
+    | Action ID | Description | Default Keys | Context |
+	|---|---|---|---|
+    | navigate_up | Move selection up | ArrowUp, k | folder-view, bookmark-list |
+    | navigate_down | Move selection down | ArrowDown, j | folder-view, bookmark-list |
+    | navigate_left | Navigate to parent | ArrowLeft, h | folder-view |
+    | navigate_right | Navigate to child | ArrowRight, l | folder-view |
+    | navigate_first | Jump to first item | Home, gg | folder-view, bookmark-list |
+    | navigate_last | Jump to last item | End, G | folder-view, bookmark-list |
+
+*** Selection Actions
+    | Action ID | Description | Default Keys | Context |
+	|---|---|---|---|
+    | select_item | Select current item | Space | folder-view, bookmark-list |
+    | select_all | Select all items | Ctrl+a | folder-view, bookmark-list |
+    | clear_selection | Clear all selections | Escape | folder-view, bookmark-list |
+    | toggle_selection | Toggle item selection | Ctrl+Space | folder-view, bookmark-list |
+
+*** Creation Actions
+    | Action ID | Description | Default Keys | Context |
+	|---|---|---|---|
+    | create_folder | Create new folder | Ctrl+Shift+n | folder-view |
+    | create_bookmark | Create new bookmark | Ctrl+n | folder-view |
+    | duplicate_item | Duplicate selected item | Ctrl+d | folder-view, bookmark-list |
+
+*** Global Actions
+    | Action ID | Description | Default Keys | Context |
+	|---|---|---|---|
+    | focus_search | Focus search bar | /, Ctrl+f | global |
+    | toggle_keymap_help | Show/hide help | ? | global |
+    | save_current_state | Save current state | Ctrl+s | global |
+    | open_settings | Open settings | Ctrl+, | global |
+
+** Default Keymap Profiles
+
+*** Vim-Style Navigation
+    @code json
+    {
+      "name": "Vim Navigation",
+      "description": "Vi/Vim inspired keyboard navigation",
+      "mappings": [
+        { "actionId": "navigate_up", "keys": ["k"], "enabled": true },
+        { "actionId": "navigate_down", "keys": ["j"], "enabled": true },
+        { "actionId": "navigate_left", "keys": ["h"], "enabled": true },
+        { "actionId": "navigate_right", "keys": ["l"], "enabled": true },
+        { "actionId": "navigate_first", "keys": ["g", "g"], "enabled": true },
+        { "actionId": "navigate_last", "keys": ["G"], "enabled": true },
+        { "actionId": "select_item", "keys": ["Enter"], "enabled": true },
+        { "actionId": "create_folder", "keys": ["o"], "enabled": true },
+        { "actionId": "create_bookmark", "keys": ["i"], "enabled": true },
+        { "actionId": "focus_search", "keys": ["/"], "enabled": true }
+      ]
+    }
+    @end
+
+*** Emacs-Style Navigation
+    @code json
+    {
+      "name": "Emacs Navigation",
+      "description": "Emacs inspired keyboard navigation",
+      "mappings": [
+        { "actionId": "navigate_up", "keys": ["Ctrl+p"], "enabled": true },
+        { "actionId": "navigate_down", "keys": ["Ctrl+n"], "enabled": true },
+        { "actionId": "navigate_left", "keys": ["Ctrl+b"], "enabled": true },
+        { "actionId": "navigate_right", "keys": ["Ctrl+f"], "enabled": true },
+        { "actionId": "navigate_first", "keys": ["Ctrl+a"], "enabled": true },
+        { "actionId": "navigate_last", "keys": ["Ctrl+e"], "enabled": true },
+        { "actionId": "select_item", "keys": ["Enter"], "enabled": true },
+        { "actionId": "create_folder", "keys": ["Ctrl+x", "Ctrl+d"], "enabled": true },
+        { "actionId": "create_bookmark", "keys": ["Ctrl+x", "Ctrl+b"], "enabled": true },
+        { "actionId": "focus_search", "keys": ["Ctrl+s"], "enabled": true }
+      ]
+    }
+    @end
+
+*** Arrow Key Navigation
+    @code json
+    {
+      "name": "Arrow Key Navigation",
+      "description": "Standard arrow key navigation",
+      "mappings": [
+        { "actionId": "navigate_up", "keys": ["ArrowUp"], "enabled": true },
+        { "actionId": "navigate_down", "keys": ["ArrowDown"], "enabled": true },
+        { "actionId": "navigate_left", "keys": ["ArrowLeft"], "enabled": true },
+        { "actionId": "navigate_right", "keys": ["ArrowRight"], "enabled": true },
+        { "actionId": "navigate_first", "keys": ["Home"], "enabled": true },
+        { "actionId": "navigate_last", "keys": ["End"], "enabled": true },
+        { "actionId": "select_item", "keys": ["Enter", "Space"], "enabled": true },
+        { "actionId": "create_folder", "keys": ["Ctrl+Shift+n"], "enabled": true },
+        { "actionId": "create_bookmark", "keys": ["Ctrl+n"], "enabled": true },
+        { "actionId": "focus_search", "keys": ["Ctrl+f"], "enabled": true }
+      ]
+    }
+    @end
+
+** JSON Schema Specification
+
+*** Keymap Schema
+    @code json
+    {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Mindscape Keymap Schema",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the keymap"
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Human-readable name for the keymap"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Description of the keymap"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Semantic version of the keymap"
+        },
+        "userId": {
+          "type": "string",
+          "description": "ID of the user who owns this keymap"
+        },
+        "isDefault": {
+          "type": "boolean",
+          "description": "Whether this is a system default keymap"
+        },
+        "mappings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "actionId": {
+                "type": "string",
+                "description": "ID of the action to trigger"
+              },
+              "keys": {
+                "type": "array",
+                "items": { "type": "string" },
+                "minItems": 1,
+                "description": "Key combination to trigger the action"
+              },
+              "enabled": {
+                "type": "boolean",
+                "description": "Whether this mapping is active"
+              },
+              "context": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Contexts where this mapping applies"
+              }
+            },
+            "required": ["actionId", "keys", "enabled"]
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "createdAt": { "type": "string", "format": "date-time" },
+            "updatedAt": { "type": "string", "format": "date-time" },
+            "lastUsed": { "type": "string", "format": "date-time" },
+            "useCount": { "type": "integer", "minimum": 0 }
+          }
+        }
+      },
+      "required": ["id", "name", "version", "userId", "mappings"]
+    }
+    @end
+
+** Implementation Checklist
+
+*** Backend Tasks
+    - ( ) Database migration for keymap storage
+    - ( ) API endpoints for CRUD operations
+    - ( ) S3 service integration
+    - ( ) Keymap validation middleware
+    - ( ) Error handling and logging
+    - ( ) API documentation (Swagger)
+    - ( ) Unit tests for keymap service
+    - ( ) Integration tests for API endpoints
+
+*** Frontend Tasks
+    - ( ) KeyboardManager implementation
+    - ( ) Action registry setup
+    - ( ) Context provider creation
+    - ( ) Component integration hooks
+    - ( ) Keymap editor UI components
+    - ( ) Settings page integration
+    - ( ) Import/export functionality
+    - ( ) Visual feedback systems
+    - ( ) Accessibility considerations
+    - ( ) Cross-browser testing
+
+*** Testing & Quality Assurance
+    - ( ) Unit tests for keyboard logic
+    - ( ) Integration tests for UI components
+    - ( ) End-to-end testing scenarios
+    - ( ) Performance testing
+    - ( ) Accessibility audit
+    - ( ) User experience testing
+    - ( ) Documentation review
+    - ( ) Code review process
+
+** Future Enhancements
+
+*** Advanced Features
+    - ( ) Keymap sharing between users
+    - ( ) Community keymap repository
+    - ( ) Macro recording and playback
+    - ( ) Context-sensitive help system
+    - ( ) Analytics for popular key combinations
+    - ( ) Mobile device support
+    - ( ) Voice command integration
+    - ( ) AI-suggested optimizations
+
+*** Performance Optimizations
+    - ( ) Lazy loading of keymap data
+    - ( ) Debounced key event handling
+    - ( ) Memory usage optimization
+    - ( ) Caching strategies for S3 data
+    - ( ) Background sync for keymap updates
+
+** Conclusion
+
+This comprehensive plan provides a roadmap for implementing a robust, customizable keyboard shortcut system in Mindscape. The phased approach ensures incremental delivery of value while building toward a complete solution that enhances user productivity and accessibility.
+
+The modular architecture allows for future expansion and customization while maintaining clean separation of concerns between frontend interaction, backend persistence, and cloud storage.
+
+@document.meta
+status: draft
+priority: high
+estimated_effort: 4 weeks
+dependencies: [
+    current-navigation-system
+    s3-storage-setup
+    user-authentication
+]
+@end

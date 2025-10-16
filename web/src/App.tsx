@@ -4,13 +4,15 @@ import { Showcase } from './pages/admin';
 
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { BackgroundProvider } from '@/contexts/BackgroundContext';
 import AdminRoute from './components/AdminRoute';
 
 const App = () => {
 	return (
 		<div class="min-h-screen transition-colors">
 			<AuthProvider>
-				<Router>
+				<BackgroundProvider>
+					<Router>
 					<Route path="/login" component={Login} />
 					<Route path="/signup" component={Signup} />
 					<Route
@@ -40,7 +42,8 @@ const App = () => {
 						)}
 					/>
 					<Route path="*404" component={() => <h1>404</h1>} />
-				</Router>
+					</Router>
+				</BackgroundProvider>
 			</AuthProvider>
 		</div>
 	);
