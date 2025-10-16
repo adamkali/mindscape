@@ -228,11 +228,14 @@ func (uc *UserController) GetDefaultBackground(ctx echo.Context) error {
 }
 
 
-// @Summary Get Background Choices
-// @Description Get Background Choices
+// @Summary Upload Background 
+// @Description Upload a Background and set the User.Background  to be the uploaded background
 //
 // @ID          UploadBackground
 // @Tags        Background
+// @Accept      multipart/form-data
+// @Param       file                formData    file            true "this is a test file"
+// @Param       Authorization       header       string                         true "admin header"     default(Bearer token)
 // @Produce     json
 // @Success     200                 {object}     responses.StringResponse
 // @Failure     404                 {object}     responses.StringResponse
@@ -251,8 +254,8 @@ func (uc UserController) UploadBackgound(ctx echo.Context) error {
 
 // #region Background
 
-// @Summary Get Background Choices
-// @Description Get Background Choices
+// @Summary Get Background Choices that ae loaded into the server.
+// @Description Get Background Choices 
 //
 // @ID          GetBackgroundChoices
 // @Tags        Background

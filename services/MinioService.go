@@ -181,6 +181,7 @@ func (m *MinioService) GetUserBackgroundChoices(user uuid.UUID) ([]BackgroundInt
 	}
 	reqParams.Set("response-content-disposition", "attachment; filename=\"beach.jpeg\"")
 
+	fmt.Printf("[DEBUG] MinioService.GetUserBackgroundChoices{ backgrounds: %v }\n", backgrounds)
 	backgroundEntities := make([]BackgroundInternal, len(backgrounds))
 	for i, background := range backgrounds {
 		presigedUrl, err := m.client.PresignedGetObject(m.ctx, user.String(), background.Key, time.Hour*24*7, reqParams)
