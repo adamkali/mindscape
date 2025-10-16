@@ -5,6 +5,8 @@ apis/UserApi.ts
 apis/UsersApi.ts
 apis/index.ts
 index.ts
+models/BackgroundData.ts
+models/BackgroundResponse.ts
 models/BookmarkResponse.ts
 models/BookmarksResponse.ts
 models/DeleteUserResponse.ts

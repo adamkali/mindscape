@@ -30,6 +30,12 @@ export interface ResponsesUserData {
      * @type {string}
      * @memberof ResponsesUserData
      */
+    background?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ResponsesUserData
+     */
     createdDatetime?: string;
     /**
      * 
@@ -81,6 +87,7 @@ export function ResponsesUserDataFromJSONTyped(json: any, ignoreDiscriminator: b
     return {
         
         'admin': json['admin'] == null ? undefined : json['admin'],
+        'background': json['background'] == null ? undefined : json['background'],
         'createdDatetime': json['created_datetime'] == null ? undefined : json['created_datetime'],
         'email': json['email'] == null ? undefined : json['email'],
         'id': json['id'] == null ? undefined : json['id'],
@@ -102,6 +109,7 @@ export function ResponsesUserDataToJSONTyped(value?: ResponsesUserData | null, i
     return {
         
         'admin': value['admin'],
+        'background': value['background'],
         'created_datetime': value['createdDatetime'],
         'email': value['email'],
         'id': value['id'],

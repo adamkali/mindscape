@@ -69,19 +69,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/StringResponse"
+                            "$ref": "#/definitions/BackgroundResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/StringResponse"
+                            "$ref": "#/definitions/BackgroundResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/StringResponse"
+                            "$ref": "#/definitions/BackgroundResponse"
                         }
                     }
                 }
@@ -820,19 +820,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/StringResponse"
+                            "$ref": "#/definitions/BackgroundResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/StringResponse"
+                            "$ref": "#/definitions/BackgroundResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/StringResponse"
+                            "$ref": "#/definitions/BackgroundResponse"
                         }
                     }
                 }
@@ -1183,6 +1183,34 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "BackgroundData": {
+            "type": "object",
+            "properties": {
+                "filename": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "BackgroundResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/BackgroundData"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "BookmarkResponse": {
             "type": "object",
             "properties": {
@@ -1588,6 +1616,9 @@ const docTemplate = `{
             "properties": {
                 "admin": {
                     "type": "boolean"
+                },
+                "background": {
+                    "type": "string"
                 },
                 "created_datetime": {
                     "type": "string"

@@ -1,5 +1,23 @@
 basePath: /api
 definitions:
+  BackgroundData:
+    properties:
+      filename:
+        type: string
+      url:
+        type: string
+    type: object
+  BackgroundResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/BackgroundData'
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   BookmarkResponse:
     properties:
       data:
@@ -264,6 +282,8 @@ definitions:
     properties:
       admin:
         type: boolean
+      background:
+        type: string
       created_datetime:
         type: string
       email:
@@ -320,15 +340,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/StringResponse'
+            $ref: '#/definitions/BackgroundResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/StringResponse'
+            $ref: '#/definitions/BackgroundResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/StringResponse'
+            $ref: '#/definitions/BackgroundResponse'
       summary: Get Background Choices
       tags:
       - Background
@@ -869,15 +889,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/StringResponse'
+            $ref: '#/definitions/BackgroundResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/StringResponse'
+            $ref: '#/definitions/BackgroundResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/StringResponse'
+            $ref: '#/definitions/BackgroundResponse'
       summary: Get User Background Choices
       tags:
       - User

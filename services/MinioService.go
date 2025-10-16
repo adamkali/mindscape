@@ -144,7 +144,7 @@ func (m *MinioService) GetDefault() (string, error) {
 	return presigedUrl.String(), nil
 }
 
-func (m *MinioService) GetBackgroundChoices() ([]string, error) {
+func (m *MinioService) GetBackgroundChoices() ([]BackgroundInternal, error) {
 	reqParams := make(url.Values)
 	backgrounds := make([]minio.ObjectInfo, 0)
 	for objects := range m.client.ListObjects(m.ctx, "mindspace", minio.ListObjectsOptions{
@@ -155,20 +155,20 @@ func (m *MinioService) GetBackgroundChoices() ([]string, error) {
 		}
 		backgrounds = append(backgrounds, objects)
 	}
-	bakcgroundUrls := make([]string, len(backgrounds))
+	bakcgroundUrls := make([]BackgroundInternal, len(backgrounds))
 	for i, background := range backgrounds {
 		reqParams.Set("response-content-disposition", "attachment; filename=\""+background.Key+"\"")
 		presigedUrl, err := m.client.PresignedGetObject(m.ctx, "mindspace", background.Key, time.Hour*24*7, reqParams)
 		if err != nil {
 			return nil, err
 		}
-		bakcgroundUrls[i] = presigedUrl.String()
+		bakcgroundUrls[i] = BackgroundInternal{Name: background.Key, URL: presigedUrl.String()}
 	}
 
 	return bakcgroundUrls, nil
 }
 
-func (m *MinioService) GetUserBackgroundChoices(user uuid.UUID) ([]string, error) {
+func (m *MinioService) GetUserBackgroundChoices(user uuid.UUID) ([]BackgroundInternal, error) {
 	reqParams := make(url.Values)
 	backgrounds := make([]minio.ObjectInfo, 0)
 	for objects := range m.client.ListObjects(m.ctx, user.String(), minio.ListObjectsOptions{
@@ -181,15 +181,15 @@ func (m *MinioService) GetUserBackgroundChoices(user uuid.UUID) ([]string, error
 	}
 	reqParams.Set("response-content-disposition", "attachment; filename=\"beach.jpeg\"")
 
-	bakcgroundUrls := make([]string, len(backgrounds))
+	backgroundEntities := make([]BackgroundInternal, len(backgrounds))
 	for i, background := range backgrounds {
 		presigedUrl, err := m.client.PresignedGetObject(m.ctx, user.String(), background.Key, time.Hour*24*7, reqParams)
 		if err != nil {
 			return nil, err
 		}
-		bakcgroundUrls[i] = presigedUrl.String()
+		backgroundEntities[i] = BackgroundInternal{Name: background.Key, URL: presigedUrl.String()}
 	}
-	return bakcgroundUrls, nil
+	return backgroundEntities, nil
 }
 
 func (m *MinioService) GetDefaultChoice(choice string) (string, error) {

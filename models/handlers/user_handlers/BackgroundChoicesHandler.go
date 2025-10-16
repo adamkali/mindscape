@@ -11,7 +11,7 @@ type BackgroundChoicesHandler struct {
 	ctx              echo.Context
 	code             int
 	err              error
-	urls             []string
+	urls             []responses.BackgroundData
 	ValidatorService services.ValidatorService
 	RedisService     services.IRedisService
 	MinioService     services.IMinioService
@@ -39,18 +39,21 @@ func (h *BackgroundChoicesHandler) Lock(code int, err error) *BackgroundChoicesH
 }
 
 func (h *BackgroundChoicesHandler) Handle() handlers.IHandler {
-	h.urls , h.err = h.MinioService.GetBackgroundChoices()
-	if h.err != nil {
+	entites, err := h.MinioService.GetBackgroundChoices()
+	if err != nil {
 		return handlers.Lock(h,500, h.err)
+	}
+	for _, entity := range entites {
+		h.urls = append(h.urls, responses.NewBackgroundsData(entity.Name, entity.URL))
 	}
 	return h
 }
 
 func (h *BackgroundChoicesHandler) JSON() error {
 	if h.err != nil {
-		return responses.NewStringsResponse().Fail(h.ctx, h.code, h.err)
+		return responses.NewBackgroundResponse().Fail(h.ctx, h.code, h.err)
 	} else {
-		return responses.NewStringsResponse().Successful(h.ctx, h.urls)
+		return responses.NewBackgroundResponse().Successful(h.ctx, h.urls)
 	}
 }
 

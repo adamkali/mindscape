@@ -227,24 +227,6 @@ func (uc *UserController) GetDefaultBackground(ctx echo.Context) error {
 	).Handle().JSON()
 }
 
-// @Summary Get Background Choices
-// @Description Get Background Choices
-//
-// @ID          GetBackgroundChoices
-// @Tags        Background
-// @Produce     json
-// @Success     200                 {object}     responses.StringResponse
-// @Failure     404                 {object}     responses.StringResponse
-// @Failure     500                 {object}     responses.StringResponse
-// @Router      /background/choices   [get]
-func (uc *UserController) GetBackgroundChoices(ctx echo.Context) error {
-	return handlers.NewBackgroundChoicesHandler(
-		ctx,
-		*uc.ValidatorService,
-		uc.RedisService,
-		uc.MinioService,
-	).Handle().JSON()
-}
 
 // @Summary Get Background Choices
 // @Description Get Background Choices
@@ -262,6 +244,27 @@ func (uc UserController) UploadBackgound(ctx echo.Context) error {
 		*uc.ValidatorService,
 		uc.UserService,
 		uc.AuthService,
+		uc.RedisService,
+		uc.MinioService,
+	).Handle().JSON()
+}
+
+// #region Background
+
+// @Summary Get Background Choices
+// @Description Get Background Choices
+//
+// @ID          GetBackgroundChoices
+// @Tags        Background
+// @Produce     json
+// @Success     200                 {object}     responses.BackgroundsResponse
+// @Failure     404                 {object}     responses.BackgroundsResponse
+// @Failure     500                 {object}     responses.BackgroundsResponse
+// @Router      /background/choices   [get]
+func (uc *UserController) GetBackgroundChoices(ctx echo.Context) error {
+	return handlers.NewBackgroundChoicesHandler(
+		ctx,
+		*uc.ValidatorService,
 		uc.RedisService,
 		uc.MinioService,
 	).Handle().JSON()
@@ -296,9 +299,9 @@ func (uc UserController) GetBackground(ctx echo.Context) error {
 // @Tags        User
 // @Param       Authorization       header       string                         true "admin header"     default(Bearer token)
 // @Produce     json
-// @Success     200                 {object}     responses.StringResponse
-// @Failure     404                 {object}     responses.StringResponse
-// @Failure     500                 {object}     responses.StringResponse
+// @Success     200                 {object}     responses.BackgroundsResponse
+// @Failure     404                 {object}     responses.BackgroundsResponse
+// @Failure     500                 {object}     responses.BackgroundsResponse
 // @Router      /users/background/choices   [get]
 func (uc UserController) GetUserBackgroundChoices(ctx echo.Context) error {
 	return handlers.NewUserBackgroundChoicesHandler(
@@ -332,10 +335,10 @@ func (uc UserController) SetBackground(ctx echo.Context) error {
 }
 
 func (uc UserController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
-	// Register the namespaces for the endopoints
 	e.GET("/api/background", uc.GetDefaultBackground)
 	e.GET("/api/background/choices", uc.GetBackgroundChoices)
 
+	// Register the namespaces for the endopoints
 	api := e.Group("/api" + uc.Name)
 	api.GET("", uc.GetUsers, authMiddleware)
 	api.POST("/login", uc.Login)

@@ -13,7 +13,7 @@ type UserBackgroundChoicesHandler struct {
 	ctx              echo.Context
 	code             int
 	err              error
-	urls             []string
+	urls             []responses.BackgroundData
 	ValidatorService services.ValidatorService
 	AuthService      services.IAuthService
 	MinioService     services.IMinioService
@@ -42,19 +42,21 @@ func (h *UserBackgroundChoicesHandler) Handle() handlers.IHandler {
 		return handlers.Lock(h, 401, err)
 	}
 
-	h.urls, h.err = h.MinioService.GetUserBackgroundChoices(userID)
-	if h.err != nil {
-		return handlers.Lock(h, 500, h.err)
+	entities, err := h.MinioService.GetUserBackgroundChoices(userID)
+	if err != nil {
+		return handlers.Lock(h, 500, err)
 	}
-
+	for _, entity := range entities {
+		h.urls = append(h.urls, responses.NewBackgroundsData(entity.Name, entity.URL))
+	}
 	return h
 }
 
 func (h *UserBackgroundChoicesHandler) JSON() error {
 	if h.err != nil {
-		return responses.NewStringsResponse().Fail(h.ctx, h.code, h.err)
+		return responses.NewBackgroundResponse().Fail(h.ctx, h.code, h.err)
 	} else {
-		return responses.NewStringsResponse().Successful(h.ctx, h.urls)
+		return responses.NewBackgroundResponse().Successful(h.ctx, h.urls)
 	}
 }
 

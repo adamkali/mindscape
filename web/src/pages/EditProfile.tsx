@@ -1,6 +1,6 @@
 import { useNavigate } from '@solidjs/router';
-import { createEffect, createSignal, For, Show } from 'solid-js';
-import { UsersApi, UserApi, type UpdateCredentialsRequest, ResponseError } from '@/api';
+import { createEffect, createSignal, Show } from 'solid-js';
+import { UsersApi,  type UpdateCredentialsRequest, ResponseError, BackgroundApi } from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBackground, useBackgroundStyle } from '@/hooks/useBackground';
 import { EmptyGuid } from '@/utils';
@@ -13,6 +13,7 @@ import {
 	CardHeader,
 	Input,
 } from '@/components/atoms';
+import BackgroundChoices from '@/components/BackgroundChoices';
 
 const EditProfile = () => {
 	const auth = useAuth();
@@ -20,8 +21,6 @@ const EditProfile = () => {
 	const api = new UsersApi();
 	const { 
 		setUserBackground, 
-		currentBackground, 
-		backgroundChoices, 
 		isLoadingChoices 
 	} = useBackground();
 	const backgroundStyle = useBackgroundStyle();
@@ -229,6 +228,8 @@ const EditProfile = () => {
 			const backgroundApi = new BackgroundApi();
 			await backgroundApi.uploadBackground({
 				authorization: `Bearer ${auth.token()}`,
+				file: customBackgroundFile()!,
+
 			});
 			setSuccess('Custom background uploaded successfully!');
 		} catch (error: any) {
@@ -421,36 +422,7 @@ const EditProfile = () => {
 							<Show when={isLoadingChoices()}>
 								<div class="text-white/70">Loading backgrounds...</div>
 							</Show>
-							<Show when={backgroundChoices()}>
-								<div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-									<For each={backgroundChoices()}>
-										{(backgroundUrl) => (
-											<div 
-												class={`relative aspect-video rounded-lg overflow-hidden cursor-pointer border-2 transition-all duration-300 hover:scale-105 ${
-													currentBackground() === backgroundUrl 
-														? 'border-white/70 ring-2 ring-white/50' 
-														: 'border-white/20 hover:border-white/40'
-												}`}
-												onClick={() => handleBackgroundSelect(backgroundUrl)}
-											>
-												<img 
-													src={backgroundUrl} 
-													alt="Background option"
-													class="w-full h-full object-cover"
-													onError={(e) => {
-														(e.target as HTMLImageElement).style.display = 'none';
-													}}
-												/>
-												<Show when={currentBackground() === backgroundUrl}>
-													<div class="absolute inset-0 bg-white/20 backdrop-blur-sm flex items-center justify-center">
-														<div class="text-white font-semibold">Selected</div>
-													</div>
-												</Show>
-											</div>
-										)}
-									</For>
-								</div>
-							</Show>
+							<BackgroundChoices handleBackgroundSelect={handleBackgroundSelect} />
 						</div>
 					</CardBody>
 				</Card>

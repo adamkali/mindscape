@@ -15,9 +15,12 @@
 
 import * as runtime from '../runtime';
 import type {
+  BackgroundResponse,
   StringResponse,
 } from '../models/index';
 import {
+    BackgroundResponseFromJSON,
+    BackgroundResponseToJSON,
     StringResponseFromJSON,
     StringResponseToJSON,
 } from '../models/index';
@@ -95,7 +98,7 @@ export class UserApi extends runtime.BaseAPI {
      * Get User Backgrounds Uploaded to the server
      * Get User Background Choices
      */
-    async getUserBackgroundChoicesRaw(requestParameters: GetUserBackgroundChoicesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StringResponse>> {
+    async getUserBackgroundChoicesRaw(requestParameters: GetUserBackgroundChoicesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BackgroundResponse>> {
         if (requestParameters['authorization'] == null) {
             throw new runtime.RequiredError(
                 'authorization',
@@ -118,14 +121,14 @@ export class UserApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => StringResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => BackgroundResponseFromJSON(jsonValue));
     }
 
     /**
      * Get User Backgrounds Uploaded to the server
      * Get User Background Choices
      */
-    async getUserBackgroundChoices(requestParameters: GetUserBackgroundChoicesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StringResponse> {
+    async getUserBackgroundChoices(requestParameters: GetUserBackgroundChoicesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BackgroundResponse> {
         const response = await this.getUserBackgroundChoicesRaw(requestParameters, initOverrides);
         return await response.value();
     }

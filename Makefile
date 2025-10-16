@@ -67,7 +67,7 @@ build: build-backend build-frontend ## Build all components
 
 swagger: ## Generate Swagger documentation
 	@echo "$(YELLOW)Generating Swagger documentation...$(NC)"
-	@if [ -f "$(BINARY_PATH)" ]; then \
+	@if [ -f $(BINARY_PATH) ]; then \
 		$(BINARY_PATH) swag; \
 		echo "$(GREEN)Swagger documentation generated$(NC)"; \
 	else \

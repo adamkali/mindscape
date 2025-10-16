@@ -1,5 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
+export * from './BackgroundData';
+export * from './BackgroundResponse';
 export * from './BookmarkResponse';
 export * from './BookmarksResponse';
 export * from './DeleteUserResponse';

@@ -1,6 +1,14 @@
-import { createContext, createSignal, createEffect, createResource, useContext, type JSX } from 'solid-js';
+import {
+	createContext,
+	createSignal,
+	createEffect,
+	createResource,
+	useContext,
+	type JSX,
+} from 'solid-js';
 import { useAuth } from '@/contexts/AuthContext';
 import { BackgroundApi, UserApi, type ResponseError } from '@/api';
+import * as Models from '@/api/models';
 
 interface BackgroundContextValue {
 	currentBackground: () => string | undefined;
@@ -8,7 +16,7 @@ interface BackgroundContextValue {
 	isLoading: () => boolean;
 	error: () => string | null;
 	refreshBackground: () => Promise<void>;
-	backgroundChoices: () => string[] | undefined;
+	backgroundChoices: () => Models.BackgroundData[] | undefined;
 	isLoadingChoices: () => boolean;
 }
 
@@ -31,7 +39,9 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 			if (response.success && response.data) {
 				return response.data;
 			}
-			throw new Error('Failed to fetch default background: ' + response.message);
+			throw new Error(
+				'Failed to fetch default background: ' + response.message,
+			);
 		} catch (err) {
 			console.error('Error loading default background:', err);
 			throw err;
@@ -46,51 +56,46 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 
 			// Fetch global background choices
 			const globalResponse = await backgroundApi.getBackgroundChoices();
-			let globalChoices: string[] = [];
+			let globalChoices: Models.BackgroundData[] = [];
 
-			if (globalResponse.success && globalResponse.data) {
-				try {
-					if (typeof globalResponse.data === 'string') {
-						globalChoices = JSON.parse(globalResponse.data);
-					} else {
-						globalChoices = globalResponse.data;
-					}
-				} catch (error) {
-					console.warn('Failed to parse global background choices as JSON:', error);
-					if (typeof globalResponse.data === 'string') {
-						globalChoices = globalResponse.data.split(/[,\n]/).map(url => url.trim()).filter(url => url);
-					} else {
-						globalChoices = [globalResponse.data];
-					}
+			try {
+				if (globalResponse.success && globalResponse.data) {
+					globalChoices = globalResponse.data;
+				} else {
+					throw new Error(
+						'Failed to fetch global background choices: ' +
+						globalResponse.message,
+					);
 				}
+			} catch (err) {
+				if ((err as ResponseError).response?.status === 401) {
+					auth.logout();
+					return [];
+				}
+				throw err;
 			}
 
 			// Fetch user-specific background choices if authenticated
-			let userChoices: string[] = [];
+			let userChoices: Models.BackgroundData[] = [];
 			if (auth.token()) {
 				try {
 					const userResponse = await userApi.getUserBackgroundChoices({
 						authorization: `Bearer ${auth.token()}`,
 					});
-
 					if (userResponse.success && userResponse.data) {
-						try {
-							if (typeof userResponse.data === 'string') {
-								userChoices = JSON.parse(userResponse.data);
-							} else {
-								userChoices = userResponse.data;
-							}
-						} catch (error) {
-							console.warn('Failed to parse user background choices as JSON:', error);
-							if (typeof userResponse.data === 'string') {
-								userChoices = userResponse.data.split(/[,\n]/).map(url => url.trim()).filter(url => url);
-							} else {
-								userChoices = [userResponse.data];
-							}
-						}
+						userChoices = userResponse.data;
+					} else {
+						throw new Error(
+							'Failed to fetch user-specific background choices: ' +
+							userResponse.message,
+						);
 					}
-				} catch (error) {
-					console.warn('Failed to fetch user background choices:', error);
+				} catch (err) {
+					if ((err as ResponseError).response?.status === 401) {
+						auth.logout();
+						return [];
+					}
+					throw err;
 				}
 			}
 
@@ -115,11 +120,16 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 
 	const loadUserBackground = async () => {
 		if (!auth.token()) return;
-		
+		if (!auth.user()) {
+			auth.logout();
+			return;
+		}
+
 		try {
 			const userApi = new UserApi();
 			const response = await userApi.getUserBackground({
-				authorization: `Bearer ${auth.token()}`
+				authorization: `Bearer ${auth.token()}`,
+				bacgkround: auth.user()?.background ?? '',
 			});
 			if (response.success && response.data) {
 				setUserBackground(response.data);
@@ -128,8 +138,12 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 		} catch (err: any) {
 			console.warn('Failed to load user background:', err);
 			// Don't set error for missing user background - this is expected for new users
+			// but it should always default to the default background.
 			if ((err as ResponseError).response?.status !== 404) {
 				setError(err.message);
+			}
+			if ((err as ResponseError).response?.status === 401) {
+				auth.logout();
 			}
 		}
 	};
@@ -143,9 +157,9 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 			const userApi = new UserApi();
 			const result = await userApi.setUserBackground({
 				authorization: `Bearer ${auth.token()}`,
-				background: backgroundUrl
+				background: backgroundUrl,
 			});
-			
+
 			if (result.success) {
 				setUserBackground(backgroundUrl);
 				setError(null);
@@ -172,7 +186,7 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 		error,
 		refreshBackground,
 		backgroundChoices,
-		isLoadingChoices: () => backgroundChoices.loading
+		isLoadingChoices: () => backgroundChoices.loading,
 	};
 
 	return (
