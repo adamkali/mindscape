@@ -7,7 +7,8 @@ import {
 	type JSX,
 } from 'solid-js';
 import { useAuth } from '@/contexts/AuthContext';
-import { BackgroundApi, UserApi, type ResponseError } from '@/api';
+import { BackgroundApi, UsersApi, type ResponseError } from '@/api';
+
 import * as Models from '@/api/models';
 
 interface BackgroundContextValue {
@@ -52,7 +53,7 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 	const [backgroundChoices] = createResource(async () => {
 		try {
 			const backgroundApi = new BackgroundApi();
-			const userApi = new UserApi();
+			const userApi = new UsersApi();
 
 			// Fetch global background choices
 			const globalResponse = await backgroundApi.getBackgroundChoices();
@@ -126,7 +127,7 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 		}
 
 		try {
-			const userApi = new UserApi();
+			const userApi = new UsersApi();
 			const response = await userApi.getUserBackground({
 				authorization: `Bearer ${auth.token()}`,
 				bacgkround: auth.user()?.background ?? '',
@@ -154,7 +155,7 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 		}
 
 		try {
-			const userApi = new UserApi();
+			const userApi = new UsersApi();
 			const result = await userApi.setUserBackground({
 				authorization: `Bearer ${auth.token()}`,
 				background: backgroundUrl,

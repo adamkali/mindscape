@@ -349,7 +349,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/BackgroundResponse'
-      summary: Get Background Choices
+      summary: Get Background Choices that ae loaded into the server.
       tags:
       - Background
   /bookmarks:
@@ -721,28 +721,6 @@ paths:
       summary: Get the Folders associated with the user under A Parent Folder
       tags:
       - Folders
-  /user/background:
-    put:
-      description: Get Background Choices
-      operationId: UploadBackground
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/StringResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/StringResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/StringResponse'
-      summary: Get Background Choices
-      tags:
-      - Background
   /users/:
     get:
       description: Get All Users. Must be Admin using the new mediator pattern
@@ -836,7 +814,7 @@ paths:
             $ref: '#/definitions/StringResponse'
       summary: Get User Background Choice
       tags:
-      - User
+      - Users
     patch:
       description: |-
         Set User Background Choice by background name
@@ -871,7 +849,43 @@ paths:
             $ref: '#/definitions/StringResponse'
       summary: Set User Background
       tags:
-      - User
+      - Users
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a Background and set the User.Background  to be the uploaded
+        background
+      operationId: UploadBackground
+      parameters:
+      - description: this is a test file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - default: Bearer token
+        description: admin header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/StringResponse'
+      summary: Upload Background
+      tags:
+      - Users
   /users/background/choices:
     get:
       description: Get User Backgrounds Uploaded to the server
@@ -900,7 +914,7 @@ paths:
             $ref: '#/definitions/BackgroundResponse'
       summary: Get User Background Choices
       tags:
-      - User
+      - Users
   /users/creds:
     post:
       consumes:

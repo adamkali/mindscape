@@ -232,15 +232,15 @@ func (uc *UserController) GetDefaultBackground(ctx echo.Context) error {
 // @Description Upload a Background and set the User.Background  to be the uploaded background
 //
 // @ID          UploadBackground
-// @Tags        Background
+// @Tags        Users 
 // @Accept      multipart/form-data
-// @Param       file                formData    file            true "this is a test file"
+// @Param       file                formData    file                            true "this is a test file"
 // @Param       Authorization       header       string                         true "admin header"     default(Bearer token)
 // @Produce     json
 // @Success     200                 {object}     responses.StringResponse
 // @Failure     404                 {object}     responses.StringResponse
 // @Failure     500                 {object}     responses.StringResponse
-// @Router      /user/background   [put]
+// @Router      /users/background   [post]
 func (uc UserController) UploadBackgound(ctx echo.Context) error {
 	return handlers.NewUploadBackgroundHandler(
 		ctx,
@@ -277,7 +277,7 @@ func (uc *UserController) GetBackgroundChoices(ctx echo.Context) error {
 // @Description Get User Background Choice
 //
 // @ID          GetUserBackground
-// @Tags        User
+// @Tags        Users
 // @Param       Authorization       header       string                         true "admin header"     default(Bearer token)
 // @Param       bacgkround          query        string                         true "background"
 // @Produce     json
@@ -299,7 +299,7 @@ func (uc UserController) GetBackground(ctx echo.Context) error {
 // @Description Get User Backgrounds Uploaded to the server
 //
 // @ID          GetUserBackgroundChoices
-// @Tags        User
+// @Tags        Users
 // @Param       Authorization       header       string                         true "admin header"     default(Bearer token)
 // @Produce     json
 // @Success     200                 {object}     responses.BackgroundsResponse
@@ -320,7 +320,7 @@ func (uc UserController) GetUserBackgroundChoices(ctx echo.Context) error {
 // @Description by query param. 
 //
 // @ID          SetUserBackground
-// @Tags        User
+// @Tags        Users
 // @Param       Authorization       header       string                         true "admin header"     default(Bearer token)
 // @Param       background          query        string                         true "background"
 // @Produce     json
@@ -350,7 +350,7 @@ func (uc UserController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFun
 	api.POST("/profile", uc.UploadProfilePicture, authMiddleware)
 	api.POST("/creds", uc.UpdateUser, authMiddleware)
 	api.GET("/profile", uc.GetProfile, authMiddleware)
-	api.PUT("/backgound", uc.UploadBackgound, authMiddleware)
+	api.POST("/background", uc.UploadBackgound, authMiddleware)
 	api.PATCH("/background", uc.SetBackground, authMiddleware)
 	api.GET("/background", uc.GetBackground, authMiddleware)
 	api.GET("/background/choices", uc.GetUserBackgroundChoices, authMiddleware)

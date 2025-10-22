@@ -246,12 +246,7 @@ func (r ValidatorService) CreateBookmarkRequest(e echo.Context) (*repository.Cre
 func (r ValidatorService) ValidateBacgroundImageChange(e echo.Context) (*requests.UploadUserBackgroundRequest, error) {
 	var err error
 	validRequest := new(requests.UploadUserBackgroundRequest)
-	user_id := e.FormValue("user_id")
 	formFile, err := e.FormFile("file")
-	if err != nil {
-		return nil, err
-	}
-	validRequest.UserId, err = uuid.Parse(user_id)
 	if err != nil {
 		return nil, err
 	}

@@ -15,6 +15,7 @@
 
 import * as runtime from '../runtime';
 import type {
+  BackgroundResponse,
   DeleteUserResponse,
   LoginRequest,
   LoginResponse,
@@ -26,6 +27,8 @@ import type {
   UsersResponse,
 } from '../models/index';
 import {
+    BackgroundResponseFromJSON,
+    BackgroundResponseToJSON,
     DeleteUserResponseFromJSON,
     DeleteUserResponseToJSON,
     LoginRequestFromJSON,
@@ -59,12 +62,26 @@ export interface GetProfilePictureRequest {
     authorization: string;
 }
 
+export interface GetUserBackgroundRequest {
+    authorization: string;
+    bacgkround: string;
+}
+
+export interface GetUserBackgroundChoicesRequest {
+    authorization: string;
+}
+
 export interface GetUsersRequest {
     authorization: string;
 }
 
 export interface LoginOperationRequest {
     loginRequest: LoginRequest;
+}
+
+export interface SetUserBackgroundRequest {
+    authorization: string;
+    background: string;
 }
 
 export interface SignupRequest {
@@ -74,6 +91,11 @@ export interface SignupRequest {
 export interface UpdateUserRequest {
     authorization: string;
     updateCredentialsRequest: UpdateCredentialsRequest;
+}
+
+export interface UploadBackgroundRequest {
+    authorization: string;
+    file: Blob;
 }
 
 export interface UploadProfilePictureRequest {
@@ -211,6 +233,95 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
+     * Get User Background Choice
+     * Get User Background Choice
+     */
+    async getUserBackgroundRaw(requestParameters: GetUserBackgroundRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StringResponse>> {
+        if (requestParameters['authorization'] == null) {
+            throw new runtime.RequiredError(
+                'authorization',
+                'Required parameter "authorization" was null or undefined when calling getUserBackground().'
+            );
+        }
+
+        if (requestParameters['bacgkround'] == null) {
+            throw new runtime.RequiredError(
+                'bacgkround',
+                'Required parameter "bacgkround" was null or undefined when calling getUserBackground().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['bacgkround'] != null) {
+            queryParameters['bacgkround'] = requestParameters['bacgkround'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        }
+
+        const response = await this.request({
+            path: `/users/background`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => StringResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get User Background Choice
+     * Get User Background Choice
+     */
+    async getUserBackground(requestParameters: GetUserBackgroundRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StringResponse> {
+        const response = await this.getUserBackgroundRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get User Backgrounds Uploaded to the server
+     * Get User Background Choices
+     */
+    async getUserBackgroundChoicesRaw(requestParameters: GetUserBackgroundChoicesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BackgroundResponse>> {
+        if (requestParameters['authorization'] == null) {
+            throw new runtime.RequiredError(
+                'authorization',
+                'Required parameter "authorization" was null or undefined when calling getUserBackgroundChoices().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        }
+
+        const response = await this.request({
+            path: `/users/background/choices`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BackgroundResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get User Backgrounds Uploaded to the server
+     * Get User Background Choices
+     */
+    async getUserBackgroundChoices(requestParameters: GetUserBackgroundChoicesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BackgroundResponse> {
+        const response = await this.getUserBackgroundChoicesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get All Users. Must be Admin using the new mediator pattern
      * Get All Users
      */
@@ -284,6 +395,56 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async login(requestParameters: LoginOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<LoginResponse> {
         const response = await this.loginRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Set User Background Choice by background name by query param.
+     * Set User Background
+     */
+    async setUserBackgroundRaw(requestParameters: SetUserBackgroundRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StringResponse>> {
+        if (requestParameters['authorization'] == null) {
+            throw new runtime.RequiredError(
+                'authorization',
+                'Required parameter "authorization" was null or undefined when calling setUserBackground().'
+            );
+        }
+
+        if (requestParameters['background'] == null) {
+            throw new runtime.RequiredError(
+                'background',
+                'Required parameter "background" was null or undefined when calling setUserBackground().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['background'] != null) {
+            queryParameters['background'] = requestParameters['background'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        }
+
+        const response = await this.request({
+            path: `/users/background`,
+            method: 'PATCH',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => StringResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Set User Background Choice by background name by query param.
+     * Set User Background
+     */
+    async setUserBackground(requestParameters: SetUserBackgroundRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StringResponse> {
+        const response = await this.setUserBackgroundRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -371,6 +532,73 @@ export class UsersApi extends runtime.BaseAPI {
      */
     async updateUser(requestParameters: UpdateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UpdateUserResponse> {
         const response = await this.updateUserRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Upload a Background and set the User.Background  to be the uploaded background
+     * Upload Background
+     */
+    async uploadBackgroundRaw(requestParameters: UploadBackgroundRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StringResponse>> {
+        if (requestParameters['authorization'] == null) {
+            throw new runtime.RequiredError(
+                'authorization',
+                'Required parameter "authorization" was null or undefined when calling uploadBackground().'
+            );
+        }
+
+        if (requestParameters['file'] == null) {
+            throw new runtime.RequiredError(
+                'file',
+                'Required parameter "file" was null or undefined when calling uploadBackground().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        }
+
+        const consumes: runtime.Consume[] = [
+            { contentType: 'multipart/form-data' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        useForm = canConsumeForm;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
+        }
+
+        if (requestParameters['file'] != null) {
+            formParams.append('file', requestParameters['file'] as any);
+        }
+
+        const response = await this.request({
+            path: `/users/background`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: formParams,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => StringResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Upload a Background and set the User.Background  to be the uploaded background
+     * Upload Background
+     */
+    async uploadBackground(requestParameters: UploadBackgroundRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StringResponse> {
+        const response = await this.uploadBackgroundRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -1,6 +1,8 @@
 package user_handlers
 
 import (
+	"fmt"
+
 	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
@@ -42,6 +44,7 @@ func (h *UserBackgroundChoicesHandler) Handle() handlers.IHandler {
 		return handlers.Lock(h, 401, err)
 	}
 
+	fmt.Println("[INFO] UserBackgroundChoicesHandler.Handle{ userID: %v }\n", userID)
 	entities, err := h.MinioService.GetUserBackgroundChoices(userID)
 	if err != nil {
 		return handlers.Lock(h, 500, err)

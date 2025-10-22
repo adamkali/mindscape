@@ -63,7 +63,7 @@ const docTemplate = `{
                 "tags": [
                     "Background"
                 ],
-                "summary": "Get Background Choices",
+                "summary": "Get Background Choices that ae loaded into the server.",
                 "operationId": "GetBackgroundChoices",
                 "responses": {
                     "200": {
@@ -615,39 +615,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/user/background": {
-            "put": {
-                "description": "Get Background Choices",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Background"
-                ],
-                "summary": "Get Background Choices",
-                "operationId": "UploadBackground",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/StringResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/StringResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/StringResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/users/": {
             "get": {
                 "description": "Get All Users. Must be Admin using the new mediator pattern",
@@ -704,7 +671,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "Users"
                 ],
                 "summary": "Get User Background Choice",
                 "operationId": "GetUserBackground",
@@ -746,13 +713,64 @@ const docTemplate = `{
                     }
                 }
             },
+            "post": {
+                "description": "Upload a Background and set the User.Background  to be the uploaded background",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Upload Background",
+                "operationId": "UploadBackground",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "this is a test file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "admin header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    }
+                }
+            },
             "patch": {
                 "description": "Set User Background Choice by background name\nby query param.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "Users"
                 ],
                 "summary": "Set User Background",
                 "operationId": "SetUserBackground",
@@ -802,7 +820,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "Users"
                 ],
                 "summary": "Get User Background Choices",
                 "operationId": "GetUserBackgroundChoices",

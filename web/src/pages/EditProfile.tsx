@@ -1,6 +1,6 @@
 import { useNavigate } from '@solidjs/router';
 import { createEffect, createSignal, Show } from 'solid-js';
-import { UsersApi,  type UpdateCredentialsRequest, ResponseError, BackgroundApi } from '@/api';
+import { UsersApi,  type UpdateCredentialsRequest, ResponseError } from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBackground, useBackgroundStyle } from '@/hooks/useBackground';
 import { EmptyGuid } from '@/utils';
@@ -225,8 +225,8 @@ const EditProfile = () => {
 		setSuccess('');
 
 		try {
-			const backgroundApi = new BackgroundApi();
-			await backgroundApi.uploadBackground({
+			const userApi = new UsersApi();
+			await userApi.uploadBackground({
 				authorization: `Bearer ${auth.token()}`,
 				file: customBackgroundFile()!,
 
