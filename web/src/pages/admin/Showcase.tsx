@@ -36,7 +36,7 @@ export default function Showcase() {
 				<CardHeader>
 					<div class="text-lg text-foreground">Mindscape UI Buttons</div>
 				</CardHeader>
-				<CardBody padding='lg' class="flex flex-row space-x-4">
+				<CardBody padding="lg" class="flex flex-row space-x-4">
 					<Button variant="primary">Primary</Button>
 					<Button variant="secondary">Secondary</Button>
 					<Button variant="tertiary">Tertiary</Button>
@@ -47,8 +47,12 @@ export default function Showcase() {
 				<CardHeader>
 					<div class="text-lg text-foreground">Mindscape UI Forms</div>
 				</CardHeader>
-				<CardBody padding='lg' >
-					<form onSubmit={submit} class="flex flex-col text-center space-y-4" id="form">
+				<CardBody padding="lg">
+					<form
+						onSubmit={submit}
+						class="flex flex-col text-center space-y-4"
+						id="form"
+					>
 						<Input
 							variant="primary"
 							title="Search"
@@ -125,8 +129,8 @@ export default function Showcase() {
 							notes: [],
 							children: [],
 						}}
-						selectedFolder={() => { }}
-						deleteFolder={() => { }}
+						selectedFolder={() => {}}
+						deleteFolder={() => {}}
 					/>
 					<FolderComponent
 						folder={{
@@ -139,8 +143,8 @@ export default function Showcase() {
 							notes: [],
 							children: [],
 						}}
-						selectedFolder={() => { }}
-						deleteFolder={() => { }}
+						selectedFolder={() => {}}
+						deleteFolder={() => {}}
 					/>
 					<CreateFolderComponent
 						userId={auth.user()?.id ?? EmptyGuid}

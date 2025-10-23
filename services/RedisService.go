@@ -4,7 +4,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/adamkali/mindscape/cmd/configuration"
@@ -20,7 +19,6 @@ type RedisService struct {
 func CreateRedisService(ctx context.Context, config *configuration.Configuration) *RedisService {
 	url := config.Cache.URL
 
-	fmt.Printf("[INFO] RedisService.CreateRedisServiceurl{ url: %v }", url)
 	opts, err := redis.ParseURL(url)
 	if err != nil {
 		panic(err)

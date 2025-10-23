@@ -4,38 +4,106 @@ package services
 
 import (
 	"context"
-	//"time"
+	"errors"
+	"sync"
 
 	"github.com/adamkali/mindscape/db/repository"
 )
 
-// AuthService provides authentication services, including creating and checking tokens.
-// the MockAuthService struct implements the IAuthService interface. And provides dummy functions
-// to obfuscate the connections to the database, as well as the creation of tokens.
-// this allows us to test the authentication services without having to connect to a real database.
-//
-// type IAuthService interface {
-// 	Create(user *repository.User) (*string, error)
-//  	Update(user repository.User) (*string, error)
-// 	CheckToken(token string) error
-// }
-
+// MockAuthService provides an in-memory implementation of IAuthService for testing
 type MockAuthService struct {
-	ctx  context.Context
+	ctx   context.Context
+	mutex sync.RWMutex
+	
+	// Test behavior controls
+	ShouldFailCreate      bool
+	ShouldFailUpdate      bool
+	ShouldFailCheckToken  bool
+	
+	CreateErrorMessage     string
+	UpdateErrorMessage     string
+	CheckTokenErrorMessage string
+	
+	// Test data tracking
+	CreateCallCount     int
+	UpdateCallCount     int
+	CheckTokenCallCount int
+	
+	LastCreateUser     *repository.User
+	LastUpdateUser     repository.User
+	LastCheckToken     string
 }
 
-func (MockAuthService *MockAuthService) Create(user *repository.User) (*string, error) {
+// CreateMockAuthService creates a new MockAuthService with default error messages
+func CreateMockAuthService(ctx context.Context, pool interface{}) *MockAuthService {
+	return &MockAuthService{
+		ctx:                    ctx,
+		CreateErrorMessage:     "Mock Create failure",
+		UpdateErrorMessage:     "Mock Update failure", 
+		CheckTokenErrorMessage: "Mock CheckToken failure",
+	}
+}
+
+// Reset clears call tracking and resets test data
+func (m *MockAuthService) Reset() {
+	m.mutex.Lock()
+	defer m.mutex.Unlock()
+	
+	// Reset call counts
+	m.CreateCallCount = 0
+	m.UpdateCallCount = 0
+	m.CheckTokenCallCount = 0
+	
+	// Reset last call parameters
+	m.LastCreateUser = nil
+	m.LastUpdateUser = repository.User{}
+	m.LastCheckToken = ""
+	
+	// Reset failure flags
+	m.ShouldFailCreate = false
+	m.ShouldFailUpdate = false
+	m.ShouldFailCheckToken = false
+}
+
+func (m *MockAuthService) Create(user *repository.User) (*string, error) {
+	m.mutex.Lock()
+	m.CreateCallCount++
+	m.LastCreateUser = user
+	m.mutex.Unlock()
+	
+	if m.ShouldFailCreate {
+		return nil, errors.New(m.CreateErrorMessage)
+	}
+	
 	// create a dummy token that is 64 characters long
 	token := "a============================================================//a"
 	return &token, nil
 }
 
-func (MockAuthService *MockAuthService) Update(user repository.User) (*string, error) {
+func (m *MockAuthService) Update(user repository.User) (*string, error) {
+	m.mutex.Lock()
+	m.UpdateCallCount++
+	m.LastUpdateUser = user
+	m.mutex.Unlock()
+	
+	if m.ShouldFailUpdate {
+		return nil, errors.New(m.UpdateErrorMessage)
+	}
+	
 	// create a dummy token that is 64 characters long
 	token := "a============================================================//a"
 	return &token, nil
 }
 
-func (MockAuthService *MockAuthService) CheckToken(token string) error {
+func (m *MockAuthService) CheckToken(token string) error {
+	m.mutex.Lock()
+	m.CheckTokenCallCount++
+	m.LastCheckToken = token
+	m.mutex.Unlock()
+	
+	if m.ShouldFailCheckToken {
+		return errors.New(m.CheckTokenErrorMessage)
+	}
+	
 	return nil
 }

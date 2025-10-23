@@ -15,7 +15,7 @@ import (
 )
 
 type DeleteUserHandler struct {
-	Data             *repository.User
+	data             *repository.User
 	err              error
 	code             int
 	ctx              echo.Context
@@ -44,26 +44,26 @@ func (h *DeleteUserHandler) Handle() handlers.IHandler {
 	jwt_token := h.ctx.Get("user").(*jwt.Token)
 	claims := jwt_token.Claims.(*services.CustomJwt)
 	userID := claims.UserId
-	user:= new(repository.User)
+	user := new(repository.User)
 	var err error
-	if err = h.AuthService.CheckToken(jwt_token.Raw); h.err != nil {
-		handlers.Lock(h, 401, err)
+	
+	if err = h.AuthService.CheckToken(jwt_token.Raw); err != nil {
+		return handlers.Lock(h, 401, err)
 	}
 	if user, err = h.UserService.Get(userID); err != nil {
-		handlers.Lock(h, 404, err)
+		return handlers.Lock(h, 404, err)
 	}
 	if !user.Admin {
-		handlers.Lock(h, 403, err)
+		return handlers.Lock(h, 403, fmt.Errorf("access denied: admin privileges required"))
 	}
 	deleteId, err := uuid.Parse(h.ctx.Param("user_id"))
 	if err != nil {
-		handlers.Lock(h, 400, err)
+		return handlers.Lock(h, 400, err)
 	}
 	if err = h.UserService.Remove(deleteId); err != nil {
-		handlers.Lock(h, 404, err)
+		return handlers.Lock(h, 404, err)
 	}
 	return h
-
 }
 
 func (h *DeleteUserHandler) JSON() error {
@@ -81,7 +81,19 @@ func (h *DeleteUserHandler) SetCode(code int) handlers.IHandler {
 	h.code = code
 	return h
 }
+
+func (h *DeleteUserHandler) Code() int {
+	return h.code
+}
+
+func (h *DeleteUserHandler) Data() any {
+	return h.data
+}
+
+func (h *DeleteUserHandler) Error() error {
+	return h.err
+}
 func (h *DeleteUserHandler) SetError(err error) handlers.IHandler {
-	h.err = fmt.Errorf("%d Error: %s", h.code, h.err.Error())
+	h.err = fmt.Errorf("%d Error: %s", h.code, err.Error())
 	return h
 }

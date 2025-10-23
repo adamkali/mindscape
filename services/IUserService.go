@@ -51,4 +51,7 @@ type IUserService interface {
 	// Update a user by id with new credentials
 	UpdateUserCredentials(params *requests.UpdateCredentialsRequest) (*repository.User, error) 
 
+	// Update the user's BackgroundImage
+	UpdateUserBackgroundImage(params *repository.UpdateUserBacgroundParams) (*repository.User, error)
+
 }

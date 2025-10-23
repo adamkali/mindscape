@@ -1,4 +1,3 @@
-
 package requests
 
 type NewUserRequest struct {

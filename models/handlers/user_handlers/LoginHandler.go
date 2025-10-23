@@ -51,7 +51,7 @@ func (h *LoginHandler) Handle() handlers.IHandler {
 	h.authenticated, err = h.UserService.Login(request)
 	if err != nil {
 		return handlers.Lock(h, 401, err)
-	} 
+	}
 	if h.authenticated == nil {
 		return handlers.Lock(h, 401, fmt.Errorf("invalid credentials"))
 	}
@@ -77,11 +77,30 @@ func (h *LoginHandler) JSON() error {
 	}
 }
 
+func (h *LoginHandler) Data() any {
+	return struct {
+		Authenticated *repository.User
+		Token         *string
+	}{
+		Authenticated: h.authenticated,
+		Token:         h.token,
+	}
+}
+
 func (h *LoginHandler) SetCode(code int) handlers.IHandler {
 	h.code = code
 	return h
 }
+
 func (h *LoginHandler) SetError(err error) handlers.IHandler {
 	h.err = err
 	return h
+}
+
+func (h *LoginHandler) Error() error {
+	return h.err
+}
+
+func (h *LoginHandler) Code() int {
+	return h.code
 }

@@ -1,6 +1,6 @@
-import { useNavigate } from "@solidjs/router";
-import { createEffect, type ParentComponent } from "solid-js";
-import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from '@solidjs/router';
+import { createEffect, type ParentComponent } from 'solid-js';
+import { useAuth } from '../contexts/AuthContext';
 
 const AdminRoute: ParentComponent = (props) => {
 	const auth = useAuth();
@@ -23,12 +23,12 @@ const AdminRoute: ParentComponent = (props) => {
 		);
 	}
 
-	// we do not trust if the user is still here 
+	// we do not trust if the user is still here
 	//
 	if (!auth.isAdmin()) {
 		navigate('/', { replace: true });
 	}
 	return <>{props.children}</>;
-}
+};
 
-export default AdminRoute
+export default AdminRoute;

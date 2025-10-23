@@ -1,6 +1,8 @@
 package user_handlers
 
 import (
+	"fmt"
+	
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
@@ -45,7 +47,7 @@ func (h *UpdateUserHandler) Handle() handlers.IHandler {
 		return handlers.Lock(h, 400, err)
 	}
 	if request.ID != userId {
-		return handlers.Lock(h, 403, err)
+		return handlers.Lock(h, 403, fmt.Errorf("user ID mismatch: cannot update another user's credentials"))
 	}
 	h.User, err = h.us.UpdateUserCredentials(request)
 	if err != nil {
@@ -79,4 +81,22 @@ func (h *UpdateUserHandler) SetError(err error) handlers.IHandler {
 func (h *UpdateUserHandler) SetCode(code int) handlers.IHandler {
 	h.code = code
 	return h
+}
+
+func (h *UpdateUserHandler) Code() int {
+	return h.code
+}
+
+func (h *UpdateUserHandler) Data() any {
+	return struct {
+		User  *repository.User
+		Token *string
+	}{
+		User:  h.User,
+		Token: h.Token,
+	}
+}
+
+func (h *UpdateUserHandler) Error() error {
+	return h.err
 }

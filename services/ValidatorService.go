@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/mail"
+	"net/url"
 	"regexp"
 	"strings"
 	"unicode"
@@ -14,6 +15,7 @@ import (
 	"github.com/adamkali/mindscape/cmd/configuration"
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/requests"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -76,7 +78,7 @@ func (ValidatorService ValidatorService) ValidateNewUserRequest(e echo.Context) 
 
 	_, err := mail.ParseAddress(validRequest.Email)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Validation failed (%s) is not a valid email address", validRequest.Email)
 	}
 
 	sevenOrMore, number, upper, special := validatePassword(validRequest.Password)
@@ -98,6 +100,27 @@ func (ValidatorService ValidatorService) ValidateLoginRequest(e echo.Context) (*
 	validRequest := new(requests.LoginRequest)
 	if err := e.Bind(&validRequest); err != nil {
 		return nil, err
+	}
+	if validRequest.Email == "" && validRequest.Username == "" {
+		err := errors.New("Email and Username cannot be null")
+		return nil, err
+	}
+	// validRequest.Username can be sql injection, but only validate if username is provided
+	if validRequest.Username != "" && !validateUsername(validRequest.Username) {
+		return nil, fmt.Errorf("Validation failed (%s) is not a valid username", validRequest.Username)
+	}
+	if validRequest.Password == "" {
+		err := errors.New("You must send a password")
+		return nil, err
+	}
+	sevenOrMore, number, upper, special := validatePassword(validRequest.Password)
+	if !(sevenOrMore && number && upper && special) {
+		return nil, fmt.Errorf(
+			"Validation failed. Seven Or More (%t), Number (%t), Upper (%t), Special (%t)",
+			sevenOrMore,
+			number,
+			upper,
+			special)
 	}
 	return validRequest, nil
 }
@@ -126,7 +149,10 @@ func (vs ValidatorService) ValidateUpdateUserCredentialRequest(e echo.Context) (
 	if err := e.Bind(&validRequest); err != nil {
 		return nil, err
 	}
-	
+	if validRequest.ID == uuid.Nil {
+		err := errors.New("ID cannot be null")
+		return nil, err
+	}
 	if !validateUsername(validRequest.Username) {
 		return nil, fmt.Errorf("Validation failed (%s) is not a valid username", validRequest.Username)
 	}
@@ -156,7 +182,6 @@ func (vs ValidatorService) ValidateUpdateUserCredentialRequest(e echo.Context) (
 }
 
 func (vs ValidatorService) ValidateCreateFolderRequest(e echo.Context) (*repository.CreateFolderParams, error) {
-	println("[INFO] ValidatorService.ValidateCreateFolderRequest")
 	validRequest := new(repository.CreateFolderParams)
 	if err := e.Bind(&validRequest); err != nil {
 		fmt.Printf("[ERROR] ValidatorService.ValidateCreateFolderRequest{ err: %v }\n", err)
@@ -176,5 +201,115 @@ func (r ValidatorService) CreateBookmarkRequest(e echo.Context) (*repository.Cre
 	if err := e.Bind(&validRequest); err != nil {
 		return nil, err
 	}
+
+	// Validate User ID
+	if validRequest.UserID == uuid.Nil {
+		return nil, errors.New("User ID cannot be null")
+	}
+
+	// Validate Folder ID
+	if validRequest.FolderID == uuid.Nil {
+		return nil, errors.New("Folder ID cannot be null")
+	}
+
+	// Validate Name
+	if validRequest.Name == "" {
+		return nil, errors.New("Bookmark name cannot be empty")
+	}
+
+	// Validate Link
+	if validRequest.Link == "" {
+		return nil, errors.New("Bookmark link cannot be empty")
+	}
+
+	// Validate URL format
+	u, err := url.Parse(validRequest.Link)
+	if err != nil {
+		return nil, errors.New("Invalid URL format")
+	}
+
+	// Only allow HTTP and HTTPS
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return nil, errors.New("Only HTTP and HTTPS URLs are allowed")
+	}
+
+	// Check for emojis in link
+	for _, r := range validRequest.Link {
+		if unicode.Is(unicode.So, r) || unicode.Is(unicode.Sm, r) {
+			return nil, errors.New("Link cannot contain emojis")
+		}
+	}
+
+	return validRequest, nil
+}
+
+func (r ValidatorService) ValidateBacgroundImageChange(e echo.Context) (*requests.UploadUserBackgroundRequest, error) {
+	var err error
+	validRequest := new(requests.UploadUserBackgroundRequest)
+	formFile, err := e.FormFile("file")
+	if err != nil {
+		return nil, err
+	}
+	// check to make sure file is not empty
+	validRequest.File = formFile
+	if validRequest.File.Size == 0 {
+		return nil, errors.New("File is empty")
+	}
+	//check to make sure file is an image
+	if validRequest.File.Header.Get("Content-Type") != "image/jpeg" &&
+		validRequest.File.Header.Get("Content-Type") != "image/png" &&
+		validRequest.File.Header.Get("Content-Type") != "image/gif" {
+		return nil, errors.New("File is not an image")
+	}
+	return validRequest, nil
+
+}
+
+func (r ValidatorService) ValidateMoveFolderRequest(e echo.Context) (*requests.MoveFolderRequest, error) {
+	validRequest := new(requests.MoveFolderRequest)
+	if err := e.Bind(&validRequest); err != nil {
+		return nil, err
+	}
+	
+	// Validate User ID
+	if validRequest.UserID == uuid.Nil {
+		return nil, errors.New("User ID cannot be null")
+	}
+	
+	// Validate Folder ID
+	if validRequest.FolderID == uuid.Nil {
+		return nil, errors.New("Folder ID cannot be null")
+	}
+	
+	// Validate that folder is not being moved to itself
+	if validRequest.NewParentID != nil && *validRequest.NewParentID == validRequest.FolderID {
+		return nil, errors.New("Cannot move folder to itself")
+	}
+	
+	return validRequest, nil
+}
+
+func (r ValidatorService) ValidateMoveBookmarkRequest(e echo.Context) (*requests.MoveBookmarkRequest, error) {
+	validRequest := new(requests.MoveBookmarkRequest)
+	if err := e.Bind(&validRequest); err != nil {
+		return nil, err
+	}
+	fmt.Printf("[INFO] ValidatorService.ValidateMoveBookmarkRequest{ validRequest: %v }\n", validRequest)
+	
+	// Validate User ID
+	if validRequest.UserID == uuid.Nil {
+		return nil, errors.New("User ID cannot be null")
+	}
+	
+	// Validate Bookmark ID
+	if validRequest.BookmarkID == uuid.Nil {
+		return nil, errors.New("Bookmark ID cannot be null")
+	}
+	
+	// Validate New Parent ID (bookmarks cannot be moved to root, must have a parent folder)
+	if validRequest.NewParentID == uuid.Nil {
+		return nil, errors.New("New parent folder ID cannot be null - bookmarks must belong to a folder")
+	}
+	
 	return validRequest, nil
 }

@@ -15,16 +15,16 @@ interface CardHeaderProps extends ComponentProps<'div'> {
 
 /**
  * CardHeader component - Header section for cards
- * 
+ *
  * Features:
  * - Title and subtitle support
  * - Additional content slot for actions or icons
  * - Proper spacing and typography hierarchy
  * - Uses design system colors
- * 
+ *
  * @example
  * ```tsx
- * <CardHeader 
+ * <CardHeader
  *   title="Card Title"
  *   subtitle="Card description"
  * >
@@ -33,31 +33,25 @@ interface CardHeaderProps extends ComponentProps<'div'> {
  * ```
  */
 export default function CardHeader(props: CardHeaderProps): JSX.Element {
-	const {title, subtitle, children, class: className, ...headerProps } = props;
+	const { title, subtitle, children, class: className, ...headerProps } = props;
 
 	return (
 		<div
-			class={cn("px-6 py-4 border-b border-border/10", className)}
+			class={cn('px-6 py-4 border-b border-white/10', className)}
 			{...headerProps}
 		>
 			<div class="flex items-start justify-between">
 				<div class="flex-1">
 					{title && (
-						<h3 class="text-lg font-semibold text-card-foreground leading-6">
+						<h3 class="text-lg font-semibold leading-6">
 							{title}
 						</h3>
 					)}
 					{subtitle && (
-						<p class="text-sm text-card-foreground/70 mt-1">
-							{subtitle}
-						</p>
+						<p class="text-sm opacity-70 mt-1">{subtitle}</p>
 					)}
 				</div>
-				{children && (
-					<div class="ml-4 flex-shrink-0">
-						{children}
-					</div>
-				)}
+				{children && <div class="ml-4 flex-shrink-0">{children}</div>}
 			</div>
 		</div>
 	);

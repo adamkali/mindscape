@@ -94,6 +94,18 @@ func (h *GetProfilePictureHandler) SetCode(code int) handlers.IHandler {
 	h.code = code
 	return h
 }
+
+func (h *GetProfilePictureHandler) Code() int {
+	return h.code
+}
+
+func (h *GetProfilePictureHandler) Data() any {
+	return h.url
+}
+
+func (h *GetProfilePictureHandler) Error() error {
+	return h.err
+}
 func (h *GetProfilePictureHandler) SetError(err error) handlers.IHandler {
 	h.err = err
 	return h

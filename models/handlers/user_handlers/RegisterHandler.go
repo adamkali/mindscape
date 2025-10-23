@@ -84,3 +84,21 @@ func (h *RegisterHandler) SetCode(code int) handlers.IHandler {
 	h.code = code
 	return h
 }
+
+func (h *RegisterHandler) Data() any {
+	return struct {
+		NewUser *repository.User
+		Token   *string
+	}{
+		NewUser: h.newUser,
+		Token:   h.token,
+	}
+}
+
+func (h *RegisterHandler) Code() int {
+	return h.code
+}
+
+func (h *RegisterHandler) Error() error {
+	return h.err
+}

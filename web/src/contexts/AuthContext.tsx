@@ -7,6 +7,7 @@ import {
 } from 'solid-js';
 import type { ResponsesUserData } from '@/api';
 import { UsersApi } from '@/api';
+import { initializeApiConfig, getApiConfig } from '@/utils/apiConfig';
 
 export interface AuthContextValue {
 	user: () => ResponsesUserData | null;
@@ -30,17 +31,31 @@ export const AuthProvider: ParentComponent = (props) => {
 	} catch {
 		localStorage.removeItem('user');
 	}
-	
+
 	const [token, setToken] = createSignal<string | null>(storedToken);
 	const [user, setUser] = createSignal<ResponsesUserData | null>(parsedUser);
-	const [isInitializing, setIsInitializing] = createSignal(!!storedToken && !parsedUser);
+	const [isInitializing, setIsInitializing] = createSignal(
+		!!storedToken && !parsedUser,
+	);
 
-	const api = new UsersApi();
+	// Create logout function that will be used by the auth interceptor
+	const logout = () => {
+		console.log('Logging out user due to authentication failure');
+		setToken(null);
+		setUser(null);
+		setIsInitializing(false);
+		// Redirect to login page using window.location to avoid router dependency
+		window.location.href = '/login';
+	};
+
+	// Initialize global API configuration with auth interceptor
+	const apiConfig = initializeApiConfig(logout);
+	const api = new UsersApi(apiConfig);
 
 	createEffect(() => {
 		const currentToken = token();
 		const currentUser = user();
-		
+
 		if (currentToken) {
 			localStorage.setItem('jwt', currentToken);
 			if (currentUser) {
@@ -81,12 +96,6 @@ export const AuthProvider: ParentComponent = (props) => {
 	const login = (newToken: string, userData: ResponsesUserData) => {
 		setToken(newToken);
 		setUser(userData);
-		setIsInitializing(false);
-	};
-
-	const logout = () => {
-		setToken(null);
-		setUser(null);
 		setIsInitializing(false);
 	};
 

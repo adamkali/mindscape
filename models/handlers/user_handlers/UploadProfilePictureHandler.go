@@ -51,6 +51,18 @@ func (h *UploadProfilePictureHandler) SetCode(code int) handlers.IHandler {
 	return h
 }
 
+func (h *UploadProfilePictureHandler) Code() int {
+	return h.code
+}
+
+func (h *UploadProfilePictureHandler) Data() any {
+	return h.response
+}
+
+func (h *UploadProfilePictureHandler) Error() error {
+	return h.err
+}
+
 func (h *UploadProfilePictureHandler) SetError(err error) handlers.IHandler {
 	h.err = err
 	return h

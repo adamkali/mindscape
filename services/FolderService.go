@@ -11,12 +11,12 @@ import (
 )
 
 type FolderService struct {
-	ctx context.Context
+	ctx  context.Context
 	pool *pgxpool.Pool
 }
 
 func CreateFolderService(
-	ctx context.Context,	
+	ctx context.Context,
 	pool *pgxpool.Pool,
 ) IFolderService {
 	return &FolderService{
@@ -58,7 +58,7 @@ func (folderService FolderService) GetRoot(user_id uuid.UUID) ([]repository.Fold
 func (folderService FolderService) Get(id uuid.UUID) (*repository.Folder, error) {
 	tx, err := folderService.pool.Begin(folderService.ctx)
 	if err != nil {
-		return nil, err	
+		return nil, err
 	}
 	defer tx.Rollback(folderService.ctx)
 	repo := repository.New(tx)
@@ -97,7 +97,7 @@ func (folderService FolderService) GetByParent(parent_id uuid.UUID) ([]repositor
 	}
 	defer tx.Rollback(folderService.ctx)
 	repo := repository.New(tx)
-	
+
 	parent_id_type := pgtype.UUID{
 		Bytes: parent_id,
 		Valid: true,
@@ -168,31 +168,41 @@ func (folderService FolderService) Remove(id uuid.UUID) error {
 }
 
 func (folderService FolderService) Move(id uuid.UUID, parent_id *uuid.UUID) error {
-	if parent_id == nil {
-		return nil
-	}
 	tx, err := folderService.pool.Begin(folderService.ctx)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback(folderService.ctx)
-	repo := repository.New(tx)
 
-	var p_id_bytes []byte
-	parent_id_type := &pgtype.UUID{}
-	if p_id_bytes, err = parent_id.MarshalBinary(); err != nil {
-		return err
+	repo := repository.New(tx)
+	parent_id_pgtype := pgtype.UUID{}
+	if parent_id != nil {
+		if err := repo.MoveFolder(
+			folderService.ctx,
+			repository.MoveFolderParams{
+				ID: id,
+				ParentID: pgtype.UUID{
+					Bytes: *parent_id,
+					Valid: true,
+				},
+			},
+		); err != nil {
+			return err
+		}
+	} else {
+		parent_id_pgtype = pgtype.UUID{}
+		parent_id_pgtype.Valid = true
+		if err := repo.MoveFolder(
+			folderService.ctx,
+			repository.MoveFolderParams{
+				ID:       id,
+				ParentID: pgtype.UUID{},
+			},
+		); err != nil {
+			return err
+		}
 	}
-	if err = parent_id_type.UnmarshalJSON(p_id_bytes); err != nil {
-		return err
-	}
-	if err := repo.MoveFolder(folderService.ctx, 
-		repository.MoveFolderParams{
-			ID: id,
-			ParentID: *parent_id_type,
-		}); err != nil {
-		return err
-	}
+
 	tx.Commit(folderService.ctx)
 	return nil
 }

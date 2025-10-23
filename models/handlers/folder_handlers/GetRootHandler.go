@@ -12,7 +12,7 @@ import (
 )
 
 type GetRootFolderHandler struct {
-	Data            []responses.FolderData
+	data            []responses.FolderData
 	err             error
 	code            int
 	ctx             echo.Context
@@ -51,7 +51,7 @@ func (h *GetRootFolderHandler) Handle() handlers.IHandler {
 	if folders, err = h.FolderService.GetRoot(userID); err != nil {
 		return handlers.Lock(h, 404, err)
 	}
-	h.Data = make([]responses.FolderData, 0)
+	h.data = make([]responses.FolderData, 0)
 	for _, folder := range folders {
 		folderData := responses.NewFolderData(folder)
 		if folderData.Bookmarks, err = h.BookmarkService.GetByFolder(*folderData.ID); err != nil {
@@ -63,7 +63,7 @@ func (h *GetRootFolderHandler) Handle() handlers.IHandler {
 		if folderData.Children, err = h.FolderService.GetByParent(*folderData.ID); err != nil {
 			return handlers.Lock(h, 500, err)
 		}
-		h.Data = append(h.Data, folderData)
+		h.data = append(h.data, folderData)
 	}
 	return h
 }
@@ -72,12 +72,24 @@ func (h *GetRootFolderHandler) JSON() error {
 	if h.err != nil {
 		return responses.NewFoldersResponse().Fail(h.ctx, h.code, h.err)
 	}
-	return responses.NewFoldersResponse().Successful(h.ctx, h.Data)
+	return responses.NewFoldersResponse().Successful(h.ctx, h.data)
 }
 
 func (h *GetRootFolderHandler) SetCode(code int) handlers.IHandler {
 	h.code = code
 	return h
+}
+
+func (h *GetRootFolderHandler) Code() int {
+	return h.code
+}
+
+func (h *GetRootFolderHandler) Data() any {
+	return h.data
+}
+
+func (h *GetRootFolderHandler) Error() error {
+	return h.err
 }
 
 

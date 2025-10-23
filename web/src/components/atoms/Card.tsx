@@ -6,7 +6,7 @@ import { type ComponentProps, type JSX } from 'solid-js';
  */
 interface CardProps extends ComponentProps<'div'> {
 	/** Visual variant of the card */
-	variant?: 'default' | 'outlined' | 'elevated';
+	variant?: 'default' | 'glass' | 'elevated' | 'outlined';
 	/** Card content */
 	children?: JSX.Element;
 }
@@ -38,21 +38,25 @@ export default function Card(props: CardProps): JSX.Element {
 
 	const getVariantClasses = () => {
 		switch (variant) {
+			case 'glass':
+				return 'bg-white/20 backdrop-blur-md border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300 shadow-slate-900/20 hover:bg-white/30 hover:border-white/50';
 			case 'outlined':
-				return 'border border-border';
+				return 'border border-border bg-card';
 			case 'elevated':
-				return 'shadow-lg border border-border/50';
+				return 'shadow-lg border border-border/50 bg-card';
 			case 'default':
 			default:
-				return 'shadow-sm';
+				return 'shadow-sm bg-card';
 		}
 	};
 
 	return (
 		<div
 			class={cn(
-				'bg-card text-card-foreground rounded-lg',
-				getVariantClasses() + ' ' + className,
+				'text-card-foreground rounded-xl',
+				variant === 'glass' ? 'text-white' : '',
+				getVariantClasses(),
+				className,
 			)}
 			{...cardProps}
 		>

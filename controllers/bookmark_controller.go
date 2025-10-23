@@ -82,8 +82,57 @@ func (c BookmarkController) GetByFolder(e echo.Context) error {
 	).Handle().JSON()
 }
 
+// @Summary     Delete a Bookmark
+// @Description Delete a Bookmark by Authorization Header, and my a 
+// @Description ParentFolderId [parent_id]. 
+//
+// @ID          DeleteBookmark 
+// @Tags        Bookmarks
+// @Accept      json
+// @Produce     json
+// @Param       Authorization       header       string                         true "Authorization Header"     default("Bearer token")
+// @Param       bookmark_id         path         string                         true "Parent Folder ID"         default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
+// @Success     200                 {object}     BookmarksResponse
+// @Failure     401                 {object}     BookmarksResponse
+// @Failure     404                 {object}     BookmarksResponse
+// @Failure     500                 {object}     BookmarksResponse
+// @Router      /bookmarks/folder/{bookmark_id} [delete]
+func (c BookmarkController) Delete(e echo.Context) error {
+	return bookmark_handlers.NewDeleteHandler(
+		e,
+		c.BookmarkService,
+		c.AuthService,
+	).Handle().JSON()
+}
+
+// @Summary     Move a Bookmark
+// @Description Move a Bookmark by Authorization Header, and my a 
+// @Description ParentFolderId [parent_id]. 
+//
+// @ID          MoveBookmark 
+// @Tags        Bookmarks
+// @Accept      json
+// @Produce     json
+// @Param       MoveBookmarkRequest body         requests.MoveBookmarkRequest true "Move Bookmark Request"
+// @Param       Authorization       header       string                         true "Authorization Header"     default("Bearer token")
+// @Success     200                 {object}     BookmarksResponse
+// @Failure     401                 {object}     BookmarksResponse
+// @Failure     404                 {object}     BookmarksResponse
+// @Failure     500                 {object}     BookmarksResponse
+// @Router      /bookmarks [patch]
+func (c BookmarkController) Move(e echo.Context) error {
+	return bookmark_handlers.NewMoveHandler(
+		e,
+		*c.ValidatorService,
+		c.BookmarkService,
+		c.AuthService,
+	).Handle().JSON()
+}
+
 func (c BookmarkController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	api := e.Group("/api" + c.Name)
 	api.POST("", c.Create, authMiddleware)
 	api.GET("/folder/:parent_id", c.GetByFolder, authMiddleware)
+	api.PATCH("", c.Move, authMiddleware)
+	api.DELETE("/folder/:bookmark_id", c.Delete, authMiddleware)
 }

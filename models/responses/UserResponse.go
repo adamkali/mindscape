@@ -18,13 +18,14 @@ type UserData struct {
 	CreatedDatetime *time.Time `json:"created_datetime"`
 	UpdatedDatetime *time.Time `json:"updated_datetime"`
 	ProfilePicUrl   *string    `json:"profile_pic_url"`
+	Background      *string    `json:"background"`
 	Admin           bool       `json:"admin"`
 }
 
 type UserResponse struct {
 	Data    *UserData `json:"data"`
-	Success bool     `json:"success"`
-	Message string   `json:"message"`
+	Success bool      `json:"success"`
+	Message string    `json:"message"`
 } // @name UserResponse
 
 func UserDataFromRepository(repository *repository.User) *UserData {
@@ -38,6 +39,7 @@ func UserDataFromRepository(repository *repository.User) *UserData {
 		CreatedDatetime: repository.CreatedDatetime,
 		UpdatedDatetime: repository.UpdatedDatetime,
 		ProfilePicUrl:   repository.ProfilePicUrl,
+		Background:      repository.Background,
 		Admin:           repository.Admin,
 	}
 }

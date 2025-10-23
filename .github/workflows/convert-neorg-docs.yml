@@ -1,0 +1,196 @@
+name: Convert Neorg Documentation
+
+on:
+  push:
+    branches: [ main, master, dev, nightly ]
+    paths: [ 'docs/**' ]
+  pull_request:
+    branches: [ main, master, dev, nightly ]
+    paths: [ 'docs/**' ]
+  workflow_dispatch:
+
+jobs:
+  convert-docs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Check if docs directory exists
+      id: check-docs
+      run: |
+        if [ -d "docs" ]; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+          echo "No docs/ directory found, skipping conversion"
+        fi
+        
+    - name: Create tarball of .norg files only
+      if: steps.check-docs.outputs.exists == 'true'
+      id: create-tarball
+      run: |
+        # Find all .norg files and create tarball
+        norg_count=$(find docs/ -name "*.norg" -type f | wc -l)
+        echo "Found $norg_count .norg files"
+        
+        if [ "$norg_count" -eq 0 ]; then
+          echo "No .norg files found, skipping conversion"
+          echo "has_norg_files=false" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        
+        find docs/ -name "*.norg" -type f | tar -czf docs.tar.gz -T -
+        echo "Created docs.tar.gz with .norg files only:"
+        tar -tzf docs.tar.gz | head -20
+        echo "has_norg_files=true" >> $GITHUB_OUTPUT
+        
+    - name: Convert Neorg to Markdown via Lambda
+      if: steps.create-tarball.outputs.has_norg_files == 'true'
+      id: convert
+      run: |
+        echo "Uploading docs.tar.gz to Neorg Documentation Lambda..."
+        
+        response=$(curl -s -w "%{http_code}" \
+          -X POST \
+          -H "x-auth-token: ${{ secrets.NEORG_DOCUMENTATION_AUTH_TOKEN }}" \
+          -H "Content-Type: application/octet-stream" \
+          --data-binary @docs.tar.gz \
+          -o converted-docs.zip \
+          "${{ vars.NEORG_LAMBDA_ENDPOINT || 'https://neorg-documentation-lambda.production.endpoint' }}")
+        
+        http_code="${response: -3}"
+        
+        if [ "$http_code" -eq 200 ]; then
+          echo "✅ Conversion successful"
+          echo "success=true" >> $GITHUB_OUTPUT
+        else
+          echo "❌ Conversion failed with HTTP $http_code"
+          echo "success=false" >> $GITHUB_OUTPUT
+          exit 1
+        fi
+        
+    - name: Extract converted documentation
+      if: steps.convert.outputs.success == 'true'
+      run: |
+        echo "Extracting converted documentation..."
+        unzip -q converted-docs.zip -d converted/
+        echo "Converted files:"
+        find converted/ -name "*.md" | head -20
+        
+    - name: Initialize and update GitHub wiki
+      if: steps.convert.outputs.success == 'true' && github.event_name != 'pull_request'
+      run: |
+        echo "Updating GitHub wiki with converted documentation..."
+        
+        # First, try to initialize the wiki by creating a simple Home page via API
+        echo "Initializing wiki if needed..."
+        curl -s -X PUT \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "message": "Initialize wiki",
+            "content": "# Mindscape Documentation\n\nThis wiki contains documentation converted from Neorg files in the docs/ directory."
+          }' \
+          "https://api.github.com/repos/${{ github.repository }}/wiki/Home" 2>/dev/null || echo "Wiki initialization via API failed or wiki already exists"
+        
+        # Wait a moment for wiki to be ready
+        sleep 3
+        
+        # Clone the wiki repository
+        echo "Cloning wiki repository..."
+        git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git wiki-repo || {
+          echo "Wiki repository not accessible, creating local wiki structure..."
+          mkdir -p wiki-repo
+          cd wiki-repo
+          git init
+          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git
+          
+          # Create initial Home page
+          echo "# Mindscape Documentation" > Home.md
+          echo "" >> Home.md  
+          echo "This wiki contains documentation converted from Neorg files in the docs/ directory." >> Home.md
+          
+          git add Home.md
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "Initialize wiki"
+          git branch -M main
+          
+          # Try to push to create the wiki repository
+          git push -u origin main 2>/dev/null && echo "Wiki repository created" || {
+            echo "Failed to create wiki repository - it may need to be initialized manually"
+            exit 1
+          }
+          cd ..
+        }
+        
+        # Copy converted files to wiki
+        if [ -d "converted" ] && [ -d "wiki-repo" ]; then
+          echo "Copying converted documentation to wiki..."
+          find converted/ -name "*.md" -type f | while read -r file; do
+            # Get filename without path and convert to wiki-friendly name
+            filename=$(basename "$file")
+            # Convert to wiki page name (capitalize first letter, replace spaces/dashes)
+            wiki_name=$(echo "$filename" | sed 's/\.md$//' | sed 's/-/ /g' | sed 's/\b\w/\u&/g' | tr ' ' '-')
+            
+            cp "$file" "wiki-repo/${wiki_name}.md"
+            echo "Copied: $file -> ${wiki_name}.md"
+          done
+        fi
+        
+        # Commit and push wiki changes
+        cd wiki-repo
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add .
+        
+        if ! git diff --staged --quiet; then
+          git commit -m "Update documentation from ${{ github.repository }}@${{ github.sha }}
+
+          Generated from Neorg files in docs/ directory
+          Converted via Neorg Documentation Lambda
+          Triggered by: ${{ github.event_name }}
+          Branch: ${{ github.ref_name }}"
+          
+          git push origin main && echo "✅ Wiki updated successfully" || echo "Failed to push wiki changes"
+        else
+          echo "No changes to wiki documentation"
+        fi
+        
+    - name: Show converted documentation (PR only)
+      if: steps.convert.outputs.success == 'true' && github.event_name == 'pull_request'
+      run: |
+        echo "📖 Documentation conversion successful for pull request!"
+        echo "Converted files would be added to GitHub wiki:"
+        
+        # Show what files would be added
+        if [ -d "converted" ]; then
+          find converted/ -name "*.md" -type f | while read -r file; do
+            filename=$(basename "$file")
+            wiki_name=$(echo "$filename" | sed 's/\.md$//' | sed 's/-/ /g' | sed 's/\b\w/\u&/g' | tr ' ' '-')
+            echo "  - ${wiki_name}.md (GitHub wiki page)"
+          done
+        fi
+        
+        echo ""
+        echo "ℹ️  Note: GitHub wiki is not updated on pull requests."
+        echo "   Wiki pages will be automatically added when changes are merged to main branch."
+        echo "   You can view the wiki at: https://github.com/${{ github.repository }}/wiki"
+        
+    - name: Upload conversion artifacts
+      if: always() && steps.create-tarball.outputs.has_norg_files == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: neorg-conversion-artifacts
+        path: |
+          docs.tar.gz
+          converted-docs.zip
+          converted/
+        retention-days: 7
+

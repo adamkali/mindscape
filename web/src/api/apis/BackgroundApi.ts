@@ -15,9 +15,12 @@
 
 import * as runtime from '../runtime';
 import type {
+  BackgroundResponse,
   StringResponse,
 } from '../models/index';
 import {
+    BackgroundResponseFromJSON,
+    BackgroundResponseToJSON,
     StringResponseFromJSON,
     StringResponseToJSON,
 } from '../models/index';
@@ -29,9 +32,9 @@ export class BackgroundApi extends runtime.BaseAPI {
 
     /**
      * Get Background Choices
-     * Get Background Choices
+     * Get Background Choices that ae loaded into the server.
      */
-    async getBackgroundChoicesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StringResponse>> {
+    async getBackgroundChoicesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BackgroundResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -43,14 +46,14 @@ export class BackgroundApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => StringResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => BackgroundResponseFromJSON(jsonValue));
     }
 
     /**
      * Get Background Choices
-     * Get Background Choices
+     * Get Background Choices that ae loaded into the server.
      */
-    async getBackgroundChoices(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StringResponse> {
+    async getBackgroundChoices(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BackgroundResponse> {
         const response = await this.getBackgroundChoicesRaw(initOverrides);
         return await response.value();
     }

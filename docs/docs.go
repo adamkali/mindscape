@@ -63,25 +63,25 @@ const docTemplate = `{
                 "tags": [
                     "Background"
                 ],
-                "summary": "Get Background Choices",
+                "summary": "Get Background Choices that ae loaded into the server.",
                 "operationId": "GetBackgroundChoices",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/StringResponse"
+                            "$ref": "#/definitions/BackgroundResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/StringResponse"
+                            "$ref": "#/definitions/BackgroundResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/StringResponse"
+                            "$ref": "#/definitions/BackgroundResponse"
                         }
                     }
                 }
@@ -143,6 +143,125 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/BookmarkResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Move a Bookmark by Authorization Header, and my a\nParentFolderId [parent_id].",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Move a Bookmark",
+                "operationId": "MoveBookmark",
+                "parameters": [
+                    {
+                        "description": "Move Bookmark Request",
+                        "name": "MoveBookmarkRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/MoveBookmarkRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"Bearer token\"",
+                        "description": "Authorization Header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/bookmarks/folder/{bookmark_id}": {
+            "delete": {
+                "description": "Delete a Bookmark by Authorization Header, and my a\nParentFolderId [parent_id].",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Delete a Bookmark",
+                "operationId": "DeleteBookmark",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\"Bearer token\"",
+                        "description": "Authorization Header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Parent Folder ID",
+                        "name": "bookmark_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarksResponse"
                         }
                     }
                 }
@@ -300,6 +419,71 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Move a Folder by Authorization Header",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Folders"
+                ],
+                "summary": "Move a Folder",
+                "operationId": "MoveFolder",
+                "parameters": [
+                    {
+                        "description": "Move Folder Request",
+                        "name": "MoveFolderRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.MoveFolderRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"Bearer token\"",
+                        "description": "Authorization Header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/responses.FolderResponse"
                         }
@@ -475,6 +659,198 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/UsersResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/background": {
+            "get": {
+                "description": "Get User Background Choice",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get User Background Choice",
+                "operationId": "GetUserBackground",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "admin header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "background",
+                        "name": "background",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Upload a Background and set the User.Background  to be the uploaded background",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Upload Background",
+                "operationId": "UploadBackground",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "this is a test file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "admin header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Set User Background Choice by background name\nby query param.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Set User Background",
+                "operationId": "SetUserBackground",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "admin header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "background",
+                        "name": "background",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/background/choices": {
+            "get": {
+                "description": "Get User Backgrounds Uploaded to the server",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get User Background Choices",
+                "operationId": "GetUserBackgroundChoices",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "admin header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/BackgroundResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/BackgroundResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/BackgroundResponse"
                         }
                     }
                 }
@@ -825,6 +1201,34 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "BackgroundData": {
+            "type": "object",
+            "properties": {
+                "filename": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "BackgroundResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/BackgroundData"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "BookmarkResponse": {
             "type": "object",
             "properties": {
@@ -898,6 +1302,21 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "MoveBookmarkRequest": {
+            "type": "object",
+            "properties": {
+                "bookmarkId": {
+                    "type": "string"
+                },
+                "newParentId": {
+                    "description": "The parent folder to move the bookmark to cannot be null",
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
                 }
             }
         },
@@ -1121,6 +1540,20 @@ const docTemplate = `{
                 }
             }
         },
+        "requests.MoveFolderRequest": {
+            "type": "object",
+            "properties": {
+                "folderId": {
+                    "type": "string"
+                },
+                "newParentId": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.FolderData": {
             "type": "object",
             "properties": {
@@ -1201,6 +1634,9 @@ const docTemplate = `{
             "properties": {
                 "admin": {
                     "type": "boolean"
+                },
+                "background": {
+                    "type": "string"
                 },
                 "created_datetime": {
                     "type": "string"

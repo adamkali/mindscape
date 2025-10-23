@@ -74,3 +74,10 @@ func (f *FolderResponse) Successful(ctx echo.Context, data repository.Folder) er
 	f.Data = NewFolderData(data)
 	return ctx.JSON(200, f)
 }
+
+func (f *FolderResponse) SuccessfulWithData(ctx echo.Context, data FolderData) error {
+	f.Success = true
+	f.Message = "OK"
+	f.Data = data
+	return ctx.JSON(200, f)
+}

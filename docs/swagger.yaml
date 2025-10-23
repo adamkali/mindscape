@@ -1,5 +1,23 @@
 basePath: /api
 definitions:
+  BackgroundData:
+    properties:
+      filename:
+        type: string
+      url:
+        type: string
+    type: object
+  BackgroundResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/BackgroundData'
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   BookmarkResponse:
     properties:
       data:
@@ -48,6 +66,16 @@ definitions:
         type: string
       success:
         type: boolean
+    type: object
+  MoveBookmarkRequest:
+    properties:
+      bookmarkId:
+        type: string
+      newParentId:
+        description: The parent folder to move the bookmark to cannot be null
+        type: string
+      userId:
+        type: string
     type: object
   NewUserRequest:
     properties:
@@ -192,6 +220,15 @@ definitions:
       user_id:
         type: string
     type: object
+  requests.MoveFolderRequest:
+    properties:
+      folderId:
+        type: string
+      newParentId:
+        type: string
+      userId:
+        type: string
+    type: object
   responses.FolderData:
     properties:
       bookmarks:
@@ -245,6 +282,8 @@ definitions:
     properties:
       admin:
         type: boolean
+      background:
+        type: string
       created_datetime:
         type: string
       email:
@@ -301,19 +340,61 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/StringResponse'
+            $ref: '#/definitions/BackgroundResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/StringResponse'
+            $ref: '#/definitions/BackgroundResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/StringResponse'
-      summary: Get Background Choices
+            $ref: '#/definitions/BackgroundResponse'
+      summary: Get Background Choices that ae loaded into the server.
       tags:
       - Background
   /bookmarks:
+    patch:
+      consumes:
+      - application/json
+      description: |-
+        Move a Bookmark by Authorization Header, and my a
+        ParentFolderId [parent_id].
+      operationId: MoveBookmark
+      parameters:
+      - description: Move Bookmark Request
+        in: body
+        name: MoveBookmarkRequest
+        required: true
+        schema:
+          $ref: '#/definitions/MoveBookmarkRequest'
+      - default: '"Bearer token"'
+        description: Authorization Header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/BookmarksResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/BookmarksResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/BookmarksResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/BookmarksResponse'
+      summary: Move a Bookmark
+      tags:
+      - Bookmarks
     post:
       consumes:
       - application/json
@@ -352,6 +433,49 @@ paths:
           schema:
             $ref: '#/definitions/BookmarkResponse'
       summary: Create a new Bookmark
+      tags:
+      - Bookmarks
+  /bookmarks/folder/{bookmark_id}:
+    delete:
+      consumes:
+      - application/json
+      description: |-
+        Delete a Bookmark by Authorization Header, and my a
+        ParentFolderId [parent_id].
+      operationId: DeleteBookmark
+      parameters:
+      - default: '"Bearer token"'
+        description: Authorization Header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Parent Folder ID
+        in: path
+        name: bookmark_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/BookmarksResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/BookmarksResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/BookmarksResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/BookmarksResponse'
+      summary: Delete a Bookmark
       tags:
       - Bookmarks
   /bookmarks/folder/{parent_id}:
@@ -432,6 +556,50 @@ paths:
           schema:
             $ref: '#/definitions/responses.FoldersResponse'
       summary: Get the Root Folders associated with the user
+      tags:
+      - Folders
+    patch:
+      consumes:
+      - application/json
+      description: Move a Folder by Authorization Header
+      operationId: MoveFolder
+      parameters:
+      - description: Move Folder Request
+        in: body
+        name: MoveFolderRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.MoveFolderRequest'
+      - default: '"Bearer token"'
+        description: Authorization Header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+      summary: Move a Folder
       tags:
       - Folders
     post:
@@ -611,6 +779,140 @@ paths:
           schema:
             $ref: '#/definitions/DeleteUserResponse'
       summary: Delete User by their UUID
+      tags:
+      - Users
+  /users/background:
+    get:
+      description: Get User Background Choice
+      operationId: GetUserBackground
+      parameters:
+      - default: Bearer token
+        description: admin header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: background
+        in: query
+        name: background
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/StringResponse'
+      summary: Get User Background Choice
+      tags:
+      - Users
+    patch:
+      description: |-
+        Set User Background Choice by background name
+        by query param.
+      operationId: SetUserBackground
+      parameters:
+      - default: Bearer token
+        description: admin header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: background
+        in: query
+        name: background
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/StringResponse'
+      summary: Set User Background
+      tags:
+      - Users
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload a Background and set the User.Background  to be the uploaded
+        background
+      operationId: UploadBackground
+      parameters:
+      - description: this is a test file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - default: Bearer token
+        description: admin header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/StringResponse'
+      summary: Upload Background
+      tags:
+      - Users
+  /users/background/choices:
+    get:
+      description: Get User Backgrounds Uploaded to the server
+      operationId: GetUserBackgroundChoices
+      parameters:
+      - default: Bearer token
+        description: admin header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/BackgroundResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/BackgroundResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/BackgroundResponse'
+      summary: Get User Background Choices
       tags:
       - Users
   /users/creds:

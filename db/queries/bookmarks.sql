@@ -40,13 +40,12 @@ RETURNING *;
 UPDATE bookmarks 
 SET folder_id = $2, name = $3, link = $4, updated_datetime = now()
 WHERE id = $1;
--- name: MoveBookmark :exec
+
+-- name: MoveBookmark :one
 UPDATE bookmarks 
 SET folder_id = $2, updated_datetime = now()
-WHERE id = $1;
-UPDATE bookmarks 
-SET updated_datetime = now()
-WHERE folder_id = (SELECT folder_id FROM bookmarks WHERE id = $1);
+WHERE id = $1
+RETURNING *;
 
 -- name: DeleteBookmark :exec
 DELETE FROM bookmarks WHERE id = $1;

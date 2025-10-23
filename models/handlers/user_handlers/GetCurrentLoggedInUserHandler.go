@@ -16,7 +16,7 @@ type GetCurrentLoggedInUserHandler struct {
 	Vs   services.ValidatorService
 	Us   services.IUserService
 	As   services.IAuthService
-	Data *repository.User
+	data *repository.User
 }
 
 func NewGetCurrentLoggedInUserHandler(
@@ -42,7 +42,7 @@ func (h *GetCurrentLoggedInUserHandler) Handle() handlers.IHandler {
 	if err != nil {
 		return handlers.Lock(h, 401, err)
 	}
-	h.Data, err = h.Us.Get(claims.UserId)
+	h.data, err = h.Us.Get(claims.UserId)
 	if err != nil {
 		return handlers.Lock(h, 404, err)
 	}
@@ -53,12 +53,24 @@ func (h *GetCurrentLoggedInUserHandler) JSON() error {
 	if h.err != nil {
 		return responses.NewUserResponse().Fail(h.ctx, h.code, h.err)
 	}
-	return responses.NewUserResponse().Successful(h.ctx, h.Data)
+	return responses.NewUserResponse().Successful(h.ctx, h.data)
 }
 
 func (h *GetCurrentLoggedInUserHandler) SetCode(code int) handlers.IHandler {
 	h.code = code
 	return h
+}
+
+func (h *GetCurrentLoggedInUserHandler) Code() int {
+	return h.code
+}
+
+func (h *GetCurrentLoggedInUserHandler) Data() any {
+	return h.data
+}
+
+func (h *GetCurrentLoggedInUserHandler) Error() error {
+	return h.err
 }
 func (h *GetCurrentLoggedInUserHandler) SetError(err error) handlers.IHandler {
 	h.err = err

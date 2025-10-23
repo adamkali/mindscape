@@ -292,10 +292,11 @@ func (q *Queries) FindBookmarksByUserIdMostRecent(ctx context.Context, userID uu
 	return items, nil
 }
 
-const moveBookmark = `-- name: MoveBookmark :exec
+const moveBookmark = `-- name: MoveBookmark :one
 UPDATE bookmarks 
 SET folder_id = $2, updated_datetime = now()
 WHERE id = $1
+RETURNING id, user_id, folder_id, name, link, icon, description, created_datetime, updated_datetime
 `
 
 type MoveBookmarkParams struct {
@@ -303,9 +304,21 @@ type MoveBookmarkParams struct {
 	FolderID uuid.UUID `json:"folder_id"`
 }
 
-func (q *Queries) MoveBookmark(ctx context.Context, arg MoveBookmarkParams) error {
-	_, err := q.db.Exec(ctx, moveBookmark, arg.ID, arg.FolderID)
-	return err
+func (q *Queries) MoveBookmark(ctx context.Context, arg MoveBookmarkParams) (Bookmark, error) {
+	row := q.db.QueryRow(ctx, moveBookmark, arg.ID, arg.FolderID)
+	var i Bookmark
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.FolderID,
+		&i.Name,
+		&i.Link,
+		&i.Icon,
+		&i.Description,
+		&i.CreatedDatetime,
+		&i.UpdatedDatetime,
+	)
+	return i, err
 }
 
 const updateBookmark = `-- name: UpdateBookmark :exec

@@ -74,7 +74,6 @@ func (UserService *UserService) addNewUser(
 	var user repository.User
 	fmt.Println("Starting Connection")
 	tx, err := UserService.pool.Begin(UserService.ctx)
-	fmt.Println(err.Error())
 	if err != nil {
 		return nil, err
 	}
@@ -303,6 +302,34 @@ func (UserService *UserService) UpdateUserCredentials(params *requests.UpdateCre
 	user.Email = updateParams.Email
 	user.Username = updateParams.Username
 
+	tx.Commit(UserService.ctx)
+	return &user, nil
+}
+
+// UpdateUserBackgroundImage
+// params: *repository.UpdateUserBacgroundParams
+// returns: (*repository.User, error)
+//
+// This function takes a UpdateUserBacgroundParams object and returns a User object.
+// If the user does not exist, an error is returned.
+func (UserService *UserService) UpdateUserBackgroundImage(params *repository.UpdateUserBacgroundParams) (*repository.User, error) {
+	tx, err := UserService.pool.Begin(UserService.ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(UserService.ctx)
+	repo := repository.New(tx)
+	
+	_, err = repo.UpdateUserBacground(UserService.ctx, *params)
+	if err != nil {
+		return nil, err
+	}
+	
+	user, err := repo.FindUserByID(UserService.ctx, params.ID)
+	if err != nil {
+		return nil, err
+	}
+	
 	tx.Commit(UserService.ctx)
 	return &user, nil
 }

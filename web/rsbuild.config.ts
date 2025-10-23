@@ -14,6 +14,9 @@ export default defineConfig({
 			'@': './src',
 		},
 	},
+	html: {
+		title: 'Mindscape',
+	},
 	server: {
 		port: 5173,
 		cors: true,
