@@ -82,27 +82,15 @@ jobs:
         echo "Converted files:"
         find converted/ -name "*.md" | head -20
         
-    - name: Setup wiki directory
+    - name: Update repository with converted docs
       if: steps.convert.outputs.success == 'true'
       run: |
-        # Clone the wiki repository with authentication
-        git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git wiki || {
-          echo "Wiki repository doesn't exist yet, creating wiki directory"
-          mkdir -p wiki
-          cd wiki
-          git init
-          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git
-        }
+        echo "Adding converted documentation to repository wiki directory..."
         
-    - name: Update wiki with converted docs
-      if: steps.convert.outputs.success == 'true'
-      run: |
-        echo "Updating wiki with converted documentation..."
-        
-        # Create wiki directory if it doesn't exist
+        # Create wiki directory in the main repository
         mkdir -p wiki
         
-        # Copy converted markdown files to wiki
+        # Copy converted markdown files to wiki directory
         if [ -d "converted" ]; then
           # Find all markdown files and copy them, preserving directory structure
           find converted/ -name "*.md" -type f | while read -r file; do
@@ -111,42 +99,35 @@ jobs:
             # Create target directory in wiki if needed
             target_dir="wiki/$(dirname "$rel_path")"
             mkdir -p "$target_dir"
-            # Copy file to wiki
+            # Copy file to wiki directory
             cp "$file" "wiki/$rel_path"
             echo "Copied: $file -> wiki/$rel_path"
           done
         fi
         
-        # Navigate to wiki directory
-        cd wiki
-        
         # Configure git
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         
-        # Add all changes
-        git add .
+        # Add all changes to the main repository
+        git add wiki/
         
-        # Check if there are changes to commit or if this is the first commit
-        if [ -z "$(git status --porcelain)" ] && [ -n "$(git log --oneline 2>/dev/null)" ]; then
+        # Check if there are changes to commit
+        if git diff --staged --quiet; then
           echo "No changes to wiki documentation"
         else
-          # Commit changes
-          git commit -m "Update documentation from ${{ github.repository }}@${{ github.sha }}
+          # Commit changes to main repository
+          git commit -m "docs: update wiki documentation from Neorg files
 
           Generated from Neorg files in docs/ directory
           Converted via Neorg Documentation Lambda
           Triggered by: ${{ github.event_name }}
           Branch: ${{ github.ref_name }}
-          Commit: ${{ github.sha }}"
+          Source commit: ${{ github.sha }}"
           
-          # Push changes (handle both new repo and existing repo)
-          git push origin main 2>/dev/null || git push origin master 2>/dev/null || {
-            echo "Creating initial wiki commit"
-            git branch -M main
-            git push -u origin main
-          }
-          echo "✅ Wiki updated successfully"
+          # Push changes to main repository
+          git push
+          echo "✅ Wiki documentation updated in main repository"
         fi
         
     - name: Upload conversion artifacts
