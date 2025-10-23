@@ -29,15 +29,27 @@ jobs:
           echo "No docs/ directory found, skipping conversion"
         fi
         
-    - name: Create tarball of docs directory
+    - name: Create tarball of .norg files only
       if: steps.check-docs.outputs.exists == 'true'
+      id: create-tarball
       run: |
-        tar -czf docs.tar.gz docs/
-        echo "Created docs.tar.gz with contents:"
+        # Find all .norg files and create tarball
+        norg_count=$(find docs/ -name "*.norg" -type f | wc -l)
+        echo "Found $norg_count .norg files"
+        
+        if [ "$norg_count" -eq 0 ]; then
+          echo "No .norg files found, skipping conversion"
+          echo "has_norg_files=false" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        
+        find docs/ -name "*.norg" -type f | tar -czf docs.tar.gz -T -
+        echo "Created docs.tar.gz with .norg files only:"
         tar -tzf docs.tar.gz | head -20
+        echo "has_norg_files=true" >> $GITHUB_OUTPUT
         
     - name: Convert Neorg to Markdown via Lambda
-      if: steps.check-docs.outputs.exists == 'true'
+      if: steps.create-tarball.outputs.has_norg_files == 'true'
       id: convert
       run: |
         echo "Uploading docs.tar.gz to Neorg Documentation Lambda..."
@@ -129,7 +141,7 @@ jobs:
         fi
         
     - name: Upload conversion artifacts
-      if: always() && steps.check-docs.outputs.exists == 'true'
+      if: always() && steps.create-tarball.outputs.has_norg_files == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: neorg-conversion-artifacts
