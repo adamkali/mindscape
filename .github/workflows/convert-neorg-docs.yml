@@ -83,7 +83,7 @@ jobs:
         find converted/ -name "*.md" | head -20
         
     - name: Update repository with converted docs
-      if: steps.convert.outputs.success == 'true'
+      if: steps.convert.outputs.success == 'true' && github.event_name != 'pull_request'
       run: |
         echo "Adding converted documentation to repository wiki directory..."
         
@@ -132,6 +132,24 @@ jobs:
           git push origin HEAD
           echo "✅ Wiki documentation updated in main repository"
         fi
+        
+    - name: Show converted documentation (PR only)
+      if: steps.convert.outputs.success == 'true' && github.event_name == 'pull_request'
+      run: |
+        echo "📖 Documentation conversion successful for pull request!"
+        echo "Converted files would be added to wiki/ directory:"
+        
+        # Show what files would be added
+        if [ -d "converted" ]; then
+          find converted/ -name "*.md" -type f | while read -r file; do
+            rel_path="${file#converted/}"
+            echo "  - wiki/$rel_path"
+          done
+        fi
+        
+        echo ""
+        echo "ℹ️  Note: Documentation is not committed to repository on pull requests."
+        echo "   Files will be automatically added when changes are merged to main branch."
         
     - name: Upload conversion artifacts
       if: always() && steps.create-tarball.outputs.has_norg_files == 'true'
