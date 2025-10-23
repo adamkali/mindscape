@@ -82,74 +82,106 @@ jobs:
         echo "Converted files:"
         find converted/ -name "*.md" | head -20
         
-    - name: Update repository with converted docs
+    - name: Initialize and update GitHub wiki
       if: steps.convert.outputs.success == 'true' && github.event_name != 'pull_request'
       run: |
-        echo "Adding converted documentation to repository wiki directory..."
+        echo "Updating GitHub wiki with converted documentation..."
         
-        # Create wiki directory in the main repository
-        mkdir -p wiki
+        # First, try to initialize the wiki by creating a simple Home page via API
+        echo "Initializing wiki if needed..."
+        curl -s -X PUT \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "message": "Initialize wiki",
+            "content": "# Mindscape Documentation\n\nThis wiki contains documentation converted from Neorg files in the docs/ directory."
+          }' \
+          "https://api.github.com/repos/${{ github.repository }}/wiki/Home" 2>/dev/null || echo "Wiki initialization via API failed or wiki already exists"
         
-        # Copy converted markdown files to wiki directory
-        if [ -d "converted" ]; then
-          # Find all markdown files and copy them, preserving directory structure
+        # Wait a moment for wiki to be ready
+        sleep 3
+        
+        # Clone the wiki repository
+        echo "Cloning wiki repository..."
+        git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git wiki-repo || {
+          echo "Wiki repository not accessible, creating local wiki structure..."
+          mkdir -p wiki-repo
+          cd wiki-repo
+          git init
+          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git
+          
+          # Create initial Home page
+          echo "# Mindscape Documentation" > Home.md
+          echo "" >> Home.md  
+          echo "This wiki contains documentation converted from Neorg files in the docs/ directory." >> Home.md
+          
+          git add Home.md
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "Initialize wiki"
+          git branch -M main
+          
+          # Try to push to create the wiki repository
+          git push -u origin main 2>/dev/null && echo "Wiki repository created" || {
+            echo "Failed to create wiki repository - it may need to be initialized manually"
+            exit 1
+          }
+          cd ..
+        }
+        
+        # Copy converted files to wiki
+        if [ -d "converted" ] && [ -d "wiki-repo" ]; then
+          echo "Copying converted documentation to wiki..."
           find converted/ -name "*.md" -type f | while read -r file; do
-            # Get relative path without the 'converted/' prefix
-            rel_path="${file#converted/}"
-            # Create target directory in wiki if needed
-            target_dir="wiki/$(dirname "$rel_path")"
-            mkdir -p "$target_dir"
-            # Copy file to wiki directory
-            cp "$file" "wiki/$rel_path"
-            echo "Copied: $file -> wiki/$rel_path"
+            # Get filename without path and convert to wiki-friendly name
+            filename=$(basename "$file")
+            # Convert to wiki page name (capitalize first letter, replace spaces/dashes)
+            wiki_name=$(echo "$filename" | sed 's/\.md$//' | sed 's/-/ /g' | sed 's/\b\w/\u&/g' | tr ' ' '-')
+            
+            cp "$file" "wiki-repo/${wiki_name}.md"
+            echo "Copied: $file -> ${wiki_name}.md"
           done
         fi
         
-        # Configure git
+        # Commit and push wiki changes
+        cd wiki-repo
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add .
         
-        # Set up authentication for git operations
-        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-        
-        # Add all changes to the main repository
-        git add wiki/
-        
-        # Check if there are changes to commit
-        if git diff --staged --quiet; then
-          echo "No changes to wiki documentation"
-        else
-          # Commit changes to main repository
-          git commit -m "docs: update wiki documentation from Neorg files
+        if ! git diff --staged --quiet; then
+          git commit -m "Update documentation from ${{ github.repository }}@${{ github.sha }}
 
           Generated from Neorg files in docs/ directory
           Converted via Neorg Documentation Lambda
           Triggered by: ${{ github.event_name }}
-          Branch: ${{ github.ref_name }}
-          Source commit: ${{ github.sha }}"
+          Branch: ${{ github.ref_name }}"
           
-          # Push changes to main repository
-          git push origin HEAD
-          echo "✅ Wiki documentation updated in main repository"
+          git push origin main && echo "✅ Wiki updated successfully" || echo "Failed to push wiki changes"
+        else
+          echo "No changes to wiki documentation"
         fi
         
     - name: Show converted documentation (PR only)
       if: steps.convert.outputs.success == 'true' && github.event_name == 'pull_request'
       run: |
         echo "📖 Documentation conversion successful for pull request!"
-        echo "Converted files would be added to wiki/ directory:"
+        echo "Converted files would be added to GitHub wiki:"
         
         # Show what files would be added
         if [ -d "converted" ]; then
           find converted/ -name "*.md" -type f | while read -r file; do
-            rel_path="${file#converted/}"
-            echo "  - wiki/$rel_path"
+            filename=$(basename "$file")
+            wiki_name=$(echo "$filename" | sed 's/\.md$//' | sed 's/-/ /g' | sed 's/\b\w/\u&/g' | tr ' ' '-')
+            echo "  - ${wiki_name}.md (GitHub wiki page)"
           done
         fi
         
         echo ""
-        echo "ℹ️  Note: Documentation is not committed to repository on pull requests."
-        echo "   Files will be automatically added when changes are merged to main branch."
+        echo "ℹ️  Note: GitHub wiki is not updated on pull requests."
+        echo "   Wiki pages will be automatically added when changes are merged to main branch."
+        echo "   You can view the wiki at: https://github.com/${{ github.repository }}/wiki"
         
     - name: Upload conversion artifacts
       if: always() && steps.create-tarball.outputs.has_norg_files == 'true'
