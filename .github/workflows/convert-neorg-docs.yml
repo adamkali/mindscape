@@ -109,6 +109,9 @@ jobs:
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         
+        # Set up authentication for git operations
+        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+        
         # Add all changes to the main repository
         git add wiki/
         
@@ -126,7 +129,7 @@ jobs:
           Source commit: ${{ github.sha }}"
           
           # Push changes to main repository
-          git push
+          git push origin HEAD
           echo "✅ Wiki documentation updated in main repository"
         fi
         
