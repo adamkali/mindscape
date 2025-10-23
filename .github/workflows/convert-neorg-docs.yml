@@ -82,7 +82,7 @@ jobs:
         echo "Converted files:"
         find converted/ -name "*.md" | head -20
         
-    - name: Update documentation in repository
+    - name: Initialize and update GitHub wiki
       if: steps.convert.outputs.success == 'true' && github.event_name != 'pull_request'
       run: |
         echo "Adding converted documentation to repository..."
@@ -133,16 +133,24 @@ jobs:
           echo "✅ Documentation updated in repository at /wiki/"
         fi
         
-        # Also try to update GitHub wiki if it exists
+        # Try to update GitHub wiki if it exists
         echo "Attempting to update GitHub wiki..."
-        git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git wiki-repo 2>/dev/null && {
-          echo "Wiki repository found, updating..."
+        
+        # Check if wiki repository exists first
+        wiki_exists=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          "https://api.github.com/repos/${{ github.repository }}/pages" | jq -r '.source.branch // empty' 2>/dev/null || echo "")
+        
+        # Try to clone wiki repository
+        if git ls-remote https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git > /dev/null 2>&1; then
+          echo "Wiki repository exists, cloning..."
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git wiki-repo
           
           # Copy files to wiki with wiki-friendly names
           if [ -d "converted" ]; then
             find converted/ -name "*.md" -type f | while read -r file; do
               filename=$(basename "$file")
-              wiki_name=$(echo "$filename" | sed 's/\.md$//' | sed 's/-/ /g' | sed 's/\b\w/\u&/g' | tr ' ' '-')
+              # Create wiki-friendly filename (remove .md, replace hyphens/underscores with spaces, capitalize)
+              wiki_name=$(echo "$filename" | sed 's/\.md$//' | sed 's/[-_]/ /g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2))}1' | tr ' ' '-')
               cp "$file" "wiki-repo/${wiki_name}.md"
               echo "Copied to wiki: $file -> ${wiki_name}.md"
             done
@@ -155,12 +163,27 @@ jobs:
           
           if ! git diff --staged --quiet; then
             git commit -m "Update documentation from ${{ github.repository }}@${{ github.sha }}"
-            git push origin main && echo "✅ GitHub wiki also updated" || echo "Failed to push to wiki"
+            # Try to push to both master and main branches
+            git push origin HEAD:master 2>/dev/null || git push origin HEAD:main 2>/dev/null || {
+              echo "Failed to push to wiki - trying to initialize..."
+              # If push fails, try to create the first commit
+              git push origin HEAD:master --force 2>/dev/null || git push origin HEAD:main --force 2>/dev/null || echo "Failed to initialize wiki"
+            }
+            echo "✅ GitHub wiki updated"
           else
             echo "No changes to push to wiki"
           fi
           cd ..
-        } || echo "ℹ️  GitHub wiki not available - documentation saved to /wiki/ directory instead"
+        else
+          echo "ℹ️  GitHub wiki repository not found. To enable wiki uploads:"
+          echo "   1. Go to https://github.com/${{ github.repository }}/settings"
+          echo "   2. Scroll down to 'Features' section"
+          echo "   3. Check 'Wikis' if not already enabled"
+          echo "   4. Go to https://github.com/${{ github.repository }}/wiki"
+          echo "   5. Create the first wiki page manually to initialize the repository"
+          echo ""
+          echo "📁 Documentation has been saved to /wiki/ directory in the main repository"
+        fi
         
     - name: Show converted documentation (PR only)
       if: steps.convert.outputs.success == 'true' && github.event_name == 'pull_request'
