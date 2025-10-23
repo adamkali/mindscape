@@ -1,6 +1,8 @@
 package user_handlers
 
 import (
+	"fmt"
+
 	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
@@ -14,7 +16,6 @@ type BackgroundHandler struct {
 	code             int
 	err              error
 	url              string
-	Query            string
 	ValidatorService services.ValidatorService
 	AuthService      services.IAuthService
 	MinioService     services.IMinioService
@@ -43,17 +44,19 @@ func (h *BackgroundHandler) Handle() handlers.IHandler {
 	if err != nil {
 		return handlers.Lock(h, 401, err)
 	}
-
-	h.Query = h.ctx.QueryParam("url")
-	if h.Query == "" {
+	q := h.ctx.QueryParam("background")
+	fmt.Printf("[DEBUG] BackgroundHandler.Handle{ background: %s }\n", h.ctx.QueryParam("background"))
+	fmt.Printf("[INFO] BackgroundHandler.Handle{ userID: %v, background: %s }\n", userID, q)
+	if q == "" {
 		h.url, h.err = h.MinioService.GetDefault()
 		if h.err != nil {
 			return handlers.Lock(h,500, h.err)
 		}
 	}
-	h.url, h.err = h.MinioService.GetPresigned(userID, h.Query)
+	fmt.Printf("[INFO] BackgroundHandler.MinioService.GetPresigned{ userID: %v, background: %s }\n", userID, q)
+	h.url, h.err = h.MinioService.GetPresigned(userID, q)
 	if h.err != nil {
-	    h.url, h.err = h.MinioService.GetDefaultChoice(h.Query)
+	    h.url, h.err = h.MinioService.GetDefaultChoice(q)
 		if h.err != nil {
 		    return handlers.Lock(h,500, h.err)
 		}

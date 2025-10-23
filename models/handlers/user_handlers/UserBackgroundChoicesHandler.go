@@ -26,8 +26,8 @@ func NewUserBackgroundChoicesHandler(
 	ValidatorService services.ValidatorService,
 	AuthService services.IAuthService,
 	MinioService services.IMinioService,
-) *BackgroundHandler {
-	return &BackgroundHandler{
+) *UserBackgroundChoicesHandler {
+	return &UserBackgroundChoicesHandler{
 		ctx:              ctx,
 		code:             200,
 		ValidatorService: ValidatorService,
@@ -36,6 +36,7 @@ func NewUserBackgroundChoicesHandler(
 	}
  }
 func (h *UserBackgroundChoicesHandler) Handle() handlers.IHandler {
+	fmt.Println("[INFO] UserBackgroundChoicesHandler.Handle\n")
 	jwt_token := h.ctx.Get("user").(*jwt.Token)
 	claims := jwt_token.Claims.(*services.CustomJwt)
 	userID := claims.UserId
@@ -43,7 +44,6 @@ func (h *UserBackgroundChoicesHandler) Handle() handlers.IHandler {
 	if err != nil {
 		return handlers.Lock(h, 401, err)
 	}
-
 	fmt.Println("[INFO] UserBackgroundChoicesHandler.Handle{ userID: %v }\n", userID)
 	entities, err := h.MinioService.GetUserBackgroundChoices(userID)
 	if err != nil {

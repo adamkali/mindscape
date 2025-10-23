@@ -223,6 +223,7 @@ const EditProfile = () => {
 		setIsLoading(true);
 		setError('');
 		setSuccess('');
+		console.log({'Uploading custom background...': customBackgroundFile()?.name});
 
 		try {
 			const userApi = new UsersApi();

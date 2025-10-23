@@ -687,7 +687,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "background",
-                        "name": "bacgkround",
+                        "name": "background",
                         "in": "query",
                         "required": true
                     }

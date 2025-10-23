@@ -130,7 +130,7 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 			const userApi = new UsersApi();
 			const response = await userApi.getUserBackground({
 				authorization: `Bearer ${auth.token()}`,
-				bacgkround: auth.user()?.background ?? '',
+				background: auth.user()?.background ?? '',
 			});
 			if (response.success && response.data) {
 				setUserBackground(response.data);

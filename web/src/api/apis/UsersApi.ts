@@ -64,7 +64,7 @@ export interface GetProfilePictureRequest {
 
 export interface GetUserBackgroundRequest {
     authorization: string;
-    bacgkround: string;
+    background: string;
 }
 
 export interface GetUserBackgroundChoicesRequest {
@@ -244,17 +244,17 @@ export class UsersApi extends runtime.BaseAPI {
             );
         }
 
-        if (requestParameters['bacgkround'] == null) {
+        if (requestParameters['background'] == null) {
             throw new runtime.RequiredError(
-                'bacgkround',
-                'Required parameter "bacgkround" was null or undefined when calling getUserBackground().'
+                'background',
+                'Required parameter "background" was null or undefined when calling getUserBackground().'
             );
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters['bacgkround'] != null) {
-            queryParameters['bacgkround'] = requestParameters['bacgkround'];
+        if (requestParameters['background'] != null) {
+            queryParameters['background'] = requestParameters['background'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

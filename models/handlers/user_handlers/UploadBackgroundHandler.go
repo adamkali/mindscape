@@ -2,7 +2,6 @@ package user_handlers
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/handlers"
@@ -70,26 +69,16 @@ func (h *UploadBackgroundHandler) Handle() handlers.IHandler {
 		return handlers.Lock(h, 400, err)
 	}
 	defer file.Close()
-	if request.UserId != jwt_token.Claims.(*services.CustomJwt).UserId {
-		return handlers.Lock(h, 403, fmt.Errorf("unauthorized access to user"))	
-	}
 	params = &repository.UpdateUserBacgroundParams{
-		ID:         request.UserId ,
+		ID:         jwt_token.Claims.(*services.CustomJwt).UserId,
 		Background: &request.File.Filename,
 	}
 	var user *repository.User
 	if user, err = h.UserService.UpdateUserBackgroundImage(params); err != nil {
 		return handlers.Lock(h, 500, err)
 	}
+	fmt.Printf("[INFO] UploadBackgroundHandler.Handle{ user: %v }\n", user)
 	h.err = h.MinioService.Upload(user.ID, *user.Background, file, request.File.Size)
-	if h.err != nil {
-		return handlers.Lock(h, 500, h.err)
-	}
-	h.err = h.RedisService.SetWithExpiration(
-		"user_background_"+user.ID.String(),
-		h.url,
-		time.Hour*24*7,
-	)
 	if h.err != nil {
 		return handlers.Lock(h, 500, h.err)
 	}

@@ -794,7 +794,7 @@ paths:
         type: string
       - description: background
         in: query
-        name: bacgkround
+        name: background
         required: true
         type: string
       produces:
