@@ -1,0 +1,76 @@
+# Uploading Custom Backgound Image Plan 
+
+
+# Uploading Custom Backgound Image Plan
+
+  This document outlines the complete plan for how Minscape devs will implement the Uploading of background images to the sever. This has high overlap with the WebP implementation plan. so please referr to that as well {** WebP Conversion Plan}
+## Project Overview
+
+   The goal of this feature is to ensure that when the user uploads a background image using the [POST /api/users/background](/ ../../controllers/user_controller.go:246) endpoint:
+- the image is converted to WebP format using the {** WebP Conversion Plan}
+- the image is stored in the MinIO S3-compatible storage
+- the image is stored in a format of `userid/backgrounds/filename.webp`
+    - 
+  Finally, when querying choices using the [GET /api/users/backgrounds/choices](/ ../../controllers/user_controller.go:311) endpoint, the images will be queried in that same directoy
+## Implementation Plan
+
+### 1. Controller Updates
+
+	there should be no changes to the controllers themselves.
+### 2. Handler Updates
+
+	there should be no changes to the handlers themselves.
+### 3. Service Updates
+
+- in the {/ ../../services/MinioService.go:171}[MinioService.GetUserBackgroundChoices] function, we will need to make sue that when querying the minio filestore, the bucketname queryied will be the `userid/backgrounds` key.
+- in the {/ ../../services/MinioService.go:54}[MinioService.Upload] function, we will need to make sure that the bucketname uploaded to is `userid/backgrounds`. So, there will need to be an optional `key` parameter added.
+```go
+    func (MinioService *MinioService) Upload(
+		uploaderID uuid.UUID,
+		uploadName string,
+		uploadFile io.Reader,
+		size int64,
+		prefix *string
+	) error {
+		exists, err := MinioService.client.BucketExists(MinioService.ctx, uploaderID.String())
+		if err != nil {
+			return err
+		} else if !exists {
+			opts := minio.MakeBucketOptions{}
+			errMakeBucket := MinioService.client.MakeBucket(MinioService.ctx, uploaderID.String(), opts)
+			if errMakeBucket != nil {
+				return err
+			}
+		}
+		var key string
+		// add a check if the prefix is not nil 
+		if prefix != nil {
+			key = userID.String() + "/" + *prefix
+		} else {
+			key = userID.String()
+		}
+		_, err = MinioService.client.PutObject(
+		        MinioService.ctx,
+			    uploaderID.String(),
+			    uploadName,
+			    uploadFile,
+			    size,
+			    minio.PutObjectOptions{}
+			)
+		if err != nil {
+	   		return err
+		}
+		return nil
+	}
+```
+### 4. Repository Updates
+
+	there should be no changes to the repositories themselves.
+	
+
+# References
+
+## WebP Conversion Plan
+
+   [WebP Conversion Plan]{:./webp-conversion-plan.norg:}
+

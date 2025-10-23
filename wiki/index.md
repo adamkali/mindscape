@@ -1,0 +1,60 @@
+# index
+
+
+# Alpha Release Needs
+
+  The following features are needed for the Alpha Release of the project. 
+  This release will be tagged as Beor 0.1.0
+
+## Treeview Functionality
+
+- ( ) Treeview
+  - (x) Allow for movement of nodes with in the treeview
+    - (x) Folders
+    - ( ) Bookmarks
+  - ( ) Allow for deletion of nodes with in the treeview
+    - ( ) Folders
+    - (x) Bookmarks
+  - ( ) Allow for creation of new nodes with in the treeview
+    - ( ) At root (id is null)
+      - ( ) Folders
+    - (x) At node (id is not null)
+      - (x) Folders
+      - (x) Bookmarks
+  - ( ) Make sure that no node is selected when page is loaded
+  - ( ) Make sure that when clicking outside of the treeview, selected node is deselected
+  - (x) Have Favicons rendered on the bookmark nodes 
+## Long Plans 
+
+- ( ) {** Uploading Custom Backgound Image Plan}[Uploading Custom Backgound Image Plan]
+- ( ) {** WebP Conversion Plan}[WebP Conversion Plan]
+- ( ) {** Widget System Architecture}[Widget System Architecture]
+## (x) UI Goodies
+
+- (x) Make sure that the treeview is scrollable
+- (x) Finalize the UI design language with repeatable desgins
+- (x) Allow connecting of searching the web in the navbar
+  - (x) Brave bar
+  - (x) Youtube bar
+  - (x) Github bar
+  - (x) SearXNG bar
+
+
+# Refernces
+
+## Uploading Custom Backgound Image Plan 
+
+- [Uploading Custom Backgound Image Plan]{:./uploading-custom-background.norg:}
+## WebP Conversion Plan
+
+- [WebP Conversion Plan]{:./webp-conversion-plan.norg:}
+## Widget System Architecture
+
+- [Widget System Architecture]{:./widget-system-architecture.norg:}
+
+
+
+
+
+
+
