@@ -32,6 +32,7 @@ type MockUserService struct {
 	ShouldFailGetAll         bool
 	ShouldFailUpdate         bool
 	ShouldFailUpdateCreds    bool
+	ShouldFailUpdateBg       bool
 	CreateErrorMessage       string
 	LoginErrorMessage        string
 	GetErrorMessage          string
@@ -39,6 +40,7 @@ type MockUserService struct {
 	GetAllErrorMessage       string
 	UpdateErrorMessage       string
 	UpdateCredsErrorMessage  string
+	UpdateBgErrorMessage     string
 	
 	// Test data tracking
 	CreateCallCount      int
@@ -48,6 +50,7 @@ type MockUserService struct {
 	GetAllCallCount      int
 	UpdateCallCount      int
 	UpdateCredsCallCount int
+	UpdateBgCallCount    int
 	LastCreateParams     *requests.NewUserRequest
 	LastLoginParams      *requests.LoginRequest
 	LastGetID            uuid.UUID
@@ -55,6 +58,7 @@ type MockUserService struct {
 	LastUpdateID         uuid.UUID
 	LastUpdateProfile    string
 	LastUpdateCredsParams *requests.UpdateCredentialsRequest
+	LastUpdateBgParams   *repository.UpdateUserBacgroundParams
 }
 
 // CreateMockUserService returns a reference to a new MockUserService for testing
@@ -72,6 +76,7 @@ func CreateMockUserService(ctx context.Context, pool *pgxpool.Pool) *MockUserSer
 		GetAllErrorMessage:      "Mock getall error",
 		UpdateErrorMessage:      "Mock update error",
 		UpdateCredsErrorMessage: "Mock update credentials error",
+		UpdateBgErrorMessage:    "Mock update background error",
 	}
 	
 	// Seed with some default test data
@@ -96,6 +101,7 @@ func (service *MockUserService) Reset() {
 	service.ShouldFailGetAll = false
 	service.ShouldFailUpdate = false
 	service.ShouldFailUpdateCreds = false
+	service.ShouldFailUpdateBg = false
 	
 	// Reset counters
 	service.CreateCallCount = 0
@@ -105,6 +111,7 @@ func (service *MockUserService) Reset() {
 	service.GetAllCallCount = 0
 	service.UpdateCallCount = 0
 	service.UpdateCredsCallCount = 0
+	service.UpdateBgCallCount = 0
 	
 	// Re-seed test data
 	service.seedTestData()
@@ -497,6 +504,31 @@ func (service *MockUserService) UpdateUserCredentials(params *requests.UpdateCre
 		}
 		user.BCryptHash = string(hashedPassword)
 	}
+	
+	return user, nil
+}
+
+// UpdateUserBackgroundImage implements IUserService.UpdateUserBackgroundImage
+func (service *MockUserService) UpdateUserBackgroundImage(params *repository.UpdateUserBacgroundParams) (*repository.User, error) {
+	service.mutex.Lock()
+	defer service.mutex.Unlock()
+	
+	service.UpdateBgCallCount++
+	service.LastUpdateBgParams = params
+	
+	if service.ShouldFailUpdateBg {
+		return nil, errors.New(service.UpdateBgErrorMessage)
+	}
+	
+	user, exists := service.users[params.ID]
+	if !exists {
+		return nil, errors.New("user not found")
+	}
+	
+	// Update background image
+	now := time.Now()
+	user.Background = params.Background
+	user.UpdatedDatetime = &now
 	
 	return user, nil
 }

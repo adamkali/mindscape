@@ -44,7 +44,7 @@ func (h *SetUserBackgroundHandler) Handle() handlers.IHandler {
 	if err != nil {
 		return handlers.Lock(h, 401, err)
 	}
-	fmt.Println("[INFO] SetUserBackgroundHandler.Handle{ userID: %v }\n", userID)
+	fmt.Printf("[INFO] SetUserBackgroundHandler.Handle{ userID: %v }\n", userID)
 	backgroundFileName := h.ctx.QueryParam("background")
 	fmt.Printf("[INFO] SetUserBackgroundHandler.Handle{ backgroundFileName: %v }\n", backgroundFileName)
 	if backgroundFileName == "" {

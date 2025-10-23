@@ -36,7 +36,7 @@ func NewUserBackgroundChoicesHandler(
 	}
  }
 func (h *UserBackgroundChoicesHandler) Handle() handlers.IHandler {
-	fmt.Println("[INFO] UserBackgroundChoicesHandler.Handle\n")
+	fmt.Println("[INFO] UserBackgroundChoicesHandler.Handle")
 	jwt_token := h.ctx.Get("user").(*jwt.Token)
 	claims := jwt_token.Claims.(*services.CustomJwt)
 	userID := claims.UserId
@@ -44,7 +44,7 @@ func (h *UserBackgroundChoicesHandler) Handle() handlers.IHandler {
 	if err != nil {
 		return handlers.Lock(h, 401, err)
 	}
-	fmt.Println("[INFO] UserBackgroundChoicesHandler.Handle{ userID: %v }\n", userID)
+	fmt.Printf("[INFO] UserBackgroundChoicesHandler.Handle{ userID: %v }\n", userID)
 	entities, err := h.MinioService.GetUserBackgroundChoices(userID)
 	if err != nil {
 		return handlers.Lock(h, 500, err)

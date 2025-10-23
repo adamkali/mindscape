@@ -308,7 +308,7 @@ func (uc UserController) GetBackground(ctx echo.Context) error {
 // @Failure     500                 {object}     responses.BackgroundsResponse
 // @Router      /users/background/choices   [get]
 func (uc UserController) GetUserBackgroundChoices(ctx echo.Context) error {
-	fmt.Println("[INFO] GetUserBackgroundChoices\n")
+	fmt.Println("[INFO] GetUserBackgroundChoices")
 	return handlers.NewUserBackgroundChoicesHandler(
 		ctx,
 		*uc.ValidatorService,
