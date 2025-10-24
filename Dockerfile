@@ -29,5 +29,5 @@ RUN apk add --no-cache ffmpeg
 COPY --from=node_builder /usr/src/web/dist /app/web/dist
 COPY --from=go_builder /usr/src/mindscape /app/
 ## Run Migrations
-RUN /app/mindscape db up -e production
+# RUN /app/mindscape db up -e production # Do not know why this is not woking :(
 CMD ["/app/mindscape", "-e", "production"]
