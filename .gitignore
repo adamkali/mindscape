@@ -23,8 +23,8 @@ go.work.sum
 
 # env file
 .env
-development.yaml
-production.yaml
+config/*.yaml
+
 
 tmp/
 

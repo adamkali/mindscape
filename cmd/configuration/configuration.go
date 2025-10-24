@@ -49,7 +49,7 @@ type Configuration struct {
 	} `yaml:"s3"`
 }
 
-const ConfigurationDir = "config/"
+const ConfigurationDir = "./config/"
 
 func LoadConfiguration(environment string) (*Configuration, error) {
 	configuration := new(Configuration)

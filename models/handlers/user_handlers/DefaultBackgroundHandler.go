@@ -1,6 +1,7 @@
 package user_handlers
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/adamkali/mindscape/models/handlers"
@@ -41,12 +42,14 @@ func (h *DefaultBackgroundHandler) Lock(code int, err error) *DefaultBackgroundH
 }
 
 func (h *DefaultBackgroundHandler) Handle() handlers.IHandler{
+	fmt.Printf("[INFO] DefaultBackgroundHandler.Handle{ }\n")
 	h.url, h.err = h.RedisService.Get("default")
-	if h.err == nil {
-		return h
+	if h.err != nil {
+		fmt.Printf("[ERROR] DefaultBackgroundHandler.Handle{ --> %s }\n", h.err)
 	}
 	h.url, h.err = h.MinioService.GetDefault()
 	if h.err != nil {
+		fmt.Printf("[ERROR] DefaultBackgroundHandler.MinioService.GetDefault{ --> %s }\n", h.err)
 		return handlers.Lock(h,500, h.err)
 	}
 	h.err = h.RedisService.SetWithExpiration(
@@ -55,6 +58,7 @@ func (h *DefaultBackgroundHandler) Handle() handlers.IHandler{
 		time.Hour*24*7,
 	)
 	if h.err != nil {
+		fmt.Printf("[ERROR] DefaultBackgroundHandler.RedisService.SetWithExpiration{ --> %s }\n", h.err)
 		return handlers.Lock(h,500, h.err)
 	}
 	return h
@@ -82,11 +86,6 @@ func (h *DefaultBackgroundHandler) Code() int {
 	return h.code
 }
 
-func (h *DefaultBackgroundHandler) Data() any {
-	return h.url
-}
+func (h *DefaultBackgroundHandler) Data() any { return h.url }
 
-func (h *DefaultBackgroundHandler) Error() error {
-	return h.err
-}
-
+func (h *DefaultBackgroundHandler) Error() error { return h.err }

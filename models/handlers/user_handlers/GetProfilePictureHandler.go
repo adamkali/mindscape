@@ -3,6 +3,7 @@
 package user_handlers
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/adamkali/mindscape/models/handlers"
@@ -64,11 +65,14 @@ func (h *GetProfilePictureHandler) Handle() handlers.IHandler {
 	if err != nil {
 		return handlers.Lock(h, 404, err)
 	}
+	fmt.Printf("[INFO] GetProfilePictureHandler.Handle{ userID: %v, profilePictureName: %s }\n", userID, profilePictureName)
 	// now check redis
 	h.url, h.err = h.Rs.Get(profilePictureName)
 	if h.err == redis.Nil {
-		h.url, h.err = h.Ms.GetPresigned(userID,profilePictureName)
+		fmt.Printf("[INFO] GetProfilePictureHandler.Handle{ userID: %v, profilePictureName: %s }\n", userID, profilePictureName)
+		h.url, h.err = h.Ms.GetPresigned(userID, profilePictureName)
 		if h.err != nil {
+			fmt.Printf("[ERROR] GetProfilePictureHandler.Handle::MinioService.GetPresigned{ userID: %v, profilePictureName: %s }\n", userID, profilePictureName)
 			return handlers.Lock(h, 500, h.err)
 		}
 		h.err = h.Rs.SetWithExpiration(
@@ -77,7 +81,8 @@ func (h *GetProfilePictureHandler) Handle() handlers.IHandler {
 			time.Hour*24*7,
 		)
 		if h.err != nil {
-			return handlers.Lock(h, 500, h.err) 
+			fmt.Printf("[ERROR] GetProfilePictureHandler.Handle::RedisService.SetWithExpiration{ userID: %v, profilePictureName: %s }\n", userID, profilePictureName)
+			return handlers.Lock(h, 500, h.err)
 		}
 	}
 	return h
