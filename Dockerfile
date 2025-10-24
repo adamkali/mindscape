@@ -2,7 +2,7 @@
 
 ## Build the Frontend with Node.js
 ### If you are not using React you can comment out this section
-FROM node:22-alpine as node_builder
+FROM node:22-alpine AS node_builder
 WORKDIR /usr/src/web
 COPY web/package.json ./
 ### use pnpm
@@ -11,7 +11,7 @@ COPY web/ ./
 RUN pnpm run build
 
 
-FROM golang:1.24-alpine as go_builder
+FROM golang:1.24-alpine AS go_builder
 WORKDIR /usr/src
 COPY go.* ./
 RUN go mod download
@@ -19,7 +19,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o mindscape .
 
 # Final image 
-FROM alpine:latest as app
+FROM alpine:latest AS app
 
 ## install ffmpeg for image processing
 RUN apk add --no-cache ffmpeg
@@ -29,6 +29,6 @@ RUN apk add --no-cache ffmpeg
 COPY --from=node_builder /usr/src/web/dist /app/web/dist
 COPY --from=go_builder /usr/src/mindscape /app/
 ## Run Migrations
-RUN /app/mindscape db up
+RUN /app/mindscape db up -e production
 
 CMD ["/app/mindscape", "-e", "production"]

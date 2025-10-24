@@ -119,18 +119,54 @@ jobs:
         if git diff --staged --quiet; then
           echo "No changes to documentation"
         else
-          # Commit changes to main repository
-          git commit -m "docs: update documentation from Neorg files
+          # For protected branches, create a new branch and PR
+          if [ "${{ github.ref_name }}" = "nightly" ] || [ "${{ github.ref_name }}" = "main" ]; then
+            echo "Creating PR for protected branch ${{ github.ref_name }}"
+            
+            # Create new branch for documentation
+            branch_name="docs/auto-update-$(date +%Y%m%d-%H%M%S)"
+            git checkout -b "$branch_name"
+            
+            # Commit changes
+            git commit -m "docs: update documentation from Neorg files
 
-          Generated from Neorg files in docs/ directory
-          Converted via Neorg Documentation Lambda
-          Triggered by: ${{ github.event_name }}
-          Branch: ${{ github.ref_name }}
-          Source commit: ${{ github.sha }}"
-          
-          # Push changes to main repository
-          git push origin HEAD
-          echo "✅ Documentation updated in repository at /wiki/"
+            Generated from Neorg files in docs/ directory
+            Converted via Neorg Documentation Lambda
+            Triggered by: ${{ github.event_name }}
+            Branch: ${{ github.ref_name }}
+            Source commit: ${{ github.sha }}"
+            
+            # Push new branch
+            git push origin "$branch_name"
+            
+            # Create PR using GitHub CLI
+            gh pr create \
+              --title "docs: auto-update documentation from Neorg files" \
+              --body "Automated documentation update from Neorg conversion.
+
+            - Source branch: ${{ github.ref_name }}
+            - Source commit: ${{ github.sha }}
+            - Trigger: ${{ github.event_name }}
+
+            This PR contains auto-generated documentation converted from .norg files." \
+              --base "${{ github.ref_name }}" \
+              --head "$branch_name"
+            
+            echo "✅ Created PR for documentation updates"
+          else
+            # For non-protected branches, push directly
+            git commit -m "docs: update documentation from Neorg files
+
+            Generated from Neorg files in docs/ directory
+            Converted via Neorg Documentation Lambda
+            Triggered by: ${{ github.event_name }}
+            Branch: ${{ github.ref_name }}
+            Source commit: ${{ github.sha }}"
+            
+            # Push changes to main repository
+            git push origin HEAD
+            echo "✅ Documentation updated in repository at /wiki/"
+          fi
         fi
         
         # Try to update GitHub wiki if it exists
