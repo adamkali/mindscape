@@ -14,7 +14,7 @@ categories: [
 	Golang
 ]
 created: 2025-10-02
-updated: 2025-10-13T13:10:34-0500
+updated: 2025-10-24T08:51:52-0500
 version: 0.0.1
 @end
 
@@ -404,6 +404,7 @@ version: 0.0.1
      }
      @end
 
+
 *** Response Models
 
 **** LoginResponse
@@ -570,6 +571,7 @@ version: 0.0.1
        "user_id": "string"
      }
      @end
+
 
 ** Authentication Flow
 
