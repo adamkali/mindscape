@@ -28,6 +28,7 @@ RUN apk add --no-cache ffmpeg
 ### If you are not using React or any other frontend you can comment out this section
 COPY --from=node_builder /usr/src/web/dist /app/web/dist
 COPY --from=go_builder /usr/src/mindscape /app/
+WORKDIR /app
 ## Run Migrations
-# RUN /app/mindscape db up -e production # Do not know why this is not woking :(
-CMD ["/app/mindscape", "-e", "production"]
+RUN ./mindscape db up -e production 
+CMD ["./mindscape", "-e", "production"]
