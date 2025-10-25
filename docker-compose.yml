@@ -1,89 +1,47 @@
----
 services:
   web:
-    image: ghcr.io/adamkali/template_app:stable
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mindscape
     environment:
-      - SERVICE_FQDN_WEB_5150
-      - REDIS_URL=${REDIS_URL}
-      - MINIO_SERVER_URL=${MINIO_SERVER_URL}
-      - MINIO_ACCESS_TOKEN=${MINIO_ACCESS_TOKEN}
-      - MINIO_SECRET_TOKEN=${MINIO_SECRET_TOKEN}
-      - POSTGRES_URL=${POSTGRES_URL}
-      - JWT_PHRASE=${JWT_PHRASE}
-      - POSTGRES_URL=${POSTGRES_URL}
+      - EGG_CACHE_DB=${EGG_CACHE_DB}
+      - EGG_CACHE_HOST=${EGG_CACHE_HOST}
+      - EGG_CACHE_PASSWORD=${EGG_CACHE_PASSWORD}
+      - EGG_CACHE_PORT=${EGG_CACHE_PORT}  
+      - EGG_CACHE_USERNAME=""
+      - EGG_COPYRIGHT_AUTHOR=${EGG_COPYRIGHT_AUTHOR}
+      - EGG_COPYRIGHT_YEAR=${EGG_COPYRIGHT_YEAR}
+      - EGG_DATABASE_DBNAME=${EGG_DATABASE_DBNAME}
+      - EGG_DATABASE_HOST=${EGG_DATABASE_HOST}
+      - EGG_DATABASE_MIGRATION_DESTINATION=${EGG_DATABASE_MIGRATION_DESTINATION}
+      - EGG_DATABASE_MIGRATION_PROTOCOL=${EGG_DATABASE_MIGRATION_PROTOCOL}
+      - EGG_DATABASE_PASSWORD=${EGG_DATABASE_PASSWORD}
+      - EGG_DATABASE_PORT=5432
+      - EGG_DATABASE_QUERIES_LOCATION=${EGG_DATABASE_QUERIES_LOCATION}
+      - EGG_DATABASE_SQLC_REPOSITORY_LOCATION=${EGG_DATABASE_SQLC_REPOSITORY_LOCATION}
+      - EGG_DATABASE_SQLC_SCHEMA=${EGG_DATABASE_SQLC_SCHEMA}
+      - EGG_DATABASE_SQLC_SQL_OR_GO=${EGG_DATABASE_SQLC_SQL_OR_GO}
+      - EGG_DATABASE_USERNAME=${EGG_DATABASE_USERNAME}
+      - EGG_LICENSE=${EGG_LICENSE}
+      - EGG_NAME=${EGG_NAME}
+      - EGG_NAMESPACE=${EGG_NAMESPACE}
+      - EGG_S3_ACCESS=${EGG_S3_ACCESS}
+      - EGG_S3_SECRET=${EGG_S3_SECRET}
+      - EGG_S3_URL=${EGG_S3_URL}
+      - EGG_SEMVER=${EGG_SEMVER}
+      - EGG_SERVER_FRONTEND_API=${EGG_SERVER_FRONTEND_API}
+      - EGG_SERVER_FRONTEND_DIR=${EGG_SERVER_FRONTEND_DIR}
+      - EGG_SERVER_JWT=${EGG_SERVER_JWT}
+      - EGG_SERVER_PORT=${EGG_SERVER_PORT}
+
     healthcheck:
       test:
         - CMD
         - curl
         - -f
-        - http://127.0.0.1:5150/_health
+        - http://127.0.0.1:60000/_health
       interval: 5s
       timeout: 20s
       retries: 10
-    volumes:
-      - type: bind
-        source: ./config/production.yaml
-        target: /usr/app/config/production.yaml
-        content: |
-          logger:
-            enable: true
-            level: trace 
-            format: compact
-
-          server:
-            binding: 0.0.0.0
-            port: 5150
-            host: http://localhost
-            middlewares:
-              static:
-                enable: true
-                must_exist: true
-                precompressed: false
-                folder:
-                  uri: "/"
-                  path: "frontend/dist"
-                fallback: "frontend/dist/index.html"
-
-          workers:
-            mode: BackgroundAsync
-
-          mailer:
-            smtp:
-              enable: false
-              host: smtp-mail.outlook.com
-              port: 587
-              secure: true
-              auth: 
-                user: adamkali@outlook.com 
-                password: {{ get_env(name="MAILER_PASSWORD", default="admin") }}
-
-          database:
-            # Database connection URI
-            uri: '{{ get_env(name="POSTGRES_URL")}}'
-            enable_logging: true
-            connect_timeout: 500
-            idle_timeout: 500
-            min_connections: 1
-            max_connections: 3
-            auto_migrate: true
-            dangerously_truncate: false
-            dangerously_recreate: false
-
-          # Queue Configuration
-          queue:
-            kind: Redis
-            uri: '{{ get_env(name="REDIS_URL") }}'
-            dangerously_flush: false
-
-          # Authentication Configuration
-          auth:
-            jwt:
-              secret: '{{ get_env(name="JWT_PHRASE") }}'
-              expiration: 604800 # 7 days
-
-          settings:
-            minio_config:
-              uri: '{{ get_env(name="MINIO_SERVER_URL") }}'
-              access_key: '{{ get_env(name="MINIO_ACCESS_TOKEN") }}'
-              secret_key: '{{ get_env(name="MINIO_SECRET_TOKEN") }}'
 
