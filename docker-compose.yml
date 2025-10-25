@@ -1,0 +1,89 @@
+---
+services:
+  web:
+    image: ghcr.io/adamkali/template_app:stable
+    environment:
+      - SERVICE_FQDN_WEB_5150
+      - REDIS_URL=${REDIS_URL}
+      - MINIO_SERVER_URL=${MINIO_SERVER_URL}
+      - MINIO_ACCESS_TOKEN=${MINIO_ACCESS_TOKEN}
+      - MINIO_SECRET_TOKEN=${MINIO_SECRET_TOKEN}
+      - POSTGRES_URL=${POSTGRES_URL}
+      - JWT_PHRASE=${JWT_PHRASE}
+      - POSTGRES_URL=${POSTGRES_URL}
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://127.0.0.1:5150/_health
+      interval: 5s
+      timeout: 20s
+      retries: 10
+    volumes:
+      - type: bind
+        source: ./config/production.yaml
+        target: /usr/app/config/production.yaml
+        content: |
+          logger:
+            enable: true
+            level: trace 
+            format: compact
+
+          server:
+            binding: 0.0.0.0
+            port: 5150
+            host: http://localhost
+            middlewares:
+              static:
+                enable: true
+                must_exist: true
+                precompressed: false
+                folder:
+                  uri: "/"
+                  path: "frontend/dist"
+                fallback: "frontend/dist/index.html"
+
+          workers:
+            mode: BackgroundAsync
+
+          mailer:
+            smtp:
+              enable: false
+              host: smtp-mail.outlook.com
+              port: 587
+              secure: true
+              auth: 
+                user: adamkali@outlook.com 
+                password: {{ get_env(name="MAILER_PASSWORD", default="admin") }}
+
+          database:
+            # Database connection URI
+            uri: '{{ get_env(name="POSTGRES_URL")}}'
+            enable_logging: true
+            connect_timeout: 500
+            idle_timeout: 500
+            min_connections: 1
+            max_connections: 3
+            auto_migrate: true
+            dangerously_truncate: false
+            dangerously_recreate: false
+
+          # Queue Configuration
+          queue:
+            kind: Redis
+            uri: '{{ get_env(name="REDIS_URL") }}'
+            dangerously_flush: false
+
+          # Authentication Configuration
+          auth:
+            jwt:
+              secret: '{{ get_env(name="JWT_PHRASE") }}'
+              expiration: 604800 # 7 days
+
+          settings:
+            minio_config:
+              uri: '{{ get_env(name="MINIO_SERVER_URL") }}'
+              access_key: '{{ get_env(name="MINIO_ACCESS_TOKEN") }}'
+              secret_key: '{{ get_env(name="MINIO_SECRET_TOKEN") }}'
+
