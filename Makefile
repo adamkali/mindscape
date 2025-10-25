@@ -128,6 +128,20 @@ docker-compose-down: ## Stop services with docker-compose
 docker-logs: ## View Docker container logs
 	docker-compose logs -f
 
+prod-setup: ## Setup production environment and start server
+	@echo "$(YELLOW)Setting up production environment...$(NC)"
+	./egg_cli env -e production
+	@if [ -f ./config/production.yaml ]; then \
+		echo "$(GREEN)config/production.yaml generated successfully$(NC)"; \
+	else \
+		echo "$(RED)config/production.yaml generation failed$(NC)"; \
+		exit 32; \
+	fi
+	@echo "$(YELLOW)Running database migrations...$(NC)"
+	./mindscape db up -e production
+	@echo "$(YELLOW)Starting production server...$(NC)"
+	./mindscape -e production
+
 clean: ## Clean build artifacts
 	@echo "$(YELLOW)Cleaning build artifacts...$(NC)"
 	@rm -rf $(BINARY_DIR)

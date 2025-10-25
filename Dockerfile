@@ -42,12 +42,8 @@ EXPOSE 60000
 
 WORKDIR /app
 
-# Generate production.yaml from environment variables using egg_cli
-RUN ./egg_cli env -e production
-RUN if [ -f ./config/production.yaml ]; then echo "config/production.yaml generated successfully"; else echo "config/production.yaml generation failed"; exit 32; fi
+## Copy Makefile for production setup
+COPY Makefile ./
 
-## Run Migrations
-RUN ./mindscape db up -e production 
-
-## Run the server
-CMD ["./mindscape", "-e", "production"]
+## Run the production setup and server
+CMD ["make", "prod-setup"]
