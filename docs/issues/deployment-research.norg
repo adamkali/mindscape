@@ -1,0 +1,67 @@
+@document.meta
+title: deployment-research
+description: A breif investigation into why the docker deployment is going wrong.
+authors: Adam Kalinowski 
+categories: [
+	Deployment
+	Mindscape
+	Egg
+	Golang
+	Solid
+	Docker
+]
+created: 2025-10-25T06:14:53-0500
+updated: 2025-10-25T06:14:53-0500
+version: 1.1.1
+categories: [
+	Deployment
+	Mindscape
+	Egg
+	Golang
+	Solid
+	Docker
+]
+@end
+
+This is a brief investigation into why my Mindscape docker deployment is failing on [coolify]{https://coolify.kalilarosa.xyz}.
+The deployment seems to be failing at a certain point with in the build process. You see, a quirk about mindscape is the use of [Egg_CLI Framework]{https://github.com/adamkali/egg_cli}
+With `egg_cli`, I wanted to quickly bootstrap my backend framework really quickly and it is an amazing success for me. 
+It allows for dynamic yaml configuration of services and it is a great tool to have.
+Now Mindscape is meant to be used in Homelabs/Personal Servers.
+It is going to be a sort of home dashboard with a folder structure for links for developers or researchers.
+** The Main Issue
+   Because of the need to be deployed and have the Postgres database ready for use with the API; I need to be able to run migrations when the container starts.
+   This means that the current use of injecting a `config/production.yaml` file is not going to work.
+   This is because the `config/production.yaml` file is not going to be created until the container is started because coolify does not load in the config file from the persistant storage until the container starts. 
+** The Solution
+   There is a solution to this problem however. 
+   When i was creating `egg_cli` I also made a solution to this problem for a convienence in testing with the use of generating a `config/production.yaml` file from environment variables. 
+   So I have edited the dockerfile to use the environment variables to generate the `config/production.yaml` file.
+   @code Dockerfile
+   RUN ./egg_cli env -e production
+   RUN if [ -f ./config/production.yaml ]; then echo "config/production.yaml generated successfully"; else echo "config/production.yaml generation failed"; exit 32; fi
+
+   ## Run Migrations
+   RUN ./mindscape db up -e production 
+
+   ## Run the server
+   CMD ["./mindscape", "-e", "production"]
+
+   @end
+   See [The Dockerfile for the Entire Context]{** Dockerfile}
+** What Needs to be Done
+   We will need to create a quick [Docker Compose File]{** Docker Compose File} to run the container.
+   And have the environment variables loaded by using coolify's environment variable feature.
+   What we will do is to create a an environment section of the Docker Compose File that loads in the environment when they are defined in the
+   @code bash
+   /project/{uuid}/environment/{uuid}/application/{uuid}/environment-variables
+   @end
+   page of the Coolify. 
+   We can get the environment variables injected in and then use them to generate the `config/production.yaml` file using egg's `egg_cli env` command.
+
+* References
+** Dockerfile
+   {/ ../../Dockerfile}
+** Docker Compose File
+   {/ ../../docker-compose.yml}
+
