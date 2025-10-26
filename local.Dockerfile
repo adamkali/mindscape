@@ -108,4 +108,4 @@ WORKDIR /app
 ## Copy Makefile for production setup
 COPY Makefile ./
 ## Run the production setup and server
-CMD ["make", "prod-setup"]
+CMD ["make", "dev-setup"]

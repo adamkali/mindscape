@@ -142,6 +142,20 @@ prod-setup: ## Setup production environment and start server
 	@echo "$(YELLOW)Starting production server...$(NC)"
 	./mindscape -e production
 
+dev-setup: ## Setup development environment and start server
+	@echo "$(YELLOW)Setting up development environment...$(NC)"
+	./egg_cli env -e development
+	@if [ -f ./config/development.yaml ]; then \
+		echo "$(GREEN)config/development.yaml generated successfully$(NC)"; \
+	else \
+		echo "$(RED)config/development.yaml generation failed$(NC)"; \
+		exit 32; \
+	fi
+	@echo "$(YELLOW)Running database migrations...$(NC)"
+	./mindscape db up -e development
+	@echo "$(YELLOW)Starting development server...$(NC)"
+	./mindscape
+
 clean: ## Clean build artifacts
 	@echo "$(YELLOW)Cleaning build artifacts...$(NC)"
 	@rm -rf $(BINARY_DIR)

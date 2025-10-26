@@ -2,7 +2,7 @@ services:
   web:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: local.Dockerfile
     container_name: mindscape
     ports:
       - "60000:60000"
@@ -36,7 +36,6 @@ services:
       - EGG_SERVER_FRONTEND_DIR=${EGG_SERVER_FRONTEND_DIR}
       - EGG_SERVER_JWT=${EGG_SERVER_JWT}
       - EGG_SERVER_PORT=${EGG_SERVER_PORT}
-
     healthcheck:
       test:
         - CMD
