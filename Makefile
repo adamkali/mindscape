@@ -130,7 +130,6 @@ docker-logs: ## View Docker container logs
 
 prod-setup: ## Setup production environment and start server
 	@echo "$(YELLOW)Setting up production environment...$(NC)"
-	./egg_cli env -e production
 	@if [ -f ./config/production.yaml ]; then \
 		echo "$(GREEN)config/production.yaml generated successfully$(NC)"; \
 	else \
@@ -144,7 +143,6 @@ prod-setup: ## Setup production environment and start server
 
 dev-setup: ## Setup development environment and start server
 	@echo "$(YELLOW)Setting up development environment...$(NC)"
-	./egg_cli env -e development
 	@if [ -f ./config/development.yaml ]; then \
 		echo "$(GREEN)config/development.yaml generated successfully$(NC)"; \
 	else \
