@@ -137,7 +137,7 @@ prod-setup: ## Setup production environment and start server
 		exit 32; \
 	fi
 	@echo "$(YELLOW)Running database migrations...$(NC)"
-	./mindscape db up -e production
+# ./mindscape db up -e production
 	@echo "$(YELLOW)Starting production server...$(NC)"
 	./mindscape -e production
 
