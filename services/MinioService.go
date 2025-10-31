@@ -51,18 +51,44 @@ func CreateMinioService(ctx context.Context, config *configuration.Configuration
 //
 // The function should return an error only if there is a problem uploading the file, or if
 // when creating the bucket something went wrong.
-func (MinioService *MinioService) Upload(uploaderID uuid.UUID, uploadName string, uploadFile io.Reader, size int64) error {
-	exists, err := MinioService.client.BucketExists(MinioService.ctx, uploaderID.String())
+func (MinioService *MinioService) Upload(
+	uploaderID uuid.UUID,
+	uploadName string,
+	uploadFile io.Reader,
+	size int64,
+	prefix string,
+) error {
+	exists, err := MinioService.client.BucketExists(
+		MinioService.ctx,
+		uploaderID.String(),
+	)
 	if err != nil {
 		return err
 	} else if !exists {
 		opts := minio.MakeBucketOptions{}
-		errMakeBucket := MinioService.client.MakeBucket(MinioService.ctx, uploaderID.String(), opts)
+		errMakeBucket := MinioService.client.MakeBucket(
+			MinioService.ctx,
+			uploaderID.String(),
+			opts,
+		)
 		if errMakeBucket != nil {
 			return err
 		}
 	}
-	_, err = MinioService.client.PutObject(MinioService.ctx, uploaderID.String(), uploadName, uploadFile, size, minio.PutObjectOptions{})
+	var key string
+	if prefix != "" {
+		key = fmt.Sprintf("%s/%s", uploaderID.String(), prefix)
+	} else {
+		key = uploaderID.String()
+	}
+	_, err = MinioService.client.PutObject(
+		MinioService.ctx,
+		key,
+		uploadName,
+		uploadFile,
+		size,
+		minio.PutObjectOptions{},
+	)
 	if err != nil {
 		return err
 	}
@@ -82,19 +108,23 @@ func (MinioService *MinioService) Upload(uploaderID uuid.UUID, uploadName string
 //	error
 //
 // Gets a file from S3 compatible storage. If the file does not exist, it will return an error.
-func (MinioService *MinioService) Get(uploaderID uuid.UUID, uploadName string) ([]byte, error) {
+func (MinioService *MinioService) Get(uploaderID uuid.UUID, prefix string, uploadName string) ([]byte, error) {
 	opts := minio.GetObjectOptions{}
-	object, err := MinioService.client.GetObject(MinioService.ctx, uploaderID.String(), uploadName, opts)
+	var key string
+	if prefix != "" {
+		key = fmt.Sprintf("%s/%s", uploaderID.String(), prefix)
+	} else {
+		key = uploaderID.String()
+	}
+	object, err := MinioService.client.GetObject(MinioService.ctx, key, uploadName, opts)
 	if err != nil {
 		return nil, err
 	}
 	defer object.Close()
-
 	data, err := io.ReadAll(object)
 	if err != nil {
 		return nil, err
 	}
-
 	return data, err
 }
 
@@ -111,10 +141,16 @@ func (MinioService *MinioService) Get(uploaderID uuid.UUID, uploadName string) (
 //	error
 //
 // Gets a presigned url from S3 compatible storage. If the file does not exist, it will return an error.
-func (m *MinioService) GetPresigned(uploaderID uuid.UUID, uploadName string) (string, error) {
+func (m *MinioService) GetPresigned(uploaderID uuid.UUID, prefix string, uploadName string) (string, error) {
 	reqParams := make(url.Values)
 	reqParams.Set("response-content-disposition", "attachment; filename=\""+uploadName+"\"")
-	presigedUrl, err := m.client.PresignedGetObject(m.ctx, uploaderID.String(), uploadName, time.Hour*72, reqParams)
+	var key string 
+	if prefix != "" {
+		key = fmt.Sprintf("%s/%s", uploaderID.String(), prefix)
+	} else {
+		key = uploaderID.String()
+	}
+	presigedUrl, err := m.client.PresignedGetObject(m.ctx, key, uploadName, time.Hour*72, reqParams)
 	if err != nil {
 		return "", err
 	}
@@ -171,7 +207,7 @@ func (m *MinioService) GetBackgroundChoices() ([]BackgroundInternal, error) {
 func (m *MinioService) GetUserBackgroundChoices(user uuid.UUID) ([]BackgroundInternal, error) {
 	reqParams := make(url.Values)
 	backgrounds := make([]minio.ObjectInfo, 0)
-	for objects := range m.client.ListObjects(m.ctx, user.String(), minio.ListObjectsOptions{
+	for objects := range m.client.ListObjects(m.ctx, user.String()+"/bacgrounds", minio.ListObjectsOptions{
 		Recursive: false,
 	}) {
 		if err := objects.Err; err != nil {

@@ -78,7 +78,13 @@ func (h *UploadBackgroundHandler) Handle() handlers.IHandler {
 		return handlers.Lock(h, 500, err)
 	}
 	fmt.Printf("[INFO] UploadBackgroundHandler.Handle{ user: %v }\n", user)
-	h.err = h.MinioService.Upload(user.ID, *user.Background, file, request.File.Size)
+	h.err = h.MinioService.Upload(
+		user.ID,
+		*user.Background,
+		file,
+		request.File.Size,
+		"background",
+	)
 	if h.err != nil {
 		return handlers.Lock(h, 500, h.err)
 	}

@@ -14,9 +14,9 @@ type BackgroundInternal struct {
 }
 
 type IMinioService interface {
-	Upload(uploaderID uuid.UUID, uploadName string, uploadFile io.Reader, size int64) error
-	Get(uploaderID uuid.UUID, uploadName string) ([]byte, error)
-	GetPresigned(uploaderID uuid.UUID, uploadName string) (string, error)
+	Upload(uploaderID uuid.UUID, uploadName string, uploadFile io.Reader, size int64, prefix string) error
+	Get(uploaderID uuid.UUID, prefix string, uploadName string) ([]byte, error)
+	GetPresigned(uploaderID uuid.UUID, prefix string, uploadName string) (string, error)
 	GetUserBackgroundChoices(user uuid.UUID) ([]BackgroundInternal, error)
 	GetBackgroundChoices() ([]BackgroundInternal, error)
 	GetDefault() (string, error)

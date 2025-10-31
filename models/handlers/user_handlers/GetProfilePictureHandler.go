@@ -4,14 +4,12 @@ package user_handlers
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
-	"github.com/redis/go-redis/v9"
 )
 
 type GetProfilePictureHandler struct {
@@ -66,24 +64,14 @@ func (h *GetProfilePictureHandler) Handle() handlers.IHandler {
 		return handlers.Lock(h, 404, err)
 	}
 	fmt.Printf("[INFO] GetProfilePictureHandler.Handle{ userID: %v, profilePictureName: %s }\n", userID, profilePictureName)
-	// now check redis
-	h.url, h.err = h.Rs.Get(profilePictureName)
-	if h.err == redis.Nil {
-		fmt.Printf("[INFO] GetProfilePictureHandler.Handle{ userID: %v, profilePictureName: %s }\n", userID, profilePictureName)
-		h.url, h.err = h.Ms.GetPresigned(userID, profilePictureName)
-		if h.err != nil {
-			fmt.Printf("[ERROR] GetProfilePictureHandler.Handle::MinioService.GetPresigned{ userID: %v, profilePictureName: %s }\n", userID, profilePictureName)
-			return handlers.Lock(h, 500, h.err)
-		}
-		h.err = h.Rs.SetWithExpiration(
-			profilePictureName,
-			h.url,
-			time.Hour*24*7,
-		)
-		if h.err != nil {
-			fmt.Printf("[ERROR] GetProfilePictureHandler.Handle::RedisService.SetWithExpiration{ userID: %v, profilePictureName: %s }\n", userID, profilePictureName)
-			return handlers.Lock(h, 500, h.err)
-		}
+	h.url, h.err = h.Ms.GetPresigned(
+		userID,
+		"profile-pic",
+		profilePictureName,
+	)
+	if h.err != nil {
+		fmt.Printf("[ERROR] GetProfilePictureHandler.Handle::MinioService.GetPresigned{ userID: %v, profilePictureName: %s }\n", userID, profilePictureName)
+		return handlers.Lock(h, 500, h.err)
 	}
 	return h
 }

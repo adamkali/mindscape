@@ -159,4 +159,3 @@ clean: ## Clean build artifacts
 	@rm -rf $(BINARY_DIR)
 	@rm -f coverage.out coverage.html
 	@echo "$(GREEN)Clean complete$(NC)"
-

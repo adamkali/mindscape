@@ -69,25 +69,6 @@ func (h *UploadProfilePictureHandler) SetError(err error) handlers.IHandler {
 }
 
 func (h *UploadProfilePictureHandler) Handle() handlers.IHandler {
-	// Handle(UserController.AuthService.CheckToken).
-	// Handle(UserController.MinioService.Upload).
-	// Handle(UserController.UserService.Update).
-	// var file *multipart.FileHeader
-	// var src multipart.File
-	// file, h.Error = h.Context.FormFile("file")
-	// if h.Error != nil {
-	// 	code = 400
-	// 	break
-	// }
-	// src, h.Error = file.Open()
-	// defer src.Close()
-	// h.UserUploadFilename = file.Filename
-	// h.Error = handle(h.UserID, h.UserUploadFilename, src, file.Size)
-	// code = 500
-	// case func(user_id uuid.UUID, profile_name string) (*repository.User, error):
-	// 	h.UserResponse, h.Error = handle(h.UserID, h.UserUploadFilename)
-	// 	code = 500
-
 	filename := "" 
 	jwt_token := h.ctx.Get("user").(*jwt.Token)
 	claims := jwt_token.Claims.(*services.CustomJwt)
@@ -108,7 +89,13 @@ func (h *UploadProfilePictureHandler) Handle() handlers.IHandler {
 	}
 	defer src.Close()
 	filename = file.Filename
-	err = h.ms.Upload(userId, filename, src, file.Size)
+	err = h.ms.Upload(
+		userId,
+		filename,
+		src,
+		file.Size,
+		"profile-pic",
+	)
 	if err != nil {
 		return handlers.Lock(h, 500, err)
 	}
