@@ -164,6 +164,18 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 			if (result.success) {
 				setUserBackground(backgroundUrl);
 				setError(null);
+
+				// Update the user object in AuthContext with the new background
+				const currentUser = auth.user();
+				if (currentUser && auth.token()) {
+					auth.update(
+						{
+							...currentUser,
+							background: backgroundUrl,
+						},
+						auth.token()!
+					);
+				}
 			} else {
 				throw new Error(result.message || 'Failed to update background');
 			}

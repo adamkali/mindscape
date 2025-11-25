@@ -13,7 +13,7 @@ export default function BackgroundChoices(props: {
 				<For each={backgroundChoices()}>
 					{(backgroundUrl) => (
 						<div
-							class={`relative aspect-video rounded-lg overflow-hidden cursor-pointer border-2 transition-all duration-300 hover:scale-105 ${currentBackground() === backgroundUrl
+							class={`relative aspect-video rounded-lg overflow-hidden cursor-pointer border-2 transition-all duration-300 hover:scale-105 ${currentBackground() === backgroundUrl.filename
 									? 'border-white/70 ring-2 ring-white/50'
 									: 'border-white/20 hover:border-white/40'
 								}`}
@@ -27,7 +27,7 @@ export default function BackgroundChoices(props: {
 									(e.target as HTMLImageElement).style.display = 'none';
 								}}
 							/>
-							<Show when={currentBackground() === backgroundUrl}>
+							<Show when={currentBackground() === backgroundUrl.filename}>
 								<div class="absolute inset-0 bg-white/20 backdrop-blur-sm flex items-center justify-center">
 									<div class="text-white font-semibold">Selected</div>
 								</div>

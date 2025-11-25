@@ -211,15 +211,11 @@ const EditProfile = () => {
 		const file = target.files?.[0];
 		if (file) {
 			setCustomBackgroundFile(file);
-			// Note: Custom background upload functionality would need backend support
-			setSuccess('Custom background selected! Upload feature coming soon.');
-			setError('');
 		}
 	};
 
 	const handleCustomBackgroundUpload = async () => {
 		if (!customBackgroundFile() || !auth.token()) return;
-
 		setIsLoading(true);
 		setError('');
 		setSuccess('');

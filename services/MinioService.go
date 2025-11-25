@@ -58,9 +58,10 @@ func (MinioService *MinioService) Upload(
 	size int64,
 	prefix string,
 ) error {
+	bucketName := uploaderID.String()
 	exists, err := MinioService.client.BucketExists(
 		MinioService.ctx,
-		uploaderID.String(),
+		bucketName,
 	)
 	if err != nil {
 		return err
@@ -68,23 +69,26 @@ func (MinioService *MinioService) Upload(
 		opts := minio.MakeBucketOptions{}
 		errMakeBucket := MinioService.client.MakeBucket(
 			MinioService.ctx,
-			uploaderID.String(),
+			bucketName,
 			opts,
 		)
 		if errMakeBucket != nil {
 			return err
 		}
 	}
-	var key string
+
+	// Construct object key (path within bucket)
+	var objectKey string
 	if prefix != "" {
-		key = fmt.Sprintf("%s/%s", uploaderID.String(), prefix)
+		objectKey = fmt.Sprintf("%s/%s", prefix, uploadName)
 	} else {
-		key = uploaderID.String()
+		objectKey = uploadName
 	}
+
 	_, err = MinioService.client.PutObject(
 		MinioService.ctx,
-		key,
-		uploadName,
+		bucketName,
+		objectKey,
 		uploadFile,
 		size,
 		minio.PutObjectOptions{},
@@ -110,13 +114,17 @@ func (MinioService *MinioService) Upload(
 // Gets a file from S3 compatible storage. If the file does not exist, it will return an error.
 func (MinioService *MinioService) Get(uploaderID uuid.UUID, prefix string, uploadName string) ([]byte, error) {
 	opts := minio.GetObjectOptions{}
-	var key string
+	bucketName := uploaderID.String()
+
+	// Construct object key (path within bucket)
+	var objectKey string
 	if prefix != "" {
-		key = fmt.Sprintf("%s/%s", uploaderID.String(), prefix)
+		objectKey = fmt.Sprintf("%s/%s", prefix, uploadName)
 	} else {
-		key = uploaderID.String()
+		objectKey = uploadName
 	}
-	object, err := MinioService.client.GetObject(MinioService.ctx, key, uploadName, opts)
+
+	object, err := MinioService.client.GetObject(MinioService.ctx, bucketName, objectKey, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -144,13 +152,23 @@ func (MinioService *MinioService) Get(uploaderID uuid.UUID, prefix string, uploa
 func (m *MinioService) GetPresigned(uploaderID uuid.UUID, prefix string, uploadName string) (string, error) {
 	reqParams := make(url.Values)
 	reqParams.Set("response-content-disposition", "attachment; filename=\""+uploadName+"\"")
-	var key string 
+	bucketName := uploaderID.String()
+
+	// Construct object key (path within bucket)
+	var objectKey string
 	if prefix != "" {
-		key = fmt.Sprintf("%s/%s", uploaderID.String(), prefix)
+		objectKey = fmt.Sprintf("%s/%s", prefix, uploadName)
 	} else {
-		key = uploaderID.String()
+		objectKey = uploadName
 	}
-	presigedUrl, err := m.client.PresignedGetObject(m.ctx, key, uploadName, time.Hour*72, reqParams)
+
+	// Check if the object actually exists before generating presigned URL
+	_, err := m.client.StatObject(m.ctx, bucketName, objectKey, minio.StatObjectOptions{})
+	if err != nil {
+		return "", err
+	}
+
+	presigedUrl, err := m.client.PresignedGetObject(m.ctx, bucketName, objectKey, time.Hour*72, reqParams)
 	if err != nil {
 		return "", err
 	}
@@ -183,9 +201,7 @@ func (m *MinioService) GetDefault() (string, error) {
 func (m *MinioService) GetBackgroundChoices() ([]BackgroundInternal, error) {
 	reqParams := make(url.Values)
 	backgrounds := make([]minio.ObjectInfo, 0)
-	for objects := range m.client.ListObjects(m.ctx, "mindspace", minio.ListObjectsOptions{
-		Recursive: false,
-	}) {
+	for objects := range m.client.ListObjects(m.ctx, "mindspace", minio.ListObjectsOptions{ Recursive: false }) {
 		if err := objects.Err; err != nil {
 			return nil, err
 		}
@@ -207,9 +223,13 @@ func (m *MinioService) GetBackgroundChoices() ([]BackgroundInternal, error) {
 func (m *MinioService) GetUserBackgroundChoices(user uuid.UUID) ([]BackgroundInternal, error) {
 	reqParams := make(url.Values)
 	backgrounds := make([]minio.ObjectInfo, 0)
-	for objects := range m.client.ListObjects(m.ctx, user.String()+"/bacgrounds", minio.ListObjectsOptions{
-		Recursive: false,
-	}) {
+	bucketName := user.String()
+
+	listObjectsOptions := minio.ListObjectsOptions{
+		Recursive: true,
+		Prefix:    "backgrounds/",
+	}
+	for objects := range m.client.ListObjects(m.ctx, bucketName, listObjectsOptions) {
 		if err := objects.Err; err != nil {
 			return nil, err
 		}
@@ -218,11 +238,18 @@ func (m *MinioService) GetUserBackgroundChoices(user uuid.UUID) ([]BackgroundInt
 
 	backgroundEntities := make([]BackgroundInternal, len(backgrounds))
 	for i, background := range backgrounds {
-		presigedUrl, err := m.client.PresignedGetObject(m.ctx, user.String(), background.Key, time.Hour*24*7, reqParams)
+		// Strip the "backgrounds/" prefix from the filename
+		filename := background.Key
+		if len(filename) > 12 && filename[:12] == "backgrounds/" {
+			filename = filename[12:]
+		}
+
+		reqParams.Set("response-content-disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
+		presigedUrl, err := m.client.PresignedGetObject(m.ctx, bucketName, background.Key, time.Hour*24*7, reqParams)
 		if err != nil {
 			return nil, err
 		}
-		backgroundEntities[i] = BackgroundInternal{Name: background.Key, URL: presigedUrl.String()}
+		backgroundEntities[i] = BackgroundInternal{Name: filename, URL: presigedUrl.String()}
 	}
 	return backgroundEntities, nil
 }

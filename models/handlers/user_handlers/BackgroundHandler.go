@@ -54,9 +54,10 @@ func (h *BackgroundHandler) Handle() handlers.IHandler {
 			fmt.Printf("[ERROR] BackgroundHandler.MinioService.GetDefault{\nuserID: %v\n --> %s }\n", userID, h.err)
 			return handlers.Lock(h,500, h.err)
 		}
+		return h
 	}
 	fmt.Printf("[INFO] BackgroundHandler.MinioService.GetPresigned{ userID: %v, background: %s }\n", userID, q)
-	h.url, h.err = h.MinioService.GetPresigned(userID, "background", q)
+	h.url, h.err = h.MinioService.GetPresigned(userID, "backgrounds", q)
 	if h.err != nil {
 		fmt.Printf("[WARNING] BackgroundHandler.MinioService.GetPresigned{\nuserID: %v,\nbackground: %s,\n} --> %s }\n", userID, q, h.err)
 		fmt.Printf("[INFO] Defaulting to BackgroundHandler.MinioService.GetDefaultChoice \n", userID, q)
