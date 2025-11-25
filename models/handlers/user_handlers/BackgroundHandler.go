@@ -42,7 +42,7 @@ func (h *BackgroundHandler) Handle() handlers.IHandler {
 	userID := claims.UserId
 	err := h.AuthService.CheckToken(jwt_token.Raw)
 	if err != nil {
-		fmt.Printf("[ERROR] BackgroundHandler.Handle{ userID: %v\n --> %s }\n", userID)
+		fmt.Printf("[ERROR] BackgroundHandler.Handle{ userID: %v\n --> %s }\n", userID, err)
 		return handlers.Lock(h, 401, err)
 	}
 	q := h.ctx.QueryParam("background")
@@ -60,7 +60,7 @@ func (h *BackgroundHandler) Handle() handlers.IHandler {
 	h.url, h.err = h.MinioService.GetPresigned(userID, "backgrounds", q)
 	if h.err != nil {
 		fmt.Printf("[WARNING] BackgroundHandler.MinioService.GetPresigned{\nuserID: %v,\nbackground: %s,\n} --> %s }\n", userID, q, h.err)
-		fmt.Printf("[INFO] Defaulting to BackgroundHandler.MinioService.GetDefaultChoice \n", userID, q)
+		fmt.Printf("[INFO] Defaulting to BackgroundHandler.MinioService.GetDefaultChoice\n")
 	    h.url, h.err = h.MinioService.GetDefaultChoice(q)
 		if h.err != nil {
 			fmt.Printf("[ERROR] BackgroundHandler.MinioService.GetDefaultChoice{\nuserID: %v,\nbackground: %s\n --> %s }\n", userID, q, h.err)
