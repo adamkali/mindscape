@@ -22,6 +22,7 @@ type Registrar struct {
 	NoteService      services.INoteService
 	RedisService     services.IRedisService
 	UserService      services.IUserService
+	WidgetService    services.IWidgetService
 	ValidatorService *services.ValidatorService
 }
 
@@ -46,6 +47,7 @@ func createControllerParams(config *configuration.Configuration) (*Registrar, er
 		NoteService:      services.CreateNoteService(ctx, db),
 		RedisService:     services.CreateRedisService(ctx, config),
 		UserService:      services.CreateUserService(ctx, db),
+		WidgetService:    services.CreateWidgetService(ctx, db),
 		ValidatorService: &services.ValidatorService{},
 	}, nil
 }

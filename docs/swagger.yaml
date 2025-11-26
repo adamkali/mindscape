@@ -141,6 +141,15 @@ definitions:
       success:
         type: boolean
     type: object
+  WidgetResponse:
+    properties:
+      data:
+        $ref: '#/definitions/responses.WidgetData'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   repository.Bookmark:
     properties:
       created_datetime:
@@ -296,6 +305,70 @@ definitions:
         type: string
       username:
         type: string
+    type: object
+  responses.WidgetData:
+    properties:
+      id:
+        type: string
+      layout:
+        $ref: '#/definitions/schemas.WidgetLayout'
+      properties:
+        additionalProperties:
+          $ref: '#/definitions/schemas.WidgetProperty'
+        type: object
+      required:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      type:
+        type: string
+    type: object
+  responses.WidgetsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/responses.WidgetData'
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  schemas.WidgetLayout:
+    properties:
+      defaultSize:
+        $ref: '#/definitions/schemas.WidgetSize'
+      maxSize:
+        $ref: '#/definitions/schemas.WidgetSize'
+      minSize:
+        $ref: '#/definitions/schemas.WidgetSize'
+      resizable:
+        type: boolean
+    type: object
+  schemas.WidgetProperty:
+    properties:
+      description:
+        type: string
+      enum:
+        items: {}
+        type: array
+      format:
+        type: string
+      label:
+        type: string
+      type:
+        type: string
+      value:
+        type: string
+    type: object
+  schemas.WidgetSize:
+    properties:
+      height:
+        type: integer
+      width:
+        type: integer
     type: object
 info:
   contact:
@@ -1121,6 +1194,56 @@ paths:
       summary: Signup to the app
       tags:
       - Users
+  /widgets/schemas:
+    get:
+      description: |-
+        Get all embeded widget schemas from the Schema
+        Storage
+      operationId: GetWidgetSchemas
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.WidgetsResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.WidgetsResponse'
+      summary: Get Widget Schemas
+      tags:
+      - Widgets
+  /widgets/schemas/{schema_id}:
+    get:
+      description: |-
+        Get embeded widget schema from the Schema
+        Storage by its identifier
+      operationId: GetWidgetSchemaByID
+      parameters:
+      - description: Widget Schema Id
+        in: path
+        name: schema_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/WidgetResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/WidgetResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/WidgetResponse'
+      summary: Get Widget Schema by ID
+      tags:
+      - Widgets
 schemes:
 - http
 swagger: "2.0"

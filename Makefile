@@ -133,6 +133,8 @@ docker-logs: ## View Docker container logs
 	docker-compose logs -f
 
 dev-docker: ## Start development environment with Docker (hot reload + debugging)
+	@echo "$(YELLOW)Building swagger documentation...$(NC)"
+	$(BINARY_PATH) swag
 	@echo "$(YELLOW)Starting development Docker environment...$(NC)"
 	@echo "$(BLUE)Backend will be available at http://localhost:60000$(NC)"
 	@echo "$(BLUE)Frontend will be available at http://localhost:5173$(NC)"

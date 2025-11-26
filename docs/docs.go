@@ -1198,6 +1198,75 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/widgets/schemas": {
+            "get": {
+                "description": "Get all embeded widget schemas from the Schema\nStorage",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Get Widget Schemas",
+                "operationId": "GetWidgetSchemas",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WidgetsResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WidgetsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/widgets/schemas/{schema_id}": {
+            "get": {
+                "description": "Get embeded widget schema from the Schema\nStorage by its identifier",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Get Widget Schema by ID",
+                "operationId": "GetWidgetSchemaByID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Widget Schema Id",
+                        "name": "schema_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/WidgetResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/WidgetResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/WidgetResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1410,6 +1479,20 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/responses.UserData"
                     }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "WidgetResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.WidgetData"
                 },
                 "message": {
                     "type": "string"
@@ -1655,6 +1738,104 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.WidgetData": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "layout": {
+                    "$ref": "#/definitions/schemas.WidgetLayout"
+                },
+                "properties": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/schemas.WidgetProperty"
+                    }
+                },
+                "required": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.WidgetsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.WidgetData"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "schemas.WidgetLayout": {
+            "type": "object",
+            "properties": {
+                "defaultSize": {
+                    "$ref": "#/definitions/schemas.WidgetSize"
+                },
+                "maxSize": {
+                    "$ref": "#/definitions/schemas.WidgetSize"
+                },
+                "minSize": {
+                    "$ref": "#/definitions/schemas.WidgetSize"
+                },
+                "resizable": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "schemas.WidgetProperty": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "enum": {
+                    "type": "array",
+                    "items": {}
+                },
+                "format": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.WidgetSize": {
+            "type": "object",
+            "properties": {
+                "height": {
+                    "type": "integer"
+                },
+                "width": {
+                    "type": "integer"
                 }
             }
         }

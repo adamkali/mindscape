@@ -4,3 +4,4 @@ export * from './BackgroundApi';
 export * from './BookmarksApi';
 export * from './FoldersApi';
 export * from './UsersApi';
+export * from './WidgetsApi';

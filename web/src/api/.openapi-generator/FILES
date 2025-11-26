@@ -2,6 +2,7 @@ apis/BackgroundApi.ts
 apis/BookmarksApi.ts
 apis/FoldersApi.ts
 apis/UsersApi.ts
+apis/WidgetsApi.ts
 apis/index.ts
 index.ts
 models/BackgroundData.ts
@@ -23,10 +24,16 @@ models/ResponsesFolderData.ts
 models/ResponsesFolderResponse.ts
 models/ResponsesFoldersResponse.ts
 models/ResponsesUserData.ts
+models/ResponsesWidgetData.ts
+models/ResponsesWidgetsResponse.ts
+models/SchemasWidgetLayout.ts
+models/SchemasWidgetProperty.ts
+models/SchemasWidgetSize.ts
 models/StringResponse.ts
 models/UpdateCredentialsRequest.ts
 models/UpdateUserResponse.ts
 models/UserResponse.ts
 models/UsersResponse.ts
+models/WidgetResponse.ts
 models/index.ts
 runtime.ts
