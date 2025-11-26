@@ -30,3 +30,12 @@ tmp/
 
 node_modules/
 
+# Build artifacts
+mindscape
+*.log
+
+# Emacs files
+*~
+\#*\#
+.\#*
+

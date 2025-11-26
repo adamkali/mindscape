@@ -1,0 +1,56 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: dev.Dockerfile
+    container_name: mindscape-backend
+    ports:
+      - "60000:60000"  # Backend API port
+    volumes:
+      - ./:/app
+      - /app/tmp
+      - /app/web/node_modules
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - "apparmor=unconfined"
+    # Map Tailscale hostname to IP for database/redis/minio access
+    # Set TAILSCALE_HOST and TAILSCALE_IP in your .env file or environment
+    extra_hosts:
+      - "${TAILSCALE_HOST:-snickers}:${TAILSCALE_IP:-100.74.242.121}"
+    networks:
+      - mindscape-network
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - -f
+        - http://127.0.0.1:60000/api/_health
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  frontend:
+    build:
+      context: .
+      dockerfile: web.Dockerfile
+    container_name: mindscape-frontend
+    ports:
+      - "5173:5173"  # Frontend dev server port
+    volumes:
+      # Mount web source code for hot reloading
+      - ./web:/app/web
+      # Exclude node_modules to use container's version
+      - /app/web/node_modules
+    environment:
+      # Use backend service name for container-to-container communication
+      - BACKEND_URL=http://backend:60000
+    depends_on:
+      - backend
+    networks:
+      - mindscape-network
+
+networks:
+  mindscape-network:
+    driver: bridge

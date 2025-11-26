@@ -5,15 +5,15 @@ tmp_dir = "tmp"
 [build]
   args_bin = []
   bin = "./tmp/mindscape"
-  cmd = "make build-debug"
+  cmd = "go build -buildvcs=false -gcflags='all=-N -l' -o ./tmp/mindscape ."
   delay = 1000
-  exclude_dir = ["assets", "tmp", "vendor", "testdata", "web/node_modules", "web/dist"] 
+  exclude_dir = ["assets", "tmp", "vendor", "testdata", "web/node_modules", "web/dist"]
   exclude_file = []
   exclude_regex = ["_test.go"]
   exclude_unchanged = false
   follow_symlink = false
   include_dir = []
-  include_ext = ["go", "tpl", "tmpl", "html", "css", "tsx", "ts" ]
+  include_ext = ["go", "tpl", "tmpl", "html"]
   include_file = []
   kill_delay = "0s"
   log = "build-errors.log"

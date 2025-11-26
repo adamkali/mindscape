@@ -45,20 +45,24 @@ setup: install ## Setup development environment
 build-backend: build-frontend ## Build backend binary
 	@echo "$(YELLOW)Building backend...$(NC)"
 	@mkdir -p $(BINARY_DIR)
-	go build -ldflags="-s -w" -o $(BINARY_PATH) .
+	go build -buildvcs=false -ldflags="-s -w" -o $(BINARY_PATH) .
 	@echo "$(GREEN)Backend built successfully: $(BINARY_PATH)$(NC)"
 
 build-debug: build-frontend ## Build backend binary with debug symbols for delve
 	@echo "$(YELLOW)Building backend with debug symbols...$(NC)"
 	@mkdir -p $(BINARY_DIR)
-	go build -gcflags="all=-N -l" -o $(BINARY_PATH) .
+	go build -buildvcs=false -gcflags="all=-N -l" -o $(BINARY_PATH) .
 	@echo "$(GREEN)Debug backend built successfully: $(BINARY_PATH)$(NC)"
 
 build-frontend: ## Build frontend
 	@if [ -d "./web" ]; then \
-		echo "$(YELLOW)Building frontend...$(NC)"; \
-		cd ./web && pnpm build; \
-		echo "$(GREEN)Frontend built successfully$(NC)"; \
+		if command -v pnpm > /dev/null 2>&1; then \
+			echo "$(YELLOW)Building frontend...$(NC)"; \
+			cd ./web && pnpm build; \
+			echo "$(GREEN)Frontend built successfully$(NC)"; \
+		else \
+			echo "$(YELLOW)pnpm not found, skipping frontend build (Docker uses separate container)$(NC)"; \
+		fi \
 	else \
 		echo "$(YELLOW)No web directory found, skipping...$(NC)"; \
 	fi
@@ -128,6 +132,41 @@ docker-compose-down: ## Stop services with docker-compose
 docker-logs: ## View Docker container logs
 	docker-compose logs -f
 
+dev-docker: ## Start development environment with Docker (hot reload + debugging)
+	@echo "$(YELLOW)Starting development Docker environment...$(NC)"
+	@echo "$(BLUE)Backend will be available at http://localhost:60000$(NC)"
+	@echo "$(BLUE)Frontend will be available at http://localhost:5173$(NC)"
+	@echo "$(BLUE)Delve debugger will be available at localhost:2345$(NC)"
+	@echo "$(YELLOW)Tip: Use 'make dev-docker-logs-backend' or 'make dev-docker-logs-frontend' to view individual logs$(NC)"
+	docker-compose -f dev.docker-compose.yml up --build
+
+dev-docker-down: ## Stop development Docker environment
+	@echo "$(YELLOW)Stopping development Docker environment...$(NC)"
+	docker-compose -f dev.docker-compose.yml down
+
+dev-docker-logs: ## View all Docker container logs
+	docker-compose -f dev.docker-compose.yml logs -f
+
+dev-docker-logs-backend: ## View backend container logs only
+	@echo "$(BLUE)Viewing backend logs (Ctrl+C to exit)...$(NC)"
+	docker-compose -f dev.docker-compose.yml logs -f backend
+
+dev-docker-logs-frontend: ## View frontend container logs only
+	@echo "$(BLUE)Viewing frontend logs (Ctrl+C to exit)...$(NC)"
+	docker-compose -f dev.docker-compose.yml logs -f frontend
+
+dev-docker-restart-backend: ## Restart only the backend container
+	@echo "$(YELLOW)Restarting backend container...$(NC)"
+	docker-compose -f dev.docker-compose.yml restart backend
+
+dev-docker-restart-frontend: ## Restart only the frontend container
+	@echo "$(YELLOW)Restarting frontend container...$(NC)"
+	docker-compose -f dev.docker-compose.yml restart frontend
+
+dev-docker-rebuild: ## Rebuild and restart development Docker environment
+	@echo "$(YELLOW)Rebuilding development Docker environment...$(NC)"
+	docker-compose -f dev.docker-compose.yml up --build --force-recreate
+
 prod-setup: ## Setup production environment and start server
 	@echo "$(YELLOW)Setting up production environment...$(NC)"
 	@if [ -f ./config/production.yaml ]; then \
@@ -159,3 +198,5 @@ clean: ## Clean build artifacts
 	@rm -rf $(BINARY_DIR)
 	@rm -f coverage.out coverage.html
 	@echo "$(GREEN)Clean complete$(NC)"
+
+

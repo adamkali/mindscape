@@ -19,16 +19,17 @@ export default defineConfig({
 	},
 	server: {
 		port: 5173,
+		host: '0.0.0.0',
 		cors: true,
 		proxy: {
 			'/api': {
-				target: 'http://localhost:60000',
-				changeOrigin: false,
+				target: process.env.BACKEND_URL || 'http://0.0.0.0:60000',
+				changeOrigin: true,
 				secure: false,
 			},
 			'/assets/svgs': {
-				target: 'http://localhost:60000',
-				changeOrigin: false,
+				target: process.env.BACKEND_URL || 'http://0.0.0.0:60000',
+				changeOrigin: true,
 				secure: false,
 			},
 		},

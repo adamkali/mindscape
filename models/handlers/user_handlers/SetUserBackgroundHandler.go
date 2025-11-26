@@ -53,7 +53,7 @@ func (h *SetUserBackgroundHandler) Handle() handlers.IHandler {
 			return handlers.Lock(h, 404, h.err)
 		}
 	} else {
-		h.url, h.err = h.MinioService.GetPresigned(userID, "background", backgroundFileName)
+		h.url, h.err = h.MinioService.GetPresigned(userID, "backgrounds", backgroundFileName)
 		if h.err != nil {
 			h.url, h.err = h.MinioService.GetDefaultChoice(backgroundFileName)
 			if h.err != nil {

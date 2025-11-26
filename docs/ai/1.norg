@@ -1,0 +1,268 @@
+@document.meta
+title: 1
+description: Task 1 
+
+authors: Adam Kalinowski
+created: 2025-11-21T15:35:45-0500
+updated: 2025-11-21T15:48:39-0500
+version: 1.1.1
+@end
+
+* Task 1 for AI 
+  Here is your task. I want to be able to run a docker compose file that will run a local server that can preform hot reloading. 
+  Right now, this is combersome as air right now does hot reload, but there is no way for me to debug using delve and neovim with it. 
+  feel free to leverage Makefiles to accomplish this task.
+  I should need only to run the make target and a launch.json. 
+  All the files you need are in the {* Links} section below
+** Deliverables
+  - the mindscape web server running on port 60000
+  - the development config being used for the configuration of the server
+  - the hot reloading of the server when the code changes 
+  - the hot reloading of the frontend when the code changes
+** Steps
+   - Make a plan for how you will do this.
+   - Add a section in this document for each step.
+   - viwe the links below for reference of which files i want you to use
+   - when you are done write out a summary of what you did here in a {* Report}
+	 with also a full outline of what i need to do in order to complete the debugging process.
+
+** Implementation Sections
+
+*** Step 1: Created Development Dockerfile (dev.Dockerfile)
+    Created a new Dockerfile specifically for development that includes:
+    - Golang 1.24 base image with all necessary tools
+    - Air for hot reloading backend code
+    - Delve (dlv) for debugging support
+    - Node.js and pnpm for frontend development
+    - All required tools: git, make, curl, ffmpeg
+    - Exposes three ports: 60000 (app), 2345 (debugger), 5173 (frontend)
+    - Mounts source code as volumes for instant hot reloading
+    - Startup script that runs both frontend dev server and backend with air
+
+*** Step 2: Created Debug Air Configuration (.air.debug.toml)
+    Created a specialized Air configuration that:
+    - Compiles Go code with debug symbols (-gcflags='all=-N -l')
+    - Runs the binary through Delve in headless mode
+    - Listens on port 2345 for remote debugging connections
+    - Supports multi-client connections (allows reconnecting)
+    - Watches Go files for changes and rebuilds automatically
+    - Excludes test files and frontend directories from watch
+
+*** Step 3: Created Development Docker Compose (dev.docker-compose.yml)
+    Created a new docker-compose configuration that:
+    - Uses the dev.Dockerfile for building
+    - Exposes all three required ports
+    - Mounts source code as volumes for hot reloading
+    - Excludes node_modules and tmp directories from mounts
+    - Passes all environment variables from .env file
+    - Adds SYS_PTRACE capability for Delve debugging
+    - Includes health checks for the application
+    - Overrides command to use .air.debug.toml configuration
+
+*** Step 4: Added Makefile Targets
+    Added four new Makefile targets for Docker development workflow:
+    - `make dev-docker`: Starts the development Docker environment with build
+    - `make dev-docker-down`: Stops and removes the development containers
+    - `make dev-docker-logs`: Follows the logs of the development container
+    - `make dev-docker-rebuild`: Force rebuilds and recreates the containers
+
+    Each target includes helpful colored output showing available URLs and ports.
+
+*** Step 5: Updated launch.json
+    Added a new debugging configuration:
+    - Name: "Attach to Docker Delve"
+    - Connects to localhost:2345 (Delve server in container)
+    - Maps container path /app to local workspace
+    - Enables verbose logging for debugging the debugger
+    - Works with VS Code and Neovim DAP (nvim-dap)
+
+* Report
+
+** Summary
+   Successfully implemented a complete Docker-based development environment for Mindscape using a
+   two-container architecture that provides:
+   - Separate containers for frontend and backend (clean log separation)
+   - Hot reloading for both backend (Air) and frontend (pnpm dev)
+   - Full debugging support via Delve debugger
+   - Single command startup with `make dev-docker`
+   - Individual service control and log viewing
+   - Proper container networking for frontend-backend communication
+   - Development config usage (development.yaml)
+   - All services running on specified ports
+
+** Architecture Overview
+   The solution uses a *microservices-style two-container architecture*:
+
+   *Container 1: Backend (mindscape-backend)*
+   - Go application with Air for hot reloading
+   - Delve debugger for breakpoint debugging
+   - Exposes ports 60000 (API) and 2345 (debugger)
+   - Mounts Go source code for hot reload
+
+   *Container 2: Frontend (mindscape-frontend)*
+   - Node.js with pnpm dev server
+   - SolidJS application with hot module replacement
+   - Exposes port 5173 (dev server)
+   - Mounts web/ directory for hot reload
+   - Proxies API requests to backend container
+
+   *Container Communication*
+   - Custom Docker bridge network: `mindscape-network`
+   - Frontend reaches backend at `http://backend:60000` via DNS
+   - Rsbuild proxy configuration uses BACKEND_URL environment variable
+
+   The solution consists of six key components:
+
+   1. *Backend Dockerfile (dev.Dockerfile)* - Backend with Air + Delve
+   2. *Frontend Dockerfile (web.Dockerfile)* - Frontend with pnpm dev server
+   3. *Debug Air Config (.air.debug.toml)* - Configures Air to run through Delve
+   4. *Dev Docker Compose (dev.docker-compose.yml)* - Orchestrates both containers with networking
+   5. *Makefile Targets* - Convenient commands for managing both services
+   6. *Launch Configuration (.vscode/launch.json)* - Enables remote debugging from Neovim/VS Code
+
+** Complete Debugging Process Guide
+
+*** Initial Setup (One-time)
+    1. Ensure you have Docker and Docker Compose installed
+    2. Ensure you have a `.env` file with all required EGG_* environment variables
+    3. Ensure you have Neovim with nvim-dap configured for Go debugging
+       - Or VS Code with the Go extension installed
+
+*** Starting the Development Environment
+    1. Open a terminal in the mindscape project root
+    2. Run: `make dev-docker`
+    3. Wait for both containers to build and start (first time takes longer)
+    4. You should see output indicating:
+       - Backend container (mindscape-backend) building and starting
+       - Frontend container (mindscape-frontend) building and starting
+       - Backend API on port 60000
+       - Frontend dev server on port 5173
+       - Delve debugger listening on port 2345
+    5. In separate terminals, view individual logs:
+       - Backend: `make dev-docker-logs-backend` (shows Air + Delve output)
+       - Frontend: `make dev-docker-logs-frontend` (shows pnpm dev output)
+    6. Verify services are running:
+       - Backend: http://localhost:60000/api/_health
+       - Frontend: http://localhost:5173
+       - Check containers: `docker ps | grep mindscape`
+
+*** Debugging with Neovim
+    1. Ensure the dev-docker containers are running (see above)
+    2. Open Neovim in the mindscape project directory
+    3. Open the file you want to debug (e.g., main.go or any handler)
+    4. Set breakpoints using your DAP plugin:
+       - For nvim-dap: `:lua require('dap').toggle_breakpoint()`
+       - Or use your keybinding (commonly `<leader>db`)
+    5. Start debugging by attaching to the remote debugger:
+       - Use the "Attach to Docker Delve" configuration
+       - In nvim-dap: `:lua require('dap').continue()`
+       - Or use your keybinding (commonly `<F5>`)
+    6. The debugger will connect to port 2345 and pause at your breakpoints
+    7. Use standard DAP commands to step through code:
+       - Step Over: `<F10>` or `:lua require('dap').step_over()`
+       - Step Into: `<F11>` or `:lua require('dap').step_into()`
+       - Continue: `<F5>` or `:lua require('dap').continue()`
+
+*** Debugging with VS Code
+    1. Ensure the dev-docker containers are running
+    2. Open VS Code in the mindscape project directory
+    3. Open the file you want to debug
+    4. Set breakpoints by clicking in the gutter next to line numbers
+    5. Open the Run and Debug panel (Ctrl+Shift+D)
+    6. Select "Attach to Docker Delve" from the dropdown
+    7. Click the green play button or press F5
+    8. The debugger will attach and pause at your breakpoints
+    9. Use the debugging toolbar to step through code
+
+*** Hot Reloading Behavior
+    - *Backend*: When you save any .go file:
+      - Air detects the change
+      - Rebuilds the binary with debug symbols
+      - Restarts Delve with the new binary
+      - Your debugger may disconnect briefly and need to reconnect
+      - Set breakpoints again after reload
+
+    - *Frontend*: When you save any .tsx, .ts, or .css file:
+      - pnpm dev detects the change
+      - Hot-reloads the module in the browser
+      - No debugger impact
+      - Browser updates automatically
+
+*** Stopping the Environment
+    1. To stop the containers: `make dev-docker-down`
+    2. Or press Ctrl+C in the terminal running `make dev-docker`
+    3. This stops and removes the containers but preserves volumes
+
+*** Troubleshooting
+    - *Debugger won't connect*:
+      - Check that port 2345 is exposed: `docker ps`
+      - Check Delve is running: `make dev-docker-logs-backend`
+      - Ensure no other service is using port 2345
+      - Verify backend container is running: `docker ps | grep backend`
+
+    - *Backend hot reload not working*:
+      - Verify volumes are mounted: `docker inspect mindscape-backend`
+      - Check Air logs: `make dev-docker-logs-backend`
+      - Try rebuilding backend: `make dev-docker-rebuild`
+
+    - *Frontend hot reload not working*:
+      - Verify web directory is mounted: `docker inspect mindscape-frontend`
+      - Check frontend logs: `make dev-docker-logs-frontend`
+      - Restart frontend: `make dev-docker-restart-frontend`
+
+    - *Frontend can't reach backend*:
+      - Check both containers are on same network: `docker network inspect mindscape-network`
+      - Verify BACKEND_URL is set: `make dev-docker-logs-frontend`
+      - Check backend health: `curl http://localhost:60000/api/_health`
+
+    - *Container won't start*:
+      - Check environment variables are set in .env
+      - Verify database/Redis/MinIO are accessible
+      - Check logs: `make dev-docker-logs-backend` or `make dev-docker-logs-frontend`
+      - Rebuild from scratch: `make dev-docker-rebuild`
+
+*** Additional Commands
+    *Viewing Logs*
+    - View all logs: `make dev-docker-logs`
+    - View backend logs only: `make dev-docker-logs-backend`
+    - View frontend logs only: `make dev-docker-logs-frontend`
+
+    *Restarting Services*
+    - Restart backend only: `make dev-docker-restart-backend`
+    - Restart frontend only: `make dev-docker-restart-frontend`
+    - Rebuild everything: `make dev-docker-rebuild`
+
+    *Container Access*
+    - Access backend shell: `docker exec -it mindscape-backend sh`
+    - Access frontend shell: `docker exec -it mindscape-frontend sh`
+    - Check container status: `docker ps | grep mindscape`
+
+** Benefits of This Solution
+   - *Clean Separation*: Frontend and backend in separate containers with isolated logs
+   - *Easy Debugging*: View backend or frontend logs independently
+   - *Single Command Startup*: `make dev-docker` starts both containers
+   - *Individual Service Control*: Restart backend or frontend independently
+   - *Hot Reloading*: Both services automatically reload on file changes
+   - *Full Debugging Support*: Delve debugger with breakpoints and stepping
+   - *Complete Isolation*: No conflicts with local Go or Node installations
+   - *Production-like Architecture*: Microservices setup mirrors real deployment
+   - *Consistent Environment*: Same setup across all developer machines
+   - *Easy to Reset*: Rebuild individual or all containers as needed
+   - *Port Conflict Free*: Can run multiple projects simultaneously
+
+** Files Modified/Created
+   - Created: `dev.Dockerfile` (backend development container)
+   - Created: `web.Dockerfile` (frontend development container)
+   - Created: `.air.debug.toml` (Air config for Delve debugging)
+   - Created: `dev.docker-compose.yml` (orchestrates both containers)
+   - Modified: `Makefile` (added dev-docker targets for both services)
+   - Modified: `.vscode/launch.json` (added remote debug config)
+   - Modified: `web/rsbuild.config.ts` (added BACKEND_URL environment variable support)
+* Links 
+  - {/ ../../local.docker-compose.yml}[Local docker-compose.yml]
+  - {/ ../../local.Dockerfile}[Local DockerFile]
+  - {/ ../../.air.toml}[.air.toml]
+  - {/ ../../Makefile}[Makefile]
+  - {/ ../../.vscode/launch.json}[launch.json]
+
+
