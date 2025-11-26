@@ -66,7 +66,21 @@
 ### 4. Repository Updates
 
 	there should be no changes to the repositories themselves.
+### 5. Frontend Updates
+
+	We will need to refresh the page, however now with the correct data, right now the data is being dictated by the local storage.
+	When this happens and we know that the localstorage is updated, we can optimistically change the localstorage to the new data.
+	then we should refresh the page for now.
 	
+# Todo  
+
+- (x) Added prefix to the functions
+- (-) change locations of current data in s3 storage
+- ( ) Make changes to the localstorage mechanism in the frontend
+- ( ) test
+  - ( ) Check if works as intended
+  - ( ) Make sure that if the Profil Picture is uploaded, it is also uploaded to the correct location
+  - ( ) Make sure that if there is an error getting the Profile Picture, we just re get the presigned url
 
 # References
 
