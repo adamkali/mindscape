@@ -88,7 +88,7 @@ dev: ## Start development server with hot reload
 
 dev-backend: build-backend ## Start backend development server
 	@echo "$(YELLOW)Starting backend server...$(NC)"
-	$(BINARY_PATH) up
+	$(BINARY_PATH)
 
 
 # Testing
