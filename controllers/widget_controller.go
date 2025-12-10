@@ -73,8 +73,59 @@ func (wc WidgetController) GetSchemaByID(
 	).Handle().JSON()
 }
 
+// @Summary Get a Users Widgets
+// @Description Get a Users Widgets by their auth token 
+// @Description and return the list of widgets associated 
+// @Description with the user account in the request params.
+//
+// @ID          GetUserWidgets
+// @Tags        Widgets
+// @Produce     json 
+// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Success     200                 {object}     responses.UserWidgetsResponse
+// @Failure     401                 {object}     responses.UserWidgetsResponse
+// @Failure     403                 {object}     responses.UserWidgetsResponse
+// @Failure     500                 {object}     responses.UserWidgetsResponse
+// @Router      /widgets            [get]
+func (wc WidgetController) Read(ctx echo.Context) error {
+	return handlers.NewReadUserWidgetsHandler(
+		ctx,
+		wc.WidgetService,
+		wc.AuthService,
+	).Handle().JSON()
+}
+
+// @Summary Get a Users Widget
+// @Description Get a Users Widget by their auth token 
+// @Description and a path parameter and return the 
+// @Description widget from the database.
+//
+// @ID          GetUserWidget
+// @Tags        Widgets
+// @Produce     json
+// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
+// @Success     200                 {object}     responses.UserWidgetResponse
+// @Failure     401                 {object}     responses.UserWidgetResponse
+// @Failure     403                 {object}     responses.UserWidgetResponse
+// @Failure     500                 {object}     responses.UserWidgetResponse
+// @Router      /widgets/{user_widget_id}    [get]
+func (wc WidgetController) ReadById(ctx echo.Context) error {
+	return handlers.NewReadUserWidgetHandler(
+		ctx,
+		wc.WidgetService,
+		wc.AuthService,
+	).Handle().JSON()
+}
+
 func (wc WidgetController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	api := e.Group("/api" + wc.Name)
 	api.GET("/schemas", wc.ReadSchemas)
 	api.GET("/schemas/:schema_id", wc.GetSchemaByID)
+
+	api.GET("/", wc.Read, authMiddleware)
+	api.GET("/:user_widget_id", wc.ReadById, authMiddleware)
+
+	
+	
 }

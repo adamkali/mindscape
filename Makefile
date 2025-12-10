@@ -81,6 +81,16 @@ swagger: ## Generate Swagger documentation
 
 swag: build-backend swagger
 
+gen: 
+	@echo "$(YELLOW)Generating Sql Client from schema...$(NC)"
+	@if [ -f $(BINARY_PATH) ]; then \
+		$(BINARY_PATH) db gen; \
+		echo "$(GREEN)Sqlc Succesfully Generated Database Client$(NC)"; \
+	else \
+		echo "$(RED)Binary not found. Run 'make build-backend' first$(NC)"; \
+		exit 1; \
+	fi
+
 # Development Servers
 dev: ## Start development server with hot reload
 	@echo "$(YELLOW)Starting development server with hot reload...$(NC)"

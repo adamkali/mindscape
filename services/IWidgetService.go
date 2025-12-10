@@ -1,16 +1,17 @@
 package services
 
 import (
-	"github.com/google/uuid"
+	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/schemas"
+	"github.com/google/uuid"
 )
 
-
 type IWidgetService interface {
-	ReadStorage() []schemas.WidgetSchema 
-	GetUserWidgets(userID string) ([]any, error)
-	CreateWidget(userID, widgetSchemaID uuid.UUID) error
-	UpdateWidget(userID, widgetID uuid.UUID, config schemas.WidgetSchema) error
-	DeleteWidget(userID, widgetID uuid.UUID) error
+	ReadStorage() []schemas.WidgetSchema
+	GetUserWidgets(userID uuid.UUID) ([]repository.UserWidget, error)
+	CreateWidget(widgetConfig *repository.CreateUserWidgetParams) (*repository.UserWidget, error)
+	UpdateWidget(widgetConfig *repository.UpdateUserWidgetParams) (*repository.UserWidget, error)
+	DeleteWidget(widgetID uuid.UUID) error
 	GetWidgetSchema(widgetID uuid.UUID) (*schemas.WidgetSchema, error)
+	GetUserWidget(widgetID uuid.UUID) (*repository.UserWidget, error)
 }
