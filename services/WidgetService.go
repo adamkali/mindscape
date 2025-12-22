@@ -99,6 +99,7 @@ func (ws *WidgetService) DeleteWidget(
 	}
 	tx.Commit(ws.ctx)
 	return nil
+
 }
 
 func (ws *WidgetService) GetWidgetSchema(

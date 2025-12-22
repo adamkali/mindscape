@@ -118,6 +118,15 @@ func (wc WidgetController) ReadById(ctx echo.Context) error {
 	).Handle().JSON()
 }
 
+func (wc WidgetController) AddWidget(ctx echo.Context) error {
+	return handlers.NewAddWidgetHandler(
+		ctx,
+		*wc.ValidatorService,
+		wc.WidgetService,
+		wc.AuthService,
+	).Handle().JSON()
+}
+
 func (wc WidgetController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	api := e.Group("/api" + wc.Name)
 	api.GET("/schemas", wc.ReadSchemas)
@@ -125,7 +134,5 @@ func (wc WidgetController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareF
 
 	api.GET("/", wc.Read, authMiddleware)
 	api.GET("/:user_widget_id", wc.ReadById, authMiddleware)
-
-	
-	
+	api.POST("/", wc.AddWidget, authMiddleware)
 }
