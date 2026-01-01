@@ -24,6 +24,9 @@ models/ResponsesFolderData.ts
 models/ResponsesFolderResponse.ts
 models/ResponsesFoldersResponse.ts
 models/ResponsesUserData.ts
+models/ResponsesUserWidgetData.ts
+models/ResponsesUserWidgetResponse.ts
+models/ResponsesUserWidgetsResponse.ts
 models/ResponsesWidgetData.ts
 models/ResponsesWidgetsResponse.ts
 models/SchemasWidgetLayout.ts

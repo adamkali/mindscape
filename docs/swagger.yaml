@@ -306,6 +306,50 @@ definitions:
       username:
         type: string
     type: object
+  responses.UserWidgetData:
+    properties:
+      config:
+        additionalProperties: {}
+        type: object
+      height:
+        type: integer
+      id:
+        type: string
+      is_visible:
+        type: boolean
+      position_x:
+        type: integer
+      position_y:
+        type: integer
+      schema_id:
+        type: string
+      user_id:
+        type: string
+      width:
+        type: integer
+      z_index:
+        type: integer
+    type: object
+  responses.UserWidgetResponse:
+    properties:
+      data:
+        $ref: '#/definitions/responses.UserWidgetData'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  responses.UserWidgetsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/responses.UserWidgetData'
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   responses.WidgetData:
     properties:
       id:
@@ -1194,6 +1238,84 @@ paths:
       summary: Signup to the app
       tags:
       - Users
+  /widgets:
+    get:
+      description: |-
+        Get a Users Widgets by their auth token
+        and return the list of widgets associated
+        with the user account in the request params.
+      operationId: GetUserWidgets
+      parameters:
+      - default: Bearer token
+        description: auth header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.UserWidgetsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.UserWidgetsResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/responses.UserWidgetsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.UserWidgetsResponse'
+      summary: Get a Users Widgets
+      tags:
+      - Widgets
+  /widgets/{user_widget_id}:
+    get:
+      description: |-
+        Get a Users Widget by their auth token
+        and a path parameter and return the
+        widget from the database.
+      operationId: GetUserWidget
+      parameters:
+      - default: Bearer token
+        description: auth header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Widget Id
+        in: path
+        name: user_widget_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.UserWidgetResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.UserWidgetResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/responses.UserWidgetResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.UserWidgetResponse'
+      summary: Get a Users Widget
+      tags:
+      - Widgets
   /widgets/schemas:
     get:
       description: |-

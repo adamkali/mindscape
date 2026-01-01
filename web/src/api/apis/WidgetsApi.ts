@@ -15,15 +15,30 @@
 
 import * as runtime from '../runtime';
 import type {
+  ResponsesUserWidgetResponse,
+  ResponsesUserWidgetsResponse,
   ResponsesWidgetsResponse,
   WidgetResponse,
 } from '../models/index';
 import {
+    ResponsesUserWidgetResponseFromJSON,
+    ResponsesUserWidgetResponseToJSON,
+    ResponsesUserWidgetsResponseFromJSON,
+    ResponsesUserWidgetsResponseToJSON,
     ResponsesWidgetsResponseFromJSON,
     ResponsesWidgetsResponseToJSON,
     WidgetResponseFromJSON,
     WidgetResponseToJSON,
 } from '../models/index';
+
+export interface GetUserWidgetRequest {
+    authorization: string;
+    userWidgetId: string;
+}
+
+export interface GetUserWidgetsRequest {
+    authorization: string;
+}
 
 export interface GetWidgetSchemaByIDRequest {
     schemaId: string;
@@ -33,6 +48,91 @@ export interface GetWidgetSchemaByIDRequest {
  * 
  */
 export class WidgetsApi extends runtime.BaseAPI {
+
+    /**
+     * Get a Users Widget by their auth token and a path parameter and return the widget from the database.
+     * Get a Users Widget
+     */
+    async getUserWidgetRaw(requestParameters: GetUserWidgetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesUserWidgetResponse>> {
+        if (requestParameters['authorization'] == null) {
+            throw new runtime.RequiredError(
+                'authorization',
+                'Required parameter "authorization" was null or undefined when calling getUserWidget().'
+            );
+        }
+
+        if (requestParameters['userWidgetId'] == null) {
+            throw new runtime.RequiredError(
+                'userWidgetId',
+                'Required parameter "userWidgetId" was null or undefined when calling getUserWidget().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        }
+
+        const response = await this.request({
+            path: `/widgets/{user_widget_id}`.replace(`{${"user_widget_id"}}`, encodeURIComponent(String(requestParameters['userWidgetId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ResponsesUserWidgetResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get a Users Widget by their auth token and a path parameter and return the widget from the database.
+     * Get a Users Widget
+     */
+    async getUserWidget(requestParameters: GetUserWidgetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ResponsesUserWidgetResponse> {
+        const response = await this.getUserWidgetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get a Users Widgets by their auth token and return the list of widgets associated with the user account in the request params.
+     * Get a Users Widgets
+     */
+    async getUserWidgetsRaw(requestParameters: GetUserWidgetsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesUserWidgetsResponse>> {
+        if (requestParameters['authorization'] == null) {
+            throw new runtime.RequiredError(
+                'authorization',
+                'Required parameter "authorization" was null or undefined when calling getUserWidgets().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        }
+
+        const response = await this.request({
+            path: `/widgets`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ResponsesUserWidgetsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get a Users Widgets by their auth token and return the list of widgets associated with the user account in the request params.
+     * Get a Users Widgets
+     */
+    async getUserWidgets(requestParameters: GetUserWidgetsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ResponsesUserWidgetsResponse> {
+        const response = await this.getUserWidgetsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Get embeded widget schema from the Schema Storage by its identifier

@@ -132,7 +132,7 @@ func (wc WidgetController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareF
 	api.GET("/schemas", wc.ReadSchemas)
 	api.GET("/schemas/:schema_id", wc.GetSchemaByID)
 
-	api.GET("/", wc.Read, authMiddleware)
+	api.GET("", wc.Read, authMiddleware)
 	api.GET("/:user_widget_id", wc.ReadById, authMiddleware)
-	api.POST("/", wc.AddWidget, authMiddleware)
+	api.POST("", wc.AddWidget, authMiddleware)
 }

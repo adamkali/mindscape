@@ -1199,6 +1199,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/widgets": {
+            "get": {
+                "description": "Get a Users Widgets by their auth token\nand return the list of widgets associated\nwith the user account in the request params.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Get a Users Widgets",
+                "operationId": "GetUserWidgets",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetsResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetsResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetsResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/widgets/schemas": {
             "get": {
                 "description": "Get all embeded widget schemas from the Schema\nStorage",
@@ -1263,6 +1312,63 @@ const docTemplate = `{
                         "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/WidgetResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/widgets/{user_widget_id}": {
+            "get": {
+                "description": "Get a Users Widget by their auth token\nand a path parameter and return the\nwidget from the database.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Get a Users Widget",
+                "operationId": "GetUserWidget",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Widget Id",
+                        "name": "user_widget_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetResponse"
                         }
                     }
                 }
@@ -1738,6 +1844,73 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.UserWidgetData": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "height": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_visible": {
+                    "type": "boolean"
+                },
+                "position_x": {
+                    "type": "integer"
+                },
+                "position_y": {
+                    "type": "integer"
+                },
+                "schema_id": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "width": {
+                    "type": "integer"
+                },
+                "z_index": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.UserWidgetResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.UserWidgetData"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "responses.UserWidgetsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.UserWidgetData"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
                 }
             }
         },

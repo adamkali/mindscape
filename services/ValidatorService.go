@@ -318,6 +318,11 @@ func (r ValidatorService) ValidateMoveBookmarkRequest(e echo.Context) (*requests
 func (r ValidatorService) ValidateAddUserWidgetRequest(e echo.Context) (*requests.AddUserWidgetRequst, error) {
 	validRequest := new(requests.AddUserWidgetRequst)
 
+	// Bind the request body first to populate validRequest fields
+	if err := e.Bind(&validRequest); err != nil {
+		return nil, err
+	}
+
 	storage, err := schemas.EmbeddedScemas()
 	if err != nil {
 		return nil, err
@@ -330,22 +335,19 @@ func (r ValidatorService) ValidateAddUserWidgetRequest(e echo.Context) (*request
 	}
 
 	// check that the size is less than or equal the max size
-	if widgetSchema.Layout.MaxSize.Height > ((int)(validRequest.Height)) {
-		return nil, fmt.Errorf("Validation failed. Configuerd Size is greater than Max Size (%d > %d)", widgetSchema.Layout.MaxSize.Height, validRequest.Height)
+	if validRequest.Height > ((int32)(widgetSchema.Layout.MaxSize.Height)) {
+		return nil, fmt.Errorf("Validation failed. Configured Size is greater than Max Size (%d > %d)", validRequest.Height, widgetSchema.Layout.MaxSize.Height)
 	}
-	if widgetSchema.Layout.MaxSize.Width > ((int)(validRequest.Width)) {
-		return nil, fmt.Errorf("Validation failed. Configuerd Size is greater than Max Size (%d > %d)", widgetSchema.Layout.MaxSize.Width, validRequest.Width)
+	if validRequest.Width > ((int32)(widgetSchema.Layout.MaxSize.Width)) {
+		return nil, fmt.Errorf("Validation failed. Configured Size is greater than Max Size (%d > %d)", validRequest.Width, widgetSchema.Layout.MaxSize.Width)
 	}
-	if widgetSchema.Layout.MinSize.Height <= ((int)(validRequest.Height)) {
-		return nil, fmt.Errorf("Validation failed. Configuerd Size is less than Min Size (%d <= %d)", widgetSchema.Layout.MinSize.Height, validRequest.Height)
+	if validRequest.Height < ((int32)(widgetSchema.Layout.MinSize.Height)) {
+		return nil, fmt.Errorf("Validation failed. Configured Size is less than Min Size (%d < %d)", validRequest.Height, widgetSchema.Layout.MinSize.Height)
 	}
-	if widgetSchema.Layout.MinSize.Width <= ((int)(validRequest.Width)) {
-		return nil, fmt.Errorf("Validation failed. Configuerd Size is less than Min Size (%d <= %d)", widgetSchema.Layout.MinSize.Width, validRequest.Width)
+	if validRequest.Width < ((int32)(widgetSchema.Layout.MinSize.Width)) {
+		return nil, fmt.Errorf("Validation failed. Configured Size is less than Min Size (%d < %d)", validRequest.Width, widgetSchema.Layout.MinSize.Width)
 	}
 	// ==================================================
 
-	if err := e.Bind(&validRequest); err != nil {
-		return nil, err
-	}
 	return validRequest, nil
 }
