@@ -8,6 +8,7 @@ import FolderCard from './FolderCard';
 import { Header } from './Header';
 import ProtectedRoute from './ProtectedRoute';
 import * as atoms from './atoms';
+import WidgetContainer from './WidgetContainer';
 
 const Components = {
 	AdminRoute,
@@ -19,6 +20,7 @@ const Components = {
 	CreateBookmarkComponent,
 	BookmarkComponent,
 	BookmarkCard,
+	WidgetContainer,
 
 	atoms: atoms,
 };

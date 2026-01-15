@@ -14,7 +14,7 @@ type AddUserWidgetRequst struct {
 	Height    int32     `json:"height"`
 	ZIndex    int32     `json:"z_index"`
 	IsVisible bool      `json:"is_visible"`
-}
+} // @name AddUserWidgetRequest
 
 func (wr AddUserWidgetRequst) IntoRepositoryParams(userID uuid.UUID) *repository.CreateUserWidgetParams {
 	return &repository.CreateUserWidgetParams{

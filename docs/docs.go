@@ -1246,6 +1246,71 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "description": "Add a Users Widget by their auth token.\nThe config is defined by the configuration parameters as defined by the user and the schema.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Add a Users Widget",
+                "operationId": "AddUserWidget",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Add Widget Request",
+                        "name": "AddUserWidgetRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/AddUserWidgetRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetResponse"
+                        }
+                    }
+                }
             }
         },
         "/widgets/schemas": {
@@ -1376,6 +1441,38 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "AddUserWidgetRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "height": {
+                    "type": "integer"
+                },
+                "is_visible": {
+                    "type": "boolean"
+                },
+                "position_x": {
+                    "type": "integer"
+                },
+                "position_y": {
+                    "type": "integer"
+                },
+                "schema_id": {
+                    "type": "string"
+                },
+                "width": {
+                    "type": "integer"
+                },
+                "z_index": {
+                    "type": "integer"
+                }
+            }
+        },
         "BackgroundData": {
             "type": "object",
             "properties": {
@@ -1997,7 +2094,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "value": {
-                    "type": "string"
+                    "description": "Changed from string to any to support different value types (string, bool, number)"
                 }
             }
         },

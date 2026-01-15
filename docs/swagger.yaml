@@ -1,5 +1,26 @@
 basePath: /api
 definitions:
+  AddUserWidgetRequest:
+    properties:
+      config:
+        items:
+          type: integer
+        type: array
+      height:
+        type: integer
+      is_visible:
+        type: boolean
+      position_x:
+        type: integer
+      position_y:
+        type: integer
+      schema_id:
+        type: string
+      width:
+        type: integer
+      z_index:
+        type: integer
+    type: object
   BackgroundData:
     properties:
       filename:
@@ -405,7 +426,8 @@ definitions:
       type:
         type: string
       value:
-        type: string
+        description: Changed from string to any to support different value types (string,
+          bool, number)
     type: object
   schemas.WidgetSize:
     properties:
@@ -1272,6 +1294,52 @@ paths:
           schema:
             $ref: '#/definitions/responses.UserWidgetsResponse'
       summary: Get a Users Widgets
+      tags:
+      - Widgets
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Add a Users Widget by their auth token.
+        The config is defined by the configuration parameters as defined by the user and the schema.
+      operationId: AddUserWidget
+      parameters:
+      - default: Bearer token
+        description: auth header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Add Widget Request
+        in: body
+        name: AddUserWidgetRequest
+        required: true
+        schema:
+          $ref: '#/definitions/AddUserWidgetRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.UserWidgetResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.UserWidgetResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.UserWidgetResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/responses.UserWidgetResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.UserWidgetResponse'
+      summary: Add a Users Widget
       tags:
       - Widgets
   /widgets/{user_widget_id}:

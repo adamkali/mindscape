@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+export * from './AddUserWidgetRequest';
 export * from './BackgroundData';
 export * from './BackgroundResponse';
 export * from './BookmarkResponse';

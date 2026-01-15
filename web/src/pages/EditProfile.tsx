@@ -242,12 +242,12 @@ const EditProfile = () => {
 	}
 
 	return (
-		<div 
-			class="min-h-screen bg-background"
+		<div
+			class="h-screen overflow-hidden bg-background"
 			style={backgroundStyle()}
 		>
 			<Header />
-			<div class="max-w-2xl mx-auto mt-4 space-y-4">
+			<div class="max-w-2xl mx-auto mt-4 space-y-4 overflow-y-auto max-h-[calc(100vh-4rem)] pb-4">
 				<Card variant="glass">
 					<CardHeader title="Edit Profile" subtitle="Update your profile information" />
 					<form class="space-y-6" onSubmit={handleSubmit}>

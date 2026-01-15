@@ -9,7 +9,7 @@ import AdminRoute from './components/AdminRoute';
 
 const App = () => {
 	return (
-		<div class="min-h-screen transition-colors">
+		<div class="h-screen overflow-hidden transition-colors">
 			<AuthProvider>
 				<BackgroundProvider>
 					<Router>

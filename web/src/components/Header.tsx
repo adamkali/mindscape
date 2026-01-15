@@ -15,12 +15,6 @@ interface SearchEngine {
 	searchUrl: (query: string) => string;
 }
 
-const searchEngine: SearchEngine = {
-	name: 'SearXNG',
-	placeholder: 'Search SearXNG...',
-	searchUrl: (query: string) =>
-		`https://search.kalilarosa.xyz/?q=${encodeURIComponent(query)}`,
-};
 
 export const Header: Component = () => {
 	const usersApi = new UsersApi();
@@ -121,26 +115,6 @@ export const Header: Component = () => {
 					<img width={175} src={'banner.svg'} alt="Mindscape" />
 				</a>
 
-				{/* Search Bars */}
-				<div class="flex items-center space-x-2">
-					<div class="flex items-center w-full">
-						<input
-							type="text"
-							placeholder={searchEngine.placeholder}
-							value={searchQueries()[searchEngine.name] || ''}
-							onInput={(e) =>
-								updateSearchQuery(searchEngine.name, e.currentTarget.value)
-							}
-							onKeyPress={(e) => {
-								if (e.key === 'Enter') {
-									handleSearch(searchEngine, e.currentTarget.value);
-									updateSearchQuery(searchEngine.name, '');
-								}
-							}}
-							class="px-3 py-1.5 text-xs bg-white/20 backdrop-blur-md border border-white/30 rounded-lg text-white placeholder:text-white/60 focus:outline-none focus:border-white/50 focus:bg-white/25 w-32 transition-all duration-200 shadow-sm hover:shadow-md"
-						/>
-					</div>
-				</div>
 
 				<div class="flex items-center space-x-4">
 					{/* Profile section with dropdown */}

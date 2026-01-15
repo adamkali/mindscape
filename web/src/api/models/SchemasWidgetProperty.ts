@@ -50,11 +50,11 @@ export interface SchemasWidgetProperty {
      */
     type?: string;
     /**
-     * 
-     * @type {string}
+     * Changed from string to any to support different value types (string, bool, number)
+     * @type {object}
      * @memberof SchemasWidgetProperty
      */
-    value?: string;
+    value?: object;
 }
 
 /**

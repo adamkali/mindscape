@@ -2,9 +2,9 @@ package controllers
 
 import (
 	"github.com/adamkali/mindscape/cmd/configuration"
+	handlers "github.com/adamkali/mindscape/models/handlers/widget_handlers"
 	"github.com/adamkali/mindscape/services"
 	"github.com/labstack/echo/v4"
-	handlers "github.com/adamkali/mindscape/models/handlers/widget_handlers"
 )
 
 func (uc WidgetController) ControllerName() string {
@@ -118,6 +118,22 @@ func (wc WidgetController) ReadById(ctx echo.Context) error {
 	).Handle().JSON()
 }
 
+// @Summary Add a Users Widget
+// @Description Add a Users Widget by their auth token.
+// @Description The config is defined by the configuration parameters as defined by the user and the schema.
+//
+// @ID          AddUserWidget
+// @Tags        Widgets
+// @Produce     json
+// @Accept      json
+// @Param       Authorization       header       string                            true "auth header"     default(Bearer token)
+// @Param       AddUserWidgetRequest body        requests.AddUserWidgetRequst      true "Add Widget Request"
+// @Success     200                 {object}     responses.UserWidgetResponse
+// @Failure     400                 {object}     responses.UserWidgetResponse
+// @Failure     401                 {object}     responses.UserWidgetResponse
+// @Failure     403                 {object}     responses.UserWidgetResponse
+// @Failure     500                 {object}     responses.UserWidgetResponse
+// @Router      /widgets            [post]
 func (wc WidgetController) AddWidget(ctx echo.Context) error {
 	return handlers.NewAddWidgetHandler(
 		ctx,

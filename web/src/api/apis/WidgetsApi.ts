@@ -15,12 +15,15 @@
 
 import * as runtime from '../runtime';
 import type {
+  AddUserWidgetRequest,
   ResponsesUserWidgetResponse,
   ResponsesUserWidgetsResponse,
   ResponsesWidgetsResponse,
   WidgetResponse,
 } from '../models/index';
 import {
+    AddUserWidgetRequestFromJSON,
+    AddUserWidgetRequestToJSON,
     ResponsesUserWidgetResponseFromJSON,
     ResponsesUserWidgetResponseToJSON,
     ResponsesUserWidgetsResponseFromJSON,
@@ -30,6 +33,11 @@ import {
     WidgetResponseFromJSON,
     WidgetResponseToJSON,
 } from '../models/index';
+
+export interface AddUserWidgetOperationRequest {
+    authorization: string;
+    addUserWidgetRequest: AddUserWidgetRequest;
+}
 
 export interface GetUserWidgetRequest {
     authorization: string;
@@ -48,6 +56,55 @@ export interface GetWidgetSchemaByIDRequest {
  * 
  */
 export class WidgetsApi extends runtime.BaseAPI {
+
+    /**
+     * Add a Users Widget by their auth token. The config is defined by the configuration parameters as defined by the user and the schema.
+     * Add a Users Widget
+     */
+    async addUserWidgetRaw(requestParameters: AddUserWidgetOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesUserWidgetResponse>> {
+        if (requestParameters['authorization'] == null) {
+            throw new runtime.RequiredError(
+                'authorization',
+                'Required parameter "authorization" was null or undefined when calling addUserWidget().'
+            );
+        }
+
+        if (requestParameters['addUserWidgetRequest'] == null) {
+            throw new runtime.RequiredError(
+                'addUserWidgetRequest',
+                'Required parameter "addUserWidgetRequest" was null or undefined when calling addUserWidget().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        }
+
+        const response = await this.request({
+            path: `/widgets`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AddUserWidgetRequestToJSON(requestParameters['addUserWidgetRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ResponsesUserWidgetResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Add a Users Widget by their auth token. The config is defined by the configuration parameters as defined by the user and the schema.
+     * Add a Users Widget
+     */
+    async addUserWidget(requestParameters: AddUserWidgetOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ResponsesUserWidgetResponse> {
+        const response = await this.addUserWidgetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Get a Users Widget by their auth token and a path parameter and return the widget from the database.

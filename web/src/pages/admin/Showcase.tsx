@@ -30,8 +30,9 @@ export default function Showcase() {
 	};
 
 	return (
-		<div class="min-h-screen bg-background space-y-4">
+		<div class="h-screen overflow-hidden bg-background">
 			<Header />
+			<div class="overflow-y-auto max-h-[calc(100vh-4rem)] space-y-4 pb-4">
 			<Card class="flex flex-col mx-auto w-1/2 ">
 				<CardHeader>
 					<div class="text-lg text-foreground">Mindscape UI Buttons</div>
@@ -155,6 +156,7 @@ export default function Showcase() {
 					/>
 				</CardBody>
 			</Card>
+			</div>
 		</div>
 	);
 }

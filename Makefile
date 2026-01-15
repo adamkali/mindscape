@@ -100,6 +100,9 @@ dev-backend: build-backend ## Start backend development server
 	@echo "$(YELLOW)Starting backend server...$(NC)"
 	$(BINARY_PATH)
 
+run:
+	@echo "$(YELLOW)Running script...$(NC)"
+	bash ./scripts/run.sh
 
 # Testing
 test: ## Run all tests
@@ -210,5 +213,4 @@ clean: ## Clean build artifacts
 	@rm -rf $(BINARY_DIR)
 	@rm -f coverage.out coverage.html
 	@echo "$(GREEN)Clean complete$(NC)"
-
 

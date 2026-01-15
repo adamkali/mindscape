@@ -25,7 +25,7 @@ type WidgetLayout struct {
 type WidgetProperty struct {
 	Type        string `json:"type"`
 	Label       string `json:"label"`
-	Value       string `json:"value"`
+	Value       any    `json:"value"` // Changed from string to any to support different value types (string, bool, number)
 	Format      string `json:"format"`
 	Description string `json:"description"`
 	Enum        []any  `json:"enum"`
@@ -89,11 +89,14 @@ func (wss *WidgetSchemaStorage) GetAll() []WidgetSchema {
 	return storage
 }
 
-//go:embed searchbar-schema.json
+//go:embed searchbar-schema.json githubprofile-wide.json githubprofile-lg.json githubprofile-sm.json
 var fs embed.FS
 
 const mapping = `[
-	"searchbar-schema.json"
+	"searchbar-schema.json",
+	"githubprofile-wide.json",
+	"githubprofile-lg.json",
+	"githubprofile-sm.json"
 ]`
 
 func EmbeddedScemas() (*WidgetSchemaStorage, error) {
