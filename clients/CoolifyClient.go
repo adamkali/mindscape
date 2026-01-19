@@ -240,11 +240,12 @@ func SortServices(services []CoolifyService, by string) ([]CoolifyService, error
 	return services, nil
 }
 
-func NewCoolifyClient(pat string, opts ...CoolifyClientOption) *CoolifyClient {
+func NewCoolifyClient(pat string, baseUrl string, opts ...CoolifyClientOption) *CoolifyClient {
 	client := &CoolifyClient{
 		httpClient:          &http.Client{},
 		personalAccessToken: pat,
 		defaultTimeout:      30 * time.Second, // Default timeout
+		baseUrl:             baseUrl
 	}
 
 	for _, opt := range opts {
