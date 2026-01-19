@@ -7,7 +7,7 @@ import {
 } from 'solid-js';
 import type { ResponsesUserData } from '@/api';
 import { UsersApi } from '@/api';
-import { initializeApiConfig, getApiConfig } from '@/utils/apiConfig';
+import { getApiConfig, initializeApiConfig } from '@/utils/apiConfig';
 
 export interface AuthContextValue {
 	user: () => ResponsesUserData | null;

@@ -1,5 +1,5 @@
+import type { ComponentProps } from 'solid-js';
 import { cn } from '@/utils/cn';
-import { type ComponentProps } from 'solid-js';
 
 interface ButtonProps extends ComponentProps<'button'> {
 	variant?: 'primary' | 'secondary' | 'tertiary' | 'danger';

@@ -1313,6 +1313,63 @@ const docTemplate = `{
                 }
             }
         },
+        "/widgets/github/{user_widget_id}": {
+            "get": {
+                "description": "Get a Users Github Widget by their auth token\nand a path parameter to return the GithubWidgetData\nThis is a special widget that needs authorization outside of\nthe mindscape so we use the github api to get the data.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Get a Users Github Widget",
+                "operationId": "GetGithubWidgetData",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Widget Id",
+                        "name": "user_widget_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/GithubResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/GithubResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/GithubResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/GithubResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/widgets/schemas": {
             "get": {
                 "description": "Get all embeded widget schemas from the Schema\nStorage",
@@ -1537,6 +1594,20 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "GithubResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.GithubWidgetData"
                 },
                 "message": {
                     "type": "string"
@@ -1912,6 +1983,103 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "responses.GithubWidgetCommitsData": {
+            "type": "object",
+            "properties": {
+                "total": {
+                    "type": "integer"
+                },
+                "weeks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.GithubWidgetCommitsWeekData"
+                    }
+                }
+            }
+        },
+        "responses.GithubWidgetCommitsDayData": {
+            "type": "object",
+            "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "percent": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.GithubWidgetCommitsWeekData": {
+            "type": "object",
+            "properties": {
+                "friday": {
+                    "$ref": "#/definitions/responses.GithubWidgetCommitsDayData"
+                },
+                "monday": {
+                    "$ref": "#/definitions/responses.GithubWidgetCommitsDayData"
+                },
+                "saturday": {
+                    "$ref": "#/definitions/responses.GithubWidgetCommitsDayData"
+                },
+                "sunday": {
+                    "$ref": "#/definitions/responses.GithubWidgetCommitsDayData"
+                },
+                "thursday": {
+                    "$ref": "#/definitions/responses.GithubWidgetCommitsDayData"
+                },
+                "tuesday": {
+                    "$ref": "#/definitions/responses.GithubWidgetCommitsDayData"
+                },
+                "wednesday": {
+                    "$ref": "#/definitions/responses.GithubWidgetCommitsDayData"
+                },
+                "week_start": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.GithubWidgetData": {
+            "type": "object",
+            "properties": {
+                "commits": {
+                    "$ref": "#/definitions/responses.GithubWidgetCommitsData"
+                },
+                "profile": {
+                    "$ref": "#/definitions/responses.GithubWidgetProfileData"
+                }
+            }
+        },
+        "responses.GithubWidgetProfileData": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "company": {
+                    "type": "string"
+                },
+                "followers": {
+                    "type": "integer"
+                },
+                "html_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "public_repos": {
+                    "type": "integer"
                 }
             }
         },

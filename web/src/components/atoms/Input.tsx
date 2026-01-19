@@ -1,5 +1,5 @@
+import type { ComponentProps, JSX } from 'solid-js';
 import { cn } from '@/utils/cn';
-import { type ComponentProps, type JSX } from 'solid-js';
 
 interface InputProps extends ComponentProps<'input'> {
 	variant?: 'primary' | 'secondary' | 'tertiary' | 'danger' | 'glass';
@@ -28,10 +28,7 @@ export default function Input(props: InputProps): JSX.Element {
 
 	return (
 		<div>
-			<label
-				for={props.id}
-				class="block text-sm font-medium text-white mb-2"
-			>
+			<label for={props.id} class="block text-sm font-medium text-white mb-2">
 				{props.label}
 			</label>
 			<input

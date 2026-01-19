@@ -11,6 +11,7 @@ models/BackgroundResponse.ts
 models/BookmarkResponse.ts
 models/BookmarksResponse.ts
 models/DeleteUserResponse.ts
+models/GithubResponse.ts
 models/LoginRequest.ts
 models/LoginResponse.ts
 models/MoveBookmarkRequest.ts
@@ -24,6 +25,11 @@ models/RequestsMoveFolderRequest.ts
 models/ResponsesFolderData.ts
 models/ResponsesFolderResponse.ts
 models/ResponsesFoldersResponse.ts
+models/ResponsesGithubWidgetCommitsData.ts
+models/ResponsesGithubWidgetCommitsDayData.ts
+models/ResponsesGithubWidgetCommitsWeekData.ts
+models/ResponsesGithubWidgetData.ts
+models/ResponsesGithubWidgetProfileData.ts
 models/ResponsesUserData.ts
 models/ResponsesUserWidgetData.ts
 models/ResponsesUserWidgetResponse.ts

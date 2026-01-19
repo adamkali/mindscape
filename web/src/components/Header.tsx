@@ -1,3 +1,4 @@
+import { A } from '@solidjs/router';
 import {
 	type Component,
 	createEffect,
@@ -5,16 +6,14 @@ import {
 	onMount,
 	Show,
 } from 'solid-js';
-import { useAuth } from '../contexts/AuthContext';
-import { A } from '@solidjs/router';
 import { UsersApi } from '@/api';
+import { useAuth } from '../contexts/AuthContext';
 
 interface SearchEngine {
 	name: string;
 	placeholder: string;
 	searchUrl: (query: string) => string;
 }
-
 
 export const Header: Component = () => {
 	const usersApi = new UsersApi();
@@ -115,11 +114,10 @@ export const Header: Component = () => {
 					<img width={175} src={'banner.svg'} alt="Mindscape" />
 				</a>
 
-
 				<div class="flex items-center space-x-4">
 					{/* Profile section with dropdown */}
 					<div class="relative profile-dropdown">
-						<div 
+						<div
 							class="flex items-center space-x-3 cursor-pointer"
 							onClick={toggleDropdown}
 						>
@@ -139,7 +137,9 @@ export const Header: Component = () => {
 								)}
 							</div>
 							<span class="text-sm text-foreground">{user?.username}</span>
-							<div class={`text-white text-xs transition-transform duration-200 ${isDropdownOpen() ? 'rotate-180' : ''}`}>
+							<div
+								class={`text-white text-xs transition-transform duration-200 ${isDropdownOpen() ? 'rotate-180' : ''}`}
+							>
 								▼
 							</div>
 						</div>
@@ -163,7 +163,9 @@ export const Header: Component = () => {
 										}}
 										class="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-white/20 transition-all duration-200 text-left"
 									>
-										<div class="w-4 h-4 mr-3 text-center">{darkMode() ? '☀️' : '🌙'}</div>
+										<div class="w-4 h-4 mr-3 text-center">
+											{darkMode() ? '☀️' : '🌙'}
+										</div>
 										{darkMode() ? 'Light Mode' : 'Dark Mode'}
 									</button>
 									<button

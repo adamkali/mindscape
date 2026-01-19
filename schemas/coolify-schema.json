@@ -1,0 +1,59 @@
+{
+  "id": "704a9bfb-982b-48ff-b45e-c671f13a4b6d",
+  "type": "coolify-a",
+  "title": "Coolify Projects Widget Schema",
+  "description": "Configuration schema for Coolify Integration",
+  "layout": {
+    "defaultSize": {
+      "width": 12,
+      "height": 24
+    },
+    "minSize": {
+      "width": 8,
+      "height": 16
+    },
+    "maxSize": {
+      "width": 16,
+      "height": 32
+    },
+    "resizable": false
+  },
+  "properties": {
+	"baseUrl": {
+		"label": "Coolify Base URL",
+		"value": "",
+		"type": "string",
+		"format": "string",
+		"description": "Coolify Base URL: `https://app.coolify.io/api/v1`",
+		"enum": []
+	},
+	"applicationIds": {
+		"label": "Application IDs",
+		"value": "",
+		"type": "array",
+		"format": "array",
+		"description": "Comma separated list of project IDs, if empty, all applications will be in the list",
+		"enum": []
+	},
+	"serviceIds":{
+		"label": "Service ID",	
+		"value": "",
+		"type": "array",
+		"format": "array",
+		"description": "Comma separated list of service IDs, if empty, all services will be in the list",
+		"enum": []
+	},
+    "personalAccessToken": {
+      "label": "Personal Access Token With Write Access",
+      "value": "",
+      "type": "string",
+      "format": "password",
+      "description": "Personal Access Token With Write Access to Redploy and Restart Projects",
+      "enum": []
+    }
+  },
+  "required": [
+	"personalAccessToken"
+  ]
+}
+

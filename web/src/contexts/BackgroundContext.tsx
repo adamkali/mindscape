@@ -1,15 +1,14 @@
 import {
 	createContext,
-	createSignal,
 	createEffect,
 	createResource,
-	useContext,
+	createSignal,
 	type JSX,
+	useContext,
 } from 'solid-js';
+import { BackgroundApi, type ResponseError, UsersApi } from '@/api';
+import type * as Models from '@/api/models';
 import { useAuth } from '@/contexts/AuthContext';
-import { BackgroundApi, UsersApi, type ResponseError } from '@/api';
-
-import * as Models from '@/api/models';
 
 interface BackgroundContextValue {
 	currentBackground: () => string | undefined;
@@ -65,7 +64,7 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 				} else {
 					throw new Error(
 						'Failed to fetch global background choices: ' +
-						globalResponse.message,
+							globalResponse.message,
 					);
 				}
 			} catch (err) {
@@ -88,7 +87,7 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 					} else {
 						throw new Error(
 							'Failed to fetch user-specific background choices: ' +
-							userResponse.message,
+								userResponse.message,
 						);
 					}
 				} catch (err) {
@@ -173,7 +172,7 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 							...currentUser,
 							background: backgroundUrl,
 						},
-						auth.token()!
+						auth.token()!,
 					);
 				}
 			} else {

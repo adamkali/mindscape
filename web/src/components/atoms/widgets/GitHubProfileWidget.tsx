@@ -1,186 +1,390 @@
-import { createSignal, onMount, Show } from 'solid-js';
+import { createSignal, For, onMount, Show } from 'solid-js';
+import { Configuration, WidgetsApi } from '@/api';
+import type {
+	ResponsesGithubWidgetCommitsDayData,
+	ResponsesGithubWidgetCommitsWeekData,
+	ResponsesGithubWidgetData,
+} from '@/api/models';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface GitHubProfileWidgetProps {
-    username?: string;
-    showStats?: boolean;
-    personalAccessToken?: string;
-    variant?: 'sm' | 'lg' | 'wide';
+	widgetId: string;
+	authToken: string;
+	containerWidth: number;
+	containerHeight: number;
 }
 
-interface GitHubProfile {
-    login: string;
-    name: string;
-    avatar_url: string;
-    bio: string;
-    followers: number;
-    following: number;
-    public_repos: number;
-    public_gists: number;
-}
+// Responsive breakpoints for layout detection
+const BREAKPOINTS = {
+	// Width thresholds
+	COMPACT_WIDTH: 150,      // Below this: avatar + name only
+	MEDIUM_WIDTH: 250,       // Below this: hide bio, minimal stats
+	WIDE_WIDTH: 350,         // Above this: horizontal layout if aspect ratio allows
+	// Height thresholds
+	COMPACT_HEIGHT: 150,     // Below this: hide commit graph and stats
+	MEDIUM_HEIGHT: 250,      // Below this: hide bio
+};
 
 export default function GitHubProfileWidget(props: GitHubProfileWidgetProps) {
-    const [profile, setProfile] = createSignal<GitHubProfile | null>(null);
-    const [loading, setLoading] = createSignal(true);
-    const [error, setError] = createSignal<string | null>(null);
+	const [data, setData] = createSignal<ResponsesGithubWidgetData | null>(null);
+	const [loading, setLoading] = createSignal(true);
+	const [error, setError] = createSignal<string | null>(null);
+	const auth = useAuth();
 
-    const username = () => props.username || 'github';
-    const variant = () => props.variant || 'sm';
-    const showStats = () => props.showStats ?? true;
+	// Responsive layout calculations
+	const width = () => props.containerWidth;
+	const height = () => props.containerHeight;
+	const aspectRatio = () => width() / height();
 
-    onMount(async () => {
-        try {
-            // GitHub API: https://api.github.com/users/{username}
-            const headers: HeadersInit = {
-                'Accept': 'application/vnd.github.v3+json',
-            };
+	// Layout mode: 'compact' | 'vertical' | 'wide'
+	const layoutMode = () => {
+		if (width() < BREAKPOINTS.COMPACT_WIDTH || height() < BREAKPOINTS.COMPACT_HEIGHT) {
+			return 'compact';
+		}
+		if (width() >= BREAKPOINTS.WIDE_WIDTH && aspectRatio() > 1.5) {
+			return 'wide';
+		}
+		return 'vertical';
+	};
 
-            // Add PAT to headers if provided for higher rate limits
-            if (props.personalAccessToken) {
-                headers['Authorization'] = `Bearer ${props.personalAccessToken}`;
-            }
+	// What to show based on available space
+	const showStats = () => width() >= BREAKPOINTS.MEDIUM_WIDTH && height() >= BREAKPOINTS.COMPACT_HEIGHT;
+	const showBio = () => width() >= BREAKPOINTS.MEDIUM_WIDTH && height() >= BREAKPOINTS.MEDIUM_HEIGHT;
+	const showCommitGraph = () => height() >= BREAKPOINTS.COMPACT_HEIGHT && width() >= BREAKPOINTS.COMPACT_WIDTH;
 
-            const response = await fetch(`https://api.github.com/users/${username()}`, {
-                headers,
-            });
+	// Calculate commit graph sizing
+	const commitSquareSize = () => {
+		// Base size on available width, min 8px, max 12px
+		const availableWidth = width() - 16; // padding
+		const maxWeeks = 52;
+		const idealSize = Math.floor(availableWidth / maxWeeks);
+		return Math.max(8, Math.min(12, idealSize));
+	};
 
-            if (!response.ok) {
-                throw new Error(`GitHub API error: ${response.status}`);
-            }
+	// Limit visible weeks based on available width
+	const maxVisibleWeeks = () => {
+		const squareSize = commitSquareSize();
+		const gap = 2;
+		const availableWidth = width() - 16; // padding
+		return Math.floor(availableWidth / (squareSize + gap));
+	};
 
-            const data = await response.json();
-            setProfile(data);
-        } catch (err) {
-            setError(err instanceof Error ? err.message : 'Failed to fetch profile');
-        } finally {
-            setLoading(false);
-        }
-    });
+	// Avatar size based on container
+	const avatarSize = () => {
+		if (layoutMode() === 'compact') return 'w-12 h-12';
+		if (layoutMode() === 'wide') return 'w-14 h-14';
+		return 'w-16 h-16';
+	};
 
-    const handleClick = () => {
-        window.open(`https://github.com/${profile()?.login}`, '_blank')
+	onMount(async () => {
+		try {
+			const config = new Configuration({
+				basePath: '/api',
+			});
+			const api = new WidgetsApi(config);
 
-    }
+			console.log({'Fetching GitHub widget data...': {
+				authToken: auth.token(),
+				userWidgetId: props.widgetId
+			}});
+			const response = await api.getGithubWidgetData({
+				authorization: `Bearer ${auth.token()}`,
+				userWidgetId: props.widgetId,
+			});
 
-    // Small variant: Avatar + Name only (minimal)
-    const SmallVariant = () => (
-        <div onClick={handleClick} class="h-full w-full flex flex-col items-center justify-center p-2 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg text-white">
-            <img
-                src={profile()?.avatar_url}
-                alt={profile()?.name}
-                class="w-16 h-16 rounded-full border-2 border-primary mb-2"
-            />
-            <h3 class="text-sm font-bold text-center truncate w-full">
-                {profile()?.name || profile()?.login}
-            </h3>
-            <p class="text-xs text-gray-400">@{profile()?.login}</p>
-        </div>
-    );
+			if (response.success && response.data) {
+				setData(response.data);
+			} else {
+				throw new Error(
+					response.message || 'Failed to fetch GitHub widget data',
+				);
+			}
+		} catch (err) {
+			setError(err instanceof Error ? err.message : 'Failed to fetch data');
+		} finally {
+			setLoading(false);
+		}
+	});
 
-    // Large variant: Full stats and details (vertical)
-    const LargeVariant = () => (
-        <div onClick={handleClick} class="h-full w-full flex flex-col items-center p-4 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg text-white">
-            <img
-                src={profile()?.avatar_url}
-                alt={profile()?.name}
-                class="w-24 h-24 rounded-full border-2 border-primary mb-3"
-            />
-            <h3 class="text-lg font-bold text-center">{profile()?.name || profile()?.login}</h3>
-            <p class="text-sm text-gray-400 mb-2">@{profile()?.login}</p>
+	const handleClick = () => {
+		const profile = data()?.profile;
+		if (profile?.htmlUrl) {
+			window.open(profile.htmlUrl, '_blank');
+		}
+	};
 
-            <Show when={profile()?.bio}>
-                <p class="text-xs text-gray-300 text-center mb-3 line-clamp-2">{profile()?.bio}</p>
-            </Show>
+	// Helper to get day data from a week
+	const getDaysFromWeek = (
+		week: ResponsesGithubWidgetCommitsWeekData,
+	): ResponsesGithubWidgetCommitsDayData[] => {
+		return [
+			week.monday,
+			week.tuesday,
+			week.wednesday,
+			week.thursday,
+			week.friday,
+			week.saturday,
+			week.sunday,
+		].filter(
+			(day): day is ResponsesGithubWidgetCommitsDayData => day !== undefined,
+		);
+	};
 
-            <Show when={showStats()}>
-                <div class="w-full grid grid-cols-2 gap-2 mt-auto">
-                    <div class="bg-black/20 rounded p-2 text-center">
-                        <div class="text-lg font-bold text-primary">{profile()?.followers}</div>
-                        <div class="text-xs text-gray-400">Followers</div>
-                    </div>
-                    <div class="bg-black/20 rounded p-2 text-center">
-                        <div class="text-lg font-bold text-secondary">{profile()?.following}</div>
-                        <div class="text-xs text-gray-400">Following</div>
-                    </div>
-                    <div class="bg-black/20 rounded p-2 text-center">
-                        <div class="text-lg font-bold text-green-400">{profile()?.public_repos}</div>
-                        <div class="text-xs text-gray-400">Repos</div>
-                    </div>
-                    <div class="bg-black/20 rounded p-2 text-center">
-                        <div class="text-lg font-bold text-yellow-400">{profile()?.public_gists}</div>
-                        <div class="text-xs text-gray-400">Gists</div>
-                    </div>
-                </div>
-            </Show>
-        </div>
-    );
+	// Commit Graph Component - responsive to container size
+	const CommitGraph = () => {
+		const allWeeks = () => data()?.commits?.weeks || [];
+		const total = () => data()?.commits?.total || 0;
 
-    // Wide variant: Horizontal layout
-    const WideVariant = () => (
-        <div
-            class="h-full w-full flex flex-row items-center p-3 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg text-white gap-4"
-            onclick={handleClick}
-        >
-            <img
-                src={profile()?.avatar_url}
-                alt={profile()?.name}
-                class="w-20 h-20 rounded-full border-2 border-primary flex-shrink-0"
-            />
+		// Get only the most recent weeks that fit in available space
+		const visibleWeeks = () => {
+			const max = maxVisibleWeeks();
+			const weeks = allWeeks();
+			// Show most recent weeks (end of array)
+			return weeks.slice(-Math.min(max, weeks.length));
+		};
 
-            <div class="flex-1 min-w-0">
-                <h3 class="text-base font-bold truncate">{profile()?.name || profile()?.login}</h3>
-                <p class="text-xs text-gray-400 mb-1">@{profile()?.login}</p>
-                <Show when={profile()?.bio}>
-                    <p class="text-xs text-gray-300 line-clamp-1">{profile()?.bio}</p>
-                </Show>
-            </div>
+		// Responsive square size
+		const squareSize = () => `${commitSquareSize()}px`;
+		const gapSize = () => width() < 200 ? '1px' : '2px';
 
-            <Show when={showStats()}>
-                <div class="flex gap-3 flex-shrink-0">
-                    <div class="text-center">
-                        <div class="text-sm font-bold text-primary">{profile()?.followers}</div>
-                        <div class="text-xs text-gray-400">Followers</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-sm font-bold text-secondary">{profile()?.following}</div>
-                        <div class="text-xs text-gray-400">Following</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-sm font-bold text-green-400">{profile()?.public_repos}</div>
-                        <div class="text-xs text-gray-400">Repos</div>
-                    </div>
-                </div>
-            </Show>
-        </div>
-    );
+		// Extract legend colors from actual data
+		const legendColors = () => {
+			const allDays: ResponsesGithubWidgetCommitsDayData[] = [];
+			for (const week of allWeeks()) {
+				allDays.push(...getDaysFromWeek(week));
+			}
 
-    return (
-        <Show
-            when={!loading()}
-            fallback={
-                <div class="h-full w-full flex items-center justify-center bg-gray-800/50 rounded-lg text-white">
-                    <div class="text-sm">Loading...</div>
-                </div>
-            }
-        >
-            <Show
-                when={!error() && profile()}
-                fallback={
-                    <div class="h-full w-full flex flex-col items-center justify-center bg-red-900/20 rounded-lg text-white p-4">
-                        <div class="text-3xl mb-2">⚠️</div>
-                        <div class="text-sm text-red-300">Error: {error()}</div>
-                    </div>
-                }
-            >
-                <Show when={variant() === 'sm'}>
-                    <SmallVariant />
-                </Show>
-                <Show when={variant() === 'lg'}>
-                    <LargeVariant />
-                </Show>
-                <Show when={variant() === 'wide'}>
-                    <WideVariant />
-                </Show>
-            </Show>
-        </Show>
-    );
+			if (allDays.length === 0) return [];
+
+			const sorted = [...allDays]
+				.filter((d) => d.color && d.percent !== undefined)
+				.sort((a, b) => (a.percent || 0) - (b.percent || 0));
+
+			if (sorted.length === 0) return [];
+
+			const indices = [
+				0,
+				Math.floor(sorted.length * 0.25),
+				Math.floor(sorted.length * 0.5),
+				Math.floor(sorted.length * 0.75),
+				sorted.length - 1,
+			];
+
+			const colors: string[] = [];
+			for (const idx of indices) {
+				const color = sorted[Math.min(idx, sorted.length - 1)]?.color;
+				if (color && !colors.includes(color)) {
+					colors.push(color);
+				}
+			}
+			return colors;
+		};
+
+		// Only show legend if there's enough width
+		const showLegend = () => width() >= 200;
+
+		return (
+			<div class="w-full mt-2 flex-shrink-0">
+				<div class="flex items-center justify-between mb-1">
+					<span class="text-xs text-gray-400 truncate">{total()} commits</span>
+					<Show when={showLegend()}>
+						<div class="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0">
+							<span>Less</span>
+							<For each={legendColors()}>
+								{(color) => (
+									<div
+										class="rounded-sm"
+										style={{
+											'background-color': color,
+											width: squareSize(),
+											height: squareSize(),
+										}}
+									/>
+								)}
+							</For>
+							<span>More</span>
+						</div>
+					</Show>
+				</div>
+				<div class="flex overflow-hidden" style={{ gap: gapSize() }}>
+					<For each={visibleWeeks()}>
+						{(week) => (
+							<div class="flex flex-col" style={{ gap: gapSize() }}>
+								<For each={getDaysFromWeek(week)}>
+									{(day) => (
+										<div
+											class="rounded-sm cursor-pointer transition-transform hover:scale-110"
+											style={{
+												'background-color': day.color || '#161b22',
+												width: squareSize(),
+												height: squareSize(),
+											}}
+											title={`${day.date}: ${day.count || 0} commits`}
+										/>
+									)}
+								</For>
+							</div>
+						)}
+					</For>
+				</div>
+			</div>
+		);
+	};
+
+	// Compact layout: Just avatar and name (for very small containers)
+	const CompactLayout = () => (
+		<div
+			onClick={handleClick}
+			class="h-full w-full flex flex-col items-center justify-center p-2 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg text-white cursor-pointer overflow-hidden"
+		>
+			<img
+				src={data()?.profile?.avatarUrl}
+				alt={data()?.profile?.name}
+				class={`${avatarSize()} rounded-full border-2 border-primary mb-1 flex-shrink-0`}
+			/>
+			<h3 class="text-xs font-bold text-center truncate w-full">
+				{data()?.profile?.name}
+			</h3>
+		</div>
+	);
+
+	// Vertical layout: Stacked content (for taller containers)
+	const VerticalLayout = () => (
+		<div class="h-full w-full flex flex-col items-center p-3 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg text-white overflow-hidden">
+			<div
+				onClick={handleClick}
+				class="flex flex-col items-center cursor-pointer flex-shrink-0"
+			>
+				<img
+					src={data()?.profile?.avatarUrl}
+					alt={data()?.profile?.name}
+					class={`${avatarSize()} rounded-full border-2 border-primary mb-2`}
+				/>
+				<h3 class="text-sm font-bold text-center truncate max-w-full">
+					{data()?.profile?.name}
+				</h3>
+				<Show when={data()?.profile?.company}>
+					<p class="text-xs text-gray-400 truncate max-w-full">
+						{data()?.profile?.company}
+					</p>
+				</Show>
+			</div>
+
+			<Show when={showBio() && data()?.profile?.bio}>
+				<p class="text-xs text-gray-300 text-center mt-2 line-clamp-2 flex-shrink-0">
+					{data()?.profile?.bio}
+				</p>
+			</Show>
+
+			<Show when={showStats()}>
+				<div class="w-full grid grid-cols-2 gap-1 mt-2 flex-shrink-0">
+					<div class="bg-black/20 rounded p-1.5 text-center">
+						<div class="text-sm font-bold text-primary">
+							{data()?.profile?.followers}
+						</div>
+						<div class="text-xs text-gray-400">Followers</div>
+					</div>
+					<div class="bg-black/20 rounded p-1.5 text-center">
+						<div class="text-sm font-bold text-green-400">
+							{data()?.profile?.publicRepos}
+						</div>
+						<div class="text-xs text-gray-400">Repos</div>
+					</div>
+				</div>
+			</Show>
+
+			<Show when={showCommitGraph()}>
+				<div class="flex-1 min-h-0 w-full overflow-hidden">
+					<CommitGraph />
+				</div>
+			</Show>
+		</div>
+	);
+
+	// Wide layout: Horizontal content (for wider containers with appropriate aspect ratio)
+	const WideLayout = () => (
+		<div class="h-full w-full flex flex-col p-3 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg text-white overflow-hidden">
+			<div class="flex flex-row items-center gap-3 flex-shrink-0">
+				<img
+					src={data()?.profile?.avatarUrl}
+					alt={data()?.profile?.name}
+					class={`${avatarSize()} rounded-full border-2 border-primary flex-shrink-0 cursor-pointer`}
+					onClick={handleClick}
+				/>
+
+				<div class="flex-1 min-w-0 overflow-hidden">
+					<h3
+						class="text-sm font-bold truncate cursor-pointer hover:text-primary"
+						onClick={handleClick}
+					>
+						{data()?.profile?.name}
+					</h3>
+					<Show when={data()?.profile?.company}>
+						<p class="text-xs text-gray-400 truncate">
+							{data()?.profile?.company}
+						</p>
+					</Show>
+					<Show when={showBio() && data()?.profile?.bio}>
+						<p class="text-xs text-gray-300 line-clamp-1 mt-0.5">
+							{data()?.profile?.bio}
+						</p>
+					</Show>
+				</div>
+
+				<Show when={showStats()}>
+					<div class="flex gap-2 flex-shrink-0">
+						<div class="text-center">
+							<div class="text-sm font-bold text-primary">
+								{data()?.profile?.followers}
+							</div>
+							<div class="text-xs text-gray-400">Followers</div>
+						</div>
+						<div class="text-center">
+							<div class="text-sm font-bold text-green-400">
+								{data()?.profile?.publicRepos}
+							</div>
+							<div class="text-xs text-gray-400">Repos</div>
+						</div>
+					</div>
+				</Show>
+			</div>
+
+			<Show when={showCommitGraph()}>
+				<div class="flex-1 min-h-0 overflow-hidden">
+					<CommitGraph />
+				</div>
+			</Show>
+		</div>
+	);
+
+	return (
+		<Show
+			when={!loading()}
+			fallback={
+				<div class="h-full w-full flex items-center justify-center bg-gray-800/50 rounded-lg text-white">
+					<div class="text-sm">Loading...</div>
+				</div>
+			}
+		>
+			<Show
+				when={!error() && data()}
+				fallback={
+					<div class="h-full w-full flex flex-col items-center justify-center bg-red-900/20 rounded-lg text-white p-4">
+						<div class="text-3xl mb-2">&#9888;</div>
+						<div class="text-sm text-red-300">Error: {error()}</div>
+					</div>
+				}
+			>
+				<Show when={layoutMode() === 'compact'}>
+					<CompactLayout />
+				</Show>
+				<Show when={layoutMode() === 'vertical'}>
+					<VerticalLayout />
+				</Show>
+				<Show when={layoutMode() === 'wide'}>
+					<WideLayout />
+				</Show>
+			</Show>
+		</Show>
+	);
 }

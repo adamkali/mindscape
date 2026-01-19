@@ -1,5 +1,5 @@
+import type { ComponentProps, JSX } from 'solid-js';
 import { cn } from '@/utils/cn';
-import { type ComponentProps, type JSX } from 'solid-js';
 
 /**
  * Props for the Card component

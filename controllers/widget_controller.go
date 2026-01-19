@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"github.com/adamkali/mindscape/cmd/configuration"
+	"github.com/adamkali/mindscape/db/repository"
 	handlers "github.com/adamkali/mindscape/models/handlers/widget_handlers"
 	"github.com/adamkali/mindscape/services"
 	"github.com/labstack/echo/v4"
@@ -34,8 +35,8 @@ type WidgetController struct {
 }
 
 // @Summary Get Widget Schemas
-// @Description Get all embeded widget schemas from the Schema 
-// @Description Storage 
+// @Description Get all embeded widget schemas from the Schema
+// @Description Storage
 //
 // @ID          GetWidgetSchemas
 // @Tags        Widgets
@@ -74,13 +75,13 @@ func (wc WidgetController) GetSchemaByID(
 }
 
 // @Summary Get a Users Widgets
-// @Description Get a Users Widgets by their auth token 
-// @Description and return the list of widgets associated 
+// @Description Get a Users Widgets by their auth token
+// @Description and return the list of widgets associated
 // @Description with the user account in the request params.
 //
 // @ID          GetUserWidgets
 // @Tags        Widgets
-// @Produce     json 
+// @Produce     json
 // @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
 // @Success     200                 {object}     responses.UserWidgetsResponse
 // @Failure     401                 {object}     responses.UserWidgetsResponse
@@ -96,8 +97,8 @@ func (wc WidgetController) Read(ctx echo.Context) error {
 }
 
 // @Summary Get a Users Widget
-// @Description Get a Users Widget by their auth token 
-// @Description and a path parameter and return the 
+// @Description Get a Users Widget by their auth token
+// @Description and a path parameter and return the
 // @Description widget from the database.
 //
 // @ID          GetUserWidget
@@ -116,6 +117,37 @@ func (wc WidgetController) ReadById(ctx echo.Context) error {
 		wc.WidgetService,
 		wc.AuthService,
 	).Handle().JSON()
+}
+
+// @Summary Get a Users Github Widget
+// @Description Get a Users Github Widget by their auth token
+// @Description and a path parameter to return the GithubWidgetData
+// @Description This is a special widget that needs authorization outside of
+// @Description the mindscape so we use the github api to get the data.
+//
+// @ID          GetGithubWidgetData
+// @Tags        Widgets
+// @Produce     json
+// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
+// @Success     200                 {object}     GithubResponse 
+// @Failure     401                 {object}     GithubResponse 
+// @Failure     401                 {object}     GithubResponse 
+// @Failure     403                 {object}     GithubResponse 
+// @Failure     500                 {object}     GithubResponse 
+// @Router      /widgets/github/{user_widget_id}    [get]
+func (wc WidgetController) GithubWidget(ctx echo.Context) error {
+	widget := handlers.NewReadUserWidgetHandler(
+		ctx,
+		wc.WidgetService,
+		wc.AuthService,
+	).Handle()
+
+	// use the Widget from ReadUserWidgetHandler
+	return handlers.GithubWidgetJsonHandler(
+		ctx,
+		widget.Data().(*repository.UserWidget),
+	)
 }
 
 // @Summary Add a Users Widget
@@ -143,6 +175,7 @@ func (wc WidgetController) AddWidget(ctx echo.Context) error {
 	).Handle().JSON()
 }
 
+
 func (wc WidgetController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	api := e.Group("/api" + wc.Name)
 	api.GET("/schemas", wc.ReadSchemas)
@@ -150,5 +183,6 @@ func (wc WidgetController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareF
 
 	api.GET("", wc.Read, authMiddleware)
 	api.GET("/:user_widget_id", wc.ReadById, authMiddleware)
+	api.GET("/github/:user_widget_id", wc.GithubWidget, authMiddleware)
 	api.POST("", wc.AddWidget, authMiddleware)
 }

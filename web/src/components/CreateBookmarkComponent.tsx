@@ -1,10 +1,10 @@
-import type { AuthContextValue } from '@/contexts/AuthContext';
-import { createSignal, type ComponentProps } from 'solid-js';
+import { type ComponentProps, createSignal } from 'solid-js';
 import {
 	BookmarksApi,
 	type CreateBookmarkRequest,
 	type RepositoryCreateBookmarkParams,
 } from '@/api';
+import type { AuthContextValue } from '@/contexts/AuthContext';
 
 interface CreateBookmarkComponentProps extends ComponentProps<'div'> {
 	userId: string;
@@ -48,7 +48,7 @@ export default function CreateBookmarkComponent(
 			<div class="mb-3">
 				<h3 class="text-sm font-medium text-white/90 mb-3">Create Bookmark</h3>
 			</div>
-			
+
 			<input
 				type="url"
 				placeholder="Enter bookmark URL"
@@ -68,7 +68,7 @@ export default function CreateBookmarkComponent(
 					}
 				}}
 			/>
-			
+
 			<input
 				type="text"
 				placeholder="Enter bookmark name"
@@ -86,7 +86,7 @@ export default function CreateBookmarkComponent(
 					}
 				}}
 			/>
-			
+
 			<div class="flex space-x-2">
 				<button
 					onClick={create}

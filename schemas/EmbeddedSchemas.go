@@ -89,14 +89,15 @@ func (wss *WidgetSchemaStorage) GetAll() []WidgetSchema {
 	return storage
 }
 
-//go:embed searchbar-schema.json githubprofile-wide.json githubprofile-lg.json githubprofile-sm.json
+//go:embed searchbar-schema.json githubprofile-wide.json githubprofile-lg.json githubprofile-sm.json coolify-schema.json
 var fs embed.FS
 
 const mapping = `[
 	"searchbar-schema.json",
 	"githubprofile-wide.json",
 	"githubprofile-lg.json",
-	"githubprofile-sm.json"
+	"githubprofile-sm.json",
+	"coolify-schema.json"
 ]`
 
 func EmbeddedScemas() (*WidgetSchemaStorage, error) {

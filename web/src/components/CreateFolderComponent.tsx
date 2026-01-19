@@ -1,7 +1,7 @@
+import { type ComponentProps, createSignal } from 'solid-js';
 import type { FoldersApi } from '@/api';
 import type { AuthContextValue } from '@/contexts/AuthContext';
 import { EmptyGuid } from '@/utils';
-import { createSignal, type ComponentProps } from 'solid-js';
 
 interface CreateFolderComponentProps extends ComponentProps<'div'> {
 	userId: string;

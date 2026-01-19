@@ -1,10 +1,17 @@
-import { WidgetsApi, type ResponsesUserWidgetData } from '@/api';
+import {
+	createEffect,
+	createSignal,
+	For,
+	type JSX,
+	onMount,
+	Suspense,
+} from 'solid-js';
+import { type ResponsesUserWidgetData, WidgetsApi } from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { createEffect, createSignal, For, onMount, Suspense, type JSX } from 'solid-js';
-import type { ElementSize } from './types';
-import RenderWidget from './RenderWidget';
 import AddWidgetModal from './AddWidgetModal';
 import { Button } from './atoms';
+import RenderWidget from './RenderWidget';
+import type { ElementSize } from './types';
 
 interface WidgetContainerProps extends JSX.HTMLAttributes<HTMLDivElement> {}
 
@@ -144,10 +151,12 @@ export default function WidgetContainer(props: WidgetContainerProps) {
 				<div>
 					<h2 class="text-2xl font-bold mb-2">Widget Debug Panel</h2>
 					<div class="text-sm text-white/70">
-						Total widgets loaded: <span class="font-bold text-green-300">{widgets().length}</span>
+						Total widgets loaded:{' '}
+						<span class="font-bold text-green-300">{widgets().length}</span>
 					</div>
 					<div class="text-xs text-white/50 mt-1">
-						Grid size: {squareSize().width.toFixed(0)}px × {squareSize().height.toFixed(0)}px
+						Grid size: {squareSize().width.toFixed(0)}px ×{' '}
+						{squareSize().height.toFixed(0)}px
 					</div>
 				</div>
 
@@ -156,15 +165,29 @@ export default function WidgetContainer(props: WidgetContainerProps) {
 					onClick={() => setIsAddWidgetModalOpen(true)}
 					class="flex items-center gap-2"
 				>
-					<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+					<svg
+						class="w-5 h-5"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M12 4v16m8-8H4"
+						/>
 					</svg>
 					Add Widget
 				</Button>
 			</div>
 
 			<div class="flex-1 overflow-y-auto overflow-x-hidden">
-				<Suspense fallback={<div class="text-white text-center py-8">Loading widgets...</div>}>
+				<Suspense
+					fallback={
+						<div class="text-white text-center py-8">Loading widgets...</div>
+					}
+				>
 					{widgets().length > 0 ? (
 						<div
 							class="grid w-full"

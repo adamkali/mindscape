@@ -1,5 +1,5 @@
-import { UsersApi, BookmarksApi, FoldersApi, BackgroundApi } from '@/api';
-import { getAuthenticatedApiConfig, getApiConfig } from './apiConfig';
+import { BackgroundApi, BookmarksApi, FoldersApi, UsersApi } from '@/api';
+import { getApiConfig, getAuthenticatedApiConfig } from './apiConfig';
 
 /**
  * Hook to get authenticated API instances with proper interceptor configuration

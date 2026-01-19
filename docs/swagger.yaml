@@ -68,6 +68,15 @@ definitions:
       success:
         type: boolean
     type: object
+  GithubResponse:
+    properties:
+      data:
+        $ref: '#/definitions/responses.GithubWidgetData'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   LoginRequest:
     properties:
       email:
@@ -307,6 +316,69 @@ definitions:
         type: string
       success:
         type: boolean
+    type: object
+  responses.GithubWidgetCommitsData:
+    properties:
+      total:
+        type: integer
+      weeks:
+        items:
+          $ref: '#/definitions/responses.GithubWidgetCommitsWeekData'
+        type: array
+    type: object
+  responses.GithubWidgetCommitsDayData:
+    properties:
+      color:
+        type: string
+      count:
+        type: integer
+      date:
+        type: string
+      percent:
+        type: integer
+    type: object
+  responses.GithubWidgetCommitsWeekData:
+    properties:
+      friday:
+        $ref: '#/definitions/responses.GithubWidgetCommitsDayData'
+      monday:
+        $ref: '#/definitions/responses.GithubWidgetCommitsDayData'
+      saturday:
+        $ref: '#/definitions/responses.GithubWidgetCommitsDayData'
+      sunday:
+        $ref: '#/definitions/responses.GithubWidgetCommitsDayData'
+      thursday:
+        $ref: '#/definitions/responses.GithubWidgetCommitsDayData'
+      tuesday:
+        $ref: '#/definitions/responses.GithubWidgetCommitsDayData'
+      wednesday:
+        $ref: '#/definitions/responses.GithubWidgetCommitsDayData'
+      week_start:
+        type: string
+    type: object
+  responses.GithubWidgetData:
+    properties:
+      commits:
+        $ref: '#/definitions/responses.GithubWidgetCommitsData'
+      profile:
+        $ref: '#/definitions/responses.GithubWidgetProfileData'
+    type: object
+  responses.GithubWidgetProfileData:
+    properties:
+      avatar_url:
+        type: string
+      bio:
+        type: string
+      company:
+        type: string
+      followers:
+        type: integer
+      html_url:
+        type: string
+      name:
+        type: string
+      public_repos:
+        type: integer
     type: object
   responses.UserData:
     properties:
@@ -1382,6 +1454,49 @@ paths:
           schema:
             $ref: '#/definitions/responses.UserWidgetResponse'
       summary: Get a Users Widget
+      tags:
+      - Widgets
+  /widgets/github/{user_widget_id}:
+    get:
+      description: |-
+        Get a Users Github Widget by their auth token
+        and a path parameter to return the GithubWidgetData
+        This is a special widget that needs authorization outside of
+        the mindscape so we use the github api to get the data.
+      operationId: GetGithubWidgetData
+      parameters:
+      - default: Bearer token
+        description: auth header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Widget Id
+        in: path
+        name: user_widget_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/GithubResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GithubResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GithubResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/GithubResponse'
+      summary: Get a Users Github Widget
       tags:
       - Widgets
   /widgets/schemas:

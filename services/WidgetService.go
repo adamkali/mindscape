@@ -124,3 +124,4 @@ func (ws *WidgetService) GetUserWidget(
 	tx.Commit(ws.ctx)
 	return &userWidget, nil
 }
+
