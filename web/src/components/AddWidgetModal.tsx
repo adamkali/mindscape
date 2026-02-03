@@ -80,6 +80,7 @@ export default function AddWidgetModal(props: AddWidgetModalProps) {
 				authorization: `Bearer ${auth.token()}`,
 				addUserWidgetRequest: {
 					schemaId: selectedSchemaId(),
+					schemaTitle: selectedSchema.title,
 					config: Array.from(
 						new TextEncoder().encode(JSON.stringify(widgetConfig())),
 					),
@@ -183,7 +184,7 @@ export default function AddWidgetModal(props: AddWidgetModalProps) {
 							</div>
 
 							<Show when={selectedSchemaId()}>
-								<div class="bg-white/10 rounded-lg p-4 border border-white/20 space-y-4">
+								<div class="bg-white/10 rounded-lg p-4 border border-white/20 space-y-4 dark:bg-slate-900/30 dark:border-slate-700/40">
 									<div>
 										<h3 class="text-sm font-semibold text-card-foreground mb-2">
 											Widget Configuration

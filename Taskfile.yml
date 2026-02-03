@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: '3'
+
+vars:
+  PRODUCTION_CONFIG: "production"
+  DEVELOPMENT_CONFIG: "development"
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+    silent: true
+
+  run-api:
+    desc: Run the Mindscape API with air hot reload
+    cmds:
+      - air
+    silent: false
+
+  run-api-debug:
+    desc: Run the Mindscape API with air hot reload + delve debugger on :2345
+    cmds:
+      - air -c .air.debug.toml
+    silent: false
+
+  run-web:
+    desc: Run the Mindscape web frontend
+    dir: web
+    cmds:
+      - pnpm dev
+    silent: false
+
+  dev:
+    desc: Run both the Mindscape API (with air) and web frontend in parallel
+    deps:
+      - run-api
+      - run-web
+
+  dev-debug:
+    desc: Run the API with delve debugger and web frontend in parallel
+    deps:
+      - run-api-debug
+      - run-web
+
+  build:
+    desc: Build the Mindscape API
+    cmds:
+      - go build -o ./tmp/mindscape .
+    silent: false
+
+  build-web:
+    desc: Build the Mindscape web frontend for production
+    dir: web
+    cmds:
+      - pnpm build
+    silent: false
+
+  test:
+    desc: Run all Go tests
+    cmds:
+      - go test ./... -v
+    silent: false
+
+  swagger:
+    desc: Generate Swagger documentation
+    cmds:
+      - make swagger
+    silent: false

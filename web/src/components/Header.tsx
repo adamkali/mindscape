@@ -107,7 +107,7 @@ export const Header: Component = () => {
 		};
 	});
 	return (
-		<div class="border-b border-white/20 bg-white/10 backdrop-blur-lg shadow-lg shadow-slate-900/20">
+		<div class="border-b border-white/20 bg-white/10 backdrop-blur-lg shadow-lg shadow-slate-900/20 dark:bg-slate-900/40 dark:border-slate-700/50 dark:shadow-black/30">
 			<div class="flex items-center justify-between p-1">
 				{/* Logo */}
 				<a href="/">
@@ -121,7 +121,7 @@ export const Header: Component = () => {
 							class="flex items-center space-x-3 cursor-pointer"
 							onClick={toggleDropdown}
 						>
-							<div class="w-8 h-8 rounded-full overflow-hidden bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+							<div class="w-8 h-8 rounded-full overflow-hidden bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 dark:bg-slate-900/40 dark:border-slate-700/50 dark:shadow-black/30">
 								{isLoadingPicture() ? (
 									<div class="text-xs text-foreground/60">...</div>
 								) : profilePicture() ? (
@@ -146,11 +146,11 @@ export const Header: Component = () => {
 
 						{/* Dropdown Menu */}
 						<Show when={isDropdownOpen()}>
-							<div class="absolute right-0 top-full mt-2 w-48 bg-white/20 backdrop-blur-md border border-white/30 rounded-xl shadow-lg z-50">
+							<div class="absolute right-0 top-full mt-2 w-48 bg-white/20 backdrop-blur-md border border-white/30 rounded-xl shadow-lg z-50 dark:bg-slate-900/40 dark:border-slate-700/50 dark:shadow-black/30">
 								<div class="py-2">
 									<A
 										href="/edit-profile"
-										class="flex items-center px-4 py-2 text-sm text-white hover:bg-white/20 transition-all duration-200"
+										class="flex items-center px-4 py-2 text-sm text-white hover:bg-white/20 transition-all duration-200 dark:text-white dark:hover:bg-slate-800/50"
 										onClick={closeDropdown}
 									>
 										<div class="w-4 h-4 mr-3 text-center">👤</div>
@@ -161,7 +161,7 @@ export const Header: Component = () => {
 											toggleDarkMode();
 											closeDropdown();
 										}}
-										class="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-white/20 transition-all duration-200 text-left"
+										class="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-white/20 transition-all duration-200 text-left dark:text-white dark:hover:bg-slate-800/50"
 									>
 										<div class="w-4 h-4 mr-3 text-center">
 											{darkMode() ? '☀️' : '🌙'}
@@ -173,7 +173,7 @@ export const Header: Component = () => {
 											handleLogout();
 											closeDropdown();
 										}}
-										class="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-white/20 transition-all duration-200 text-left"
+										class="flex items-center w-full px-4 py-2 text-sm text-white hover:bg-white/20 transition-all duration-200 text-left dark:text-white dark:hover:bg-slate-800/50"
 									>
 										<div class="w-4 h-4 mr-3 text-center">🚪</div>
 										Logout
