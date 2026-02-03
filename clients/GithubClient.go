@@ -21,8 +21,8 @@ type GitHubClient struct {
 }
 
 var (
-	baseColor   = "#10106c"
-	targetColor = "#1e1efc"
+	GitBaseColor   = "#10106c"
+	GitTargetColor = "#4e8efc"
 )
 
 type GitHubProfile struct {
@@ -245,7 +245,7 @@ func processCommits(commits map[string]string) *FinalDateEntry {
 		}
 
 		finalDict.DateEntries[date].Percent = percent
-		finalDict.DateEntries[date].Color = blendHex(baseColor, targetColor, percent)
+		finalDict.DateEntries[date].Color = blendHex(GitBaseColor, GitTargetColor, percent)
 	}
 
 	// Populate SortedDates from DateEntries keys and sort them

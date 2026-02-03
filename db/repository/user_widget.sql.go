@@ -14,6 +14,7 @@ import (
 const createUserWidget = `-- name: CreateUserWidget :one
 INSERT INTO user_widgets (
 	user_id,
+	schema_title,
 	schema_id,
 	config,
 	position_x,
@@ -23,25 +24,27 @@ INSERT INTO user_widgets (
 	z_index,
 	is_visible
 ) VALUES (
-	$1, $2, $3, $4, $5, $6, $7, $8, $9
-) RETURNING id, user_id, schema_id, config, position_x, position_y, width, height, z_index, is_visible, created_datetime, updated_datetime
+	$1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+) RETURNING id, user_id, schema_id, config, position_x, position_y, width, height, z_index, is_visible, created_datetime, updated_datetime, schema_title
 `
 
 type CreateUserWidgetParams struct {
-	UserID    uuid.UUID `json:"user_id"`
-	SchemaID  uuid.UUID `json:"schema_id"`
-	Config    []byte    `json:"config"`
-	PositionX int32     `json:"position_x"`
-	PositionY int32     `json:"position_y"`
-	Width     int32     `json:"width"`
-	Height    int32     `json:"height"`
-	ZIndex    int32     `json:"z_index"`
-	IsVisible bool      `json:"is_visible"`
+	UserID      uuid.UUID `json:"user_id"`
+	SchemaTitle *string   `json:"schema_title"`
+	SchemaID    uuid.UUID `json:"schema_id"`
+	Config      []byte    `json:"config"`
+	PositionX   int32     `json:"position_x"`
+	PositionY   int32     `json:"position_y"`
+	Width       int32     `json:"width"`
+	Height      int32     `json:"height"`
+	ZIndex      int32     `json:"z_index"`
+	IsVisible   bool      `json:"is_visible"`
 }
 
 func (q *Queries) CreateUserWidget(ctx context.Context, arg CreateUserWidgetParams) (UserWidget, error) {
 	row := q.db.QueryRow(ctx, createUserWidget,
 		arg.UserID,
+		arg.SchemaTitle,
 		arg.SchemaID,
 		arg.Config,
 		arg.PositionX,
@@ -65,6 +68,7 @@ func (q *Queries) CreateUserWidget(ctx context.Context, arg CreateUserWidgetPara
 		&i.IsVisible,
 		&i.CreatedDatetime,
 		&i.UpdatedDatetime,
+		&i.SchemaTitle,
 	)
 	return i, err
 }
@@ -79,7 +83,7 @@ func (q *Queries) DeleteUserWidget(ctx context.Context, id uuid.UUID) error {
 }
 
 const findUserWidgetByID = `-- name: FindUserWidgetByID :one
-SELECT id, user_id, schema_id, config, position_x, position_y, width, height, z_index, is_visible, created_datetime, updated_datetime FROM user_widgets WHERE id = $1
+SELECT id, user_id, schema_id, config, position_x, position_y, width, height, z_index, is_visible, created_datetime, updated_datetime, schema_title FROM user_widgets WHERE id = $1
 `
 
 func (q *Queries) FindUserWidgetByID(ctx context.Context, id uuid.UUID) (UserWidget, error) {
@@ -98,12 +102,13 @@ func (q *Queries) FindUserWidgetByID(ctx context.Context, id uuid.UUID) (UserWid
 		&i.IsVisible,
 		&i.CreatedDatetime,
 		&i.UpdatedDatetime,
+		&i.SchemaTitle,
 	)
 	return i, err
 }
 
 const findUserWidgetsByUserID = `-- name: FindUserWidgetsByUserID :many
-SELECT id, user_id, schema_id, config, position_x, position_y, width, height, z_index, is_visible, created_datetime, updated_datetime FROM user_widgets WHERE user_id = $1
+SELECT id, user_id, schema_id, config, position_x, position_y, width, height, z_index, is_visible, created_datetime, updated_datetime, schema_title FROM user_widgets WHERE user_id = $1
 `
 
 func (q *Queries) FindUserWidgetsByUserID(ctx context.Context, userID uuid.UUID) ([]UserWidget, error) {
@@ -128,6 +133,7 @@ func (q *Queries) FindUserWidgetsByUserID(ctx context.Context, userID uuid.UUID)
 			&i.IsVisible,
 			&i.CreatedDatetime,
 			&i.UpdatedDatetime,
+			&i.SchemaTitle,
 		); err != nil {
 			return nil, err
 		}
@@ -148,7 +154,7 @@ UPDATE user_widgets SET
 	height = $6,
 	z_index = $7,
 	is_visible = $8
-WHERE id = $1 RETURNING id, user_id, schema_id, config, position_x, position_y, width, height, z_index, is_visible, created_datetime, updated_datetime
+WHERE id = $1 RETURNING id, user_id, schema_id, config, position_x, position_y, width, height, z_index, is_visible, created_datetime, updated_datetime, schema_title
 `
 
 type UpdateUserWidgetParams struct {
@@ -187,6 +193,7 @@ func (q *Queries) UpdateUserWidget(ctx context.Context, arg UpdateUserWidgetPara
 		&i.IsVisible,
 		&i.CreatedDatetime,
 		&i.UpdatedDatetime,
+		&i.SchemaTitle,
 	)
 	return i, err
 }

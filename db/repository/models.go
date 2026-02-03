@@ -76,4 +76,5 @@ type UserWidget struct {
 	IsVisible       bool       `json:"is_visible"`
 	CreatedDatetime *time.Time `json:"created_datetime"`
 	UpdatedDatetime *time.Time `json:"updated_datetime"`
+	SchemaTitle     *string    `json:"schema_title"`
 }

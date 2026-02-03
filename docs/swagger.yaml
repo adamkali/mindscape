@@ -16,6 +16,8 @@ definitions:
         type: integer
       schema_id:
         type: string
+      schema_title:
+        type: string
       width:
         type: integer
       z_index:
@@ -59,10 +61,101 @@ definitions:
       success:
         type: boolean
     type: object
+  CoolifyActionResponse:
+    properties:
+      data:
+        $ref: '#/definitions/responses.CoolifyActionData'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  CoolifyWidgetApplication:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      description:
+        type: string
+      fqdn:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      redirect:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+      uuid:
+        type: string
+    type: object
+  CoolifyWidgetApplicationResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/CoolifyWidgetApplication'
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  CoolifyWidgetService:
+    properties:
+      created_at:
+        type: string
+      deleted_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      service_type:
+        type: string
+      updated_at:
+        type: string
+      uuid:
+        type: string
+    type: object
+  CoolifyWidgetServiceResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/CoolifyWidgetService'
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   DeleteUserResponse:
     properties:
       data:
         type: string
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  GithubCommitsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/responses.GithubWidgetCommitsData'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  GithubProfileResponse:
+    properties:
+      data:
+        $ref: '#/definitions/responses.GithubWidgetProfileData'
       message:
         type: string
       success:
@@ -268,6 +361,15 @@ definitions:
       userId:
         type: string
     type: object
+  responses.CoolifyActionData:
+    properties:
+      action:
+        type: string
+      app_uuid:
+        type: string
+      deployment_id:
+        type: string
+    type: object
   responses.FolderData:
     properties:
       bookmarks:
@@ -373,10 +475,14 @@ definitions:
         type: string
       followers:
         type: integer
+      following:
+        type: integer
       html_url:
         type: string
       name:
         type: string
+      public_gists:
+        type: integer
       public_repos:
         type: integer
     type: object
@@ -410,11 +516,15 @@ definitions:
         type: string
       is_visible:
         type: boolean
+      name:
+        type: string
       position_x:
         type: integer
       position_y:
         type: integer
       schema_id:
+        type: string
+      schema_title:
         type: string
       user_id:
         type: string
@@ -1454,6 +1564,312 @@ paths:
           schema:
             $ref: '#/definitions/responses.UserWidgetResponse'
       summary: Get a Users Widget
+      tags:
+      - Widgets
+  /widgets/{user_widget_id}/coolify/applications:
+    get:
+      description: Get a Users Coolify Applications by their auth token
+      operationId: GetUserCoolifyApplications
+      parameters:
+      - default: Bearer token
+        description: auth header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Widget Id
+        in: path
+        name: user_widget_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/CoolifyWidgetApplicationResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/CoolifyWidgetApplicationResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/CoolifyWidgetApplicationResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/CoolifyWidgetApplicationResponse'
+      summary: Get a Users Coolify Applications
+      tags:
+      - Widgets
+  /widgets/{user_widget_id}/coolify/applications/{app_uuid}/restart:
+    post:
+      description: Restart a Coolify Application by app UUID
+      operationId: RestartCoolifyApplication
+      parameters:
+      - default: Bearer token
+        description: auth header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Widget Id
+        in: path
+        name: user_widget_id
+        required: true
+        type: string
+      - description: Application UUID
+        in: path
+        name: app_uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/CoolifyActionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/CoolifyActionResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/CoolifyActionResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/CoolifyActionResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/CoolifyActionResponse'
+      summary: Restart a Coolify Application
+      tags:
+      - Widgets
+  /widgets/{user_widget_id}/coolify/applications/{app_uuid}/start:
+    post:
+      description: Start a Coolify Application by app UUID
+      operationId: StartCoolifyApplication
+      parameters:
+      - default: Bearer token
+        description: auth header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Widget Id
+        in: path
+        name: user_widget_id
+        required: true
+        type: string
+      - description: Application UUID
+        in: path
+        name: app_uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/CoolifyActionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/CoolifyActionResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/CoolifyActionResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/CoolifyActionResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/CoolifyActionResponse'
+      summary: Start a Coolify Application
+      tags:
+      - Widgets
+  /widgets/{user_widget_id}/coolify/applications/{app_uuid}/stop:
+    post:
+      description: Stop a Coolify Application by app UUID
+      operationId: StopCoolifyApplication
+      parameters:
+      - default: Bearer token
+        description: auth header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Widget Id
+        in: path
+        name: user_widget_id
+        required: true
+        type: string
+      - description: Application UUID
+        in: path
+        name: app_uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/CoolifyActionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/CoolifyActionResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/CoolifyActionResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/CoolifyActionResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/CoolifyActionResponse'
+      summary: Stop a Coolify Application
+      tags:
+      - Widgets
+  /widgets/{user_widget_id}/coolify/services:
+    get:
+      description: Get a Users Coolify Services by their auth token
+      operationId: GetUserCoolifyServices
+      parameters:
+      - default: Bearer token
+        description: auth header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Widget Id
+        in: path
+        name: user_widget_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/CoolifyWidgetServiceResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/CoolifyWidgetServiceResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/CoolifyWidgetServiceResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/CoolifyWidgetServiceResponse'
+      summary: Get a Users Coolify Services
+      tags:
+      - Widgets
+  /widgets/{user_widget_id}/github/commits:
+    get:
+      description: |-
+        Get a Users Github Commits Widget by their auth token
+        and a path parameter to return only the commits data.
+        This endpoint fetches commit history and may take longer.
+      operationId: GetGithubCommitsWidgetData
+      parameters:
+      - default: Bearer token
+        description: auth header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Widget Id
+        in: path
+        name: user_widget_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/GithubCommitsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GithubCommitsResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GithubCommitsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/GithubCommitsResponse'
+      summary: Get a Users Github Commits Widget Data
+      tags:
+      - Widgets
+  /widgets/{user_widget_id}/github/profile:
+    get:
+      description: |-
+        Get a Users Github Profile Widget by their auth token
+        and a path parameter to return only the profile data.
+        This is a fast endpoint that returns profile info quickly.
+      operationId: GetGithubProfileWidgetData
+      parameters:
+      - default: Bearer token
+        description: auth header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Widget Id
+        in: path
+        name: user_widget_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/GithubProfileResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GithubProfileResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GithubProfileResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/GithubProfileResponse'
+      summary: Get a Users Github Profile Widget Data
       tags:
       - Widgets
   /widgets/github/{user_widget_id}:

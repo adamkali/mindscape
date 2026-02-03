@@ -2,7 +2,6 @@ package widget_handlers
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/adamkali/mindscape/clients"
 	"github.com/adamkali/mindscape/db/repository"
@@ -16,7 +15,7 @@ type CoolifyWidgetApplicationHandler struct {
 	code   int
 	err    error
 	widget *repository.UserWidget
-	data   *clients.CoolifyApplication
+	data   []clients.CoolifyApplication
 }
 
 func NewCoolifyWidgetApplicationHandler(
@@ -28,9 +27,19 @@ func NewCoolifyWidgetApplicationHandler(
 		code:   200,
 		err:    nil,
 		widget: widget,
-		data:   &clients.CoolifyApplication{},
+		data:   []clients.CoolifyApplication{},
 	}
 }
+
+func CoolifyWidgetApplicationsJsonHandler(
+	ctx echo.Context,
+	widget *repository.UserWidget,
+) error {
+	handler := NewCoolifyWidgetApplicationHandler(ctx, widget)
+	return handler.Handle().JSON()
+}
+
+
 
 func (h *CoolifyWidgetApplicationHandler) SetCode(code int) handlers.IHandler {
 	h.code = code
@@ -45,10 +54,6 @@ func (h *CoolifyWidgetApplicationHandler) Code() int    { return h.code }
 func (h *CoolifyWidgetApplicationHandler) Error() error { return h.err }
 func (h *CoolifyWidgetApplicationHandler) Data() any    { return h.data }
 func (h *CoolifyWidgetApplicationHandler) Handle() handlers.IHandler {
-	applicationId := h.ctx.Param("application_id")
-	if applicationId == "" {
-		return handlers.Lock(h, 400, fmt.Errorf("application_id is required"))
-	}
 	var config CoolifyWidgetConfig
 	 err := json.Unmarshal(h.widget.Config, &config)
 	if err != nil {
@@ -56,8 +61,7 @@ func (h *CoolifyWidgetApplicationHandler) Handle() handlers.IHandler {
 	}
 
 	client := clients.NewCoolifyClient(config.PersonalAccessToken, config.BaseUrl)
-
-	h.data, err = client.GetCoolifyApplication(h.ctx, applicationId)
+	h.data, err = client.GetCoolifyApplications(h.ctx)
 	if err != nil {
 		return handlers.Lock(h, 400, err)
 	}
@@ -65,7 +69,7 @@ func (h *CoolifyWidgetApplicationHandler) Handle() handlers.IHandler {
 }
 func (h *CoolifyWidgetApplicationHandler) JSON() error {
 	if h.err == nil {
-		return responses.NewCoolifyWidgetApplicationResponse().Successful(h.ctx, *h.data)
+		return responses.NewCoolifyWidgetApplicationResponse().Successful(h.ctx, h.data)
 	} else {
 		return responses.NewCoolifyWidgetApplicationResponse().Fail(h.ctx, h.code, h.err)
 	}

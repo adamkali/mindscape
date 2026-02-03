@@ -10,7 +10,9 @@ import (
 
 type UserWidgetData struct {
 	ID        uuid.UUID      `json:"id"`
+	Name      string         `json:"name"`
 	UserID    uuid.UUID      `json:"user_id"`
+	SchemaTitle string         `json:"schema_title"`
 	SchemaID  uuid.UUID      `json:"schema_id"`
 	Config    map[string]any `json:"config"`
 	PositionX int32          `json:"position_x"`
@@ -29,7 +31,9 @@ type UserWidgetResponse struct {
 
 func (u *UserWidgetData) UserWidgetFromData(data *repository.UserWidget) error {
 	u.ID = data.ID
+	u.Name = *data.SchemaTitle
 	u.UserID = data.UserID
+	u.SchemaTitle = *data.SchemaTitle
 	u.SchemaID = data.SchemaID
 	u.PositionX = data.PositionX
 	u.PositionY = data.PositionY

@@ -27,6 +27,14 @@
 		"description": "Coolify Base URL: `https://app.coolify.io/api/v1`",
 		"enum": []
 	},
+	"foldInitially": {
+		"label": "Hide Apps and Services by Default",
+		"value": true,
+		"type": "boolean",
+		"format": "boolean",
+		"description": "On Widget load, hide all apps and services by default",
+		"enum": []
+	},
 	"applicationIds": {
 		"label": "Application IDs",
 		"value": "",

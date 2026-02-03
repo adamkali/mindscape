@@ -6,6 +6,7 @@ SELECT * FROM user_widgets WHERE id = $1;
 -- name: CreateUserWidget :one
 INSERT INTO user_widgets (
 	user_id,
+	schema_title,
 	schema_id,
 	config,
 	position_x,
@@ -15,7 +16,7 @@ INSERT INTO user_widgets (
 	z_index,
 	is_visible
 ) VALUES (
-	$1, $2, $3, $4, $5, $6, $7, $8, $9
+	$1, $2, $3, $4, $5, $6, $7, $8, $9, $10
 ) RETURNING *;
 
 -- name: UpdateUserWidget :one

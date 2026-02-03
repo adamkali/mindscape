@@ -2,6 +2,7 @@ import { createSignal } from 'solid-js';
 
 interface SearchbarWidgetProps {
 	url: string;
+	engine?: string;
 }
 
 export default function SearchbarWidget(props: SearchbarWidgetProps) {
@@ -35,7 +36,7 @@ export default function SearchbarWidget(props: SearchbarWidgetProps) {
 			<input
 				id="search"
 				type="text"
-				placeholder="🔍 Search..."
+				placeholder={`🔍 Search with ${props.engine}... `}
 				class="h-full w-full px-4 py-2 rounded-lg bg-slate-300/10 text-foreground focus:outline-none"
 				value={searchQuery()}
 				onInput={(e) => setSearchQuery(e.currentTarget.value)}

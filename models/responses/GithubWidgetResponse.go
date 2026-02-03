@@ -14,7 +14,9 @@ type GithubWidgetProfileData struct {
 	Company     string `json:"company"`
 	Bio         string `json:"bio"`
 	PublicRepos int    `json:"public_repos"`
+	PublicGists int    `json:"public_gists"`
 	Followers   int    `json:"followers"`
+	Following   int    `json:"following"`
 }
 
 type GithubWidgetCommitsDayData struct {
@@ -51,6 +53,18 @@ type GithubWidgetResponse struct {
 	Message string           `json:"message"`
 } // @name GithubResponse
 
+type GithubProfileWidgetResponse struct {
+	Data    GithubWidgetProfileData `json:"data"`
+	Success bool                    `json:"success"`
+	Message string                  `json:"message"`
+} // @name GithubProfileResponse
+
+type GithubCommitWidgetResponse struct {
+	Data    GithubWidgetCommitsData `json:"data"`
+	Success bool                    `json:"success"`
+	Message string                  `json:"message"`
+} // @name GithubCommitsResponse
+
 func NewGithubWidgetProfileData(profile clients.GitHubProfile) GithubWidgetProfileData {
 	return GithubWidgetProfileData{
 		AvatarURL:   profile.AvatarURL,
@@ -60,6 +74,8 @@ func NewGithubWidgetProfileData(profile clients.GitHubProfile) GithubWidgetProfi
 		Bio:         profile.Bio,
 		PublicRepos: profile.PublicRepos,
 		Followers:   profile.Followers,
+		Following:   profile.Following,
+		PublicGists: profile.PublicGists,
 	}
 }
 
@@ -79,7 +95,7 @@ func newEmptyDayData(date string) GithubWidgetCommitsDayData {
 		Date:    date,
 		Count:   0,
 		Percent: 0,
-		Color:   "#cc1e1e", // Base color for 0 commits
+		Color:   clients.GitBaseColor, // Base color for 0 commits
 	}
 }
 
@@ -217,6 +233,54 @@ func (w *GithubWidgetResponse) Successful(
 ) error {
 	w.Success = true
 	w.Data = *NewGithubWidgetData(profile, commits)
+	return ctx.JSON(200, w)
+}
+
+// GithubProfileWidgetResponse methods
+func NewGithubProfileWidgetResponse() *GithubProfileWidgetResponse {
+	return &GithubProfileWidgetResponse{
+		Data:    GithubWidgetProfileData{},
+		Success: true,
+		Message: "Ok",
+	}
+}
+
+func (w *GithubProfileWidgetResponse) Fail(ctx echo.Context, code int, err error) error {
+	w.Success = false
+	w.Message = err.Error()
+	return ctx.JSON(code, w)
+}
+
+func (w *GithubProfileWidgetResponse) Successful(
+	ctx echo.Context,
+	profile *clients.GitHubProfile,
+) error {
+	w.Success = true
+	w.Data = NewGithubWidgetProfileData(*profile)
+	return ctx.JSON(200, w)
+}
+
+// GithubCommitWidgetResponse methods
+func NewGithubCommitWidgetResponse() *GithubCommitWidgetResponse {
+	return &GithubCommitWidgetResponse{
+		Data:    GithubWidgetCommitsData{},
+		Success: true,
+		Message: "Ok",
+	}
+}
+
+func (w *GithubCommitWidgetResponse) Fail(ctx echo.Context, code int, err error) error {
+	w.Success = false
+	w.Message = err.Error()
+	return ctx.JSON(code, w)
+}
+
+func (w *GithubCommitWidgetResponse) Successful(
+	ctx echo.Context,
+	commits *clients.FinalDateEntry,
+) error {
+	w.Success = true
+	w.Data = NewGithubWidgetCommitsData(commits)
 	return ctx.JSON(200, w)
 }
 

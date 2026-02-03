@@ -130,11 +130,11 @@ func (wc WidgetController) ReadById(ctx echo.Context) error {
 // @Produce     json
 // @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
 // @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
-// @Success     200                 {object}     GithubResponse 
-// @Failure     401                 {object}     GithubResponse 
-// @Failure     401                 {object}     GithubResponse 
-// @Failure     403                 {object}     GithubResponse 
-// @Failure     500                 {object}     GithubResponse 
+// @Success     200                 {object}     GithubResponse
+// @Failure     401                 {object}     GithubResponse
+// @Failure     401                 {object}     GithubResponse
+// @Failure     403                 {object}     GithubResponse
+// @Failure     500                 {object}     GithubResponse
 // @Router      /widgets/github/{user_widget_id}    [get]
 func (wc WidgetController) GithubWidget(ctx echo.Context) error {
 	widget := handlers.NewReadUserWidgetHandler(
@@ -145,6 +145,70 @@ func (wc WidgetController) GithubWidget(ctx echo.Context) error {
 
 	// use the Widget from ReadUserWidgetHandler
 	return handlers.GithubWidgetJsonHandler(
+		ctx,
+		widget.Data().(*repository.UserWidget),
+	)
+}
+
+// @Summary Get a Users Github Profile Widget Data
+// @Description Get a Users Github Profile Widget by their auth token
+// @Description and a path parameter to return only the profile data.
+// @Description This is a fast endpoint that returns profile info quickly.
+//
+// @ID          GetGithubProfileWidgetData
+// @Tags        Widgets
+// @Produce     json
+// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
+// @Success     200                 {object}     GithubProfileResponse
+// @Failure     401                 {object}     GithubProfileResponse
+// @Failure     403                 {object}     GithubProfileResponse
+// @Failure     500                 {object}     GithubProfileResponse
+// @Router      /widgets/{user_widget_id}/github/profile    [get]
+func (wc WidgetController) GithubProfileWidget(ctx echo.Context) error {
+	widget := handlers.NewReadUserWidgetHandler(
+		ctx,
+		wc.WidgetService,
+		wc.AuthService,
+	).Handle()
+
+	if widget.Error() != nil {
+		return widget.JSON()
+	}
+
+	return handlers.GithubProfileWidgetJsonHandler(
+		ctx,
+		widget.Data().(*repository.UserWidget),
+	)
+}
+
+// @Summary Get a Users Github Commits Widget Data
+// @Description Get a Users Github Commits Widget by their auth token
+// @Description and a path parameter to return only the commits data.
+// @Description This endpoint fetches commit history and may take longer.
+//
+// @ID          GetGithubCommitsWidgetData
+// @Tags        Widgets
+// @Produce     json
+// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
+// @Success     200                 {object}     GithubCommitsResponse
+// @Failure     401                 {object}     GithubCommitsResponse
+// @Failure     403                 {object}     GithubCommitsResponse
+// @Failure     500                 {object}     GithubCommitsResponse
+// @Router      /widgets/{user_widget_id}/github/commits    [get]
+func (wc WidgetController) GithubCommitsWidget(ctx echo.Context) error {
+	widget := handlers.NewReadUserWidgetHandler(
+		ctx,
+		wc.WidgetService,
+		wc.AuthService,
+	).Handle()
+
+	if widget.Error() != nil {
+		return widget.JSON()
+	}
+
+	return handlers.GithubCommitWidgetJsonHandler(
 		ctx,
 		widget.Data().(*repository.UserWidget),
 	)
@@ -175,6 +239,169 @@ func (wc WidgetController) AddWidget(ctx echo.Context) error {
 	).Handle().JSON()
 }
 
+//region COOLIFY
+// @Summary Get a Users Coolify Applications
+// @Description Get a Users Coolify Applications by their auth token
+//
+// @ID          GetUserCoolifyApplications
+// @Tags        Widgets
+// @Produce     json
+// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
+// @Success     200                 {object}     CoolifyWidgetApplicationResponse
+// @Failure     401                 {object}     CoolifyWidgetApplicationResponse
+// @Failure     403                 {object}     CoolifyWidgetApplicationResponse
+// @Failure     500                 {object}     CoolifyWidgetApplicationResponse
+// @Router      /widgets/{user_widget_id}/coolify/applications    [get]
+func (wc WidgetController) CoolifyWidgetApplications(ctx echo.Context) error {
+	widget := handlers.NewReadUserWidgetHandler(
+		ctx,
+		wc.WidgetService,
+		wc.AuthService,
+	).Handle()
+
+	if widget.Error() != nil {
+		return widget.JSON()
+	}
+	return handlers.CoolifyWidgetApplicationsJsonHandler(
+		ctx,
+		widget.Data().(*repository.UserWidget),
+	)
+}
+
+// @Summary Start a Coolify Application
+// @Description Start a Coolify Application by app UUID
+//
+// @ID          StartCoolifyApplication
+// @Tags        Widgets
+// @Produce     json
+// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
+// @Param       app_uuid            path         string                         true "Application UUID"
+// @Success     200                 {object}     CoolifyActionResponse
+// @Failure     400                 {object}     CoolifyActionResponse
+// @Failure     401                 {object}     CoolifyActionResponse
+// @Failure     403                 {object}     CoolifyActionResponse
+// @Failure     500                 {object}     CoolifyActionResponse
+// @Router      /widgets/{user_widget_id}/coolify/applications/{app_uuid}/start [post]
+func (wc WidgetController) StartCoolifyApplication(ctx echo.Context) error {
+	widget := handlers.NewReadUserWidgetHandler(
+		ctx,
+		wc.WidgetService,
+		wc.AuthService,
+	).Handle()
+
+	if widget.Error() != nil {
+		return widget.JSON()
+	}
+
+	appUUID := ctx.Param("app_uuid")
+	return handlers.CoolifyApplicationStartJsonHandler(
+		ctx,
+		widget.Data().(*repository.UserWidget),
+		appUUID,
+	)
+}
+
+// @Summary Stop a Coolify Application
+// @Description Stop a Coolify Application by app UUID
+//
+// @ID          StopCoolifyApplication
+// @Tags        Widgets
+// @Produce     json
+// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
+// @Param       app_uuid            path         string                         true "Application UUID"
+// @Success     200                 {object}     CoolifyActionResponse
+// @Failure     400                 {object}     CoolifyActionResponse
+// @Failure     401                 {object}     CoolifyActionResponse
+// @Failure     403                 {object}     CoolifyActionResponse
+// @Failure     500                 {object}     CoolifyActionResponse
+// @Router      /widgets/{user_widget_id}/coolify/applications/{app_uuid}/stop [post]
+func (wc WidgetController) StopCoolifyApplication(ctx echo.Context) error {
+	widget := handlers.NewReadUserWidgetHandler(
+		ctx,
+		wc.WidgetService,
+		wc.AuthService,
+	).Handle()
+
+	if widget.Error() != nil {
+		return widget.JSON()
+	}
+
+	appUUID := ctx.Param("app_uuid")
+	return handlers.CoolifyApplicationStopJsonHandler(
+		ctx,
+		widget.Data().(*repository.UserWidget),
+		appUUID,
+	)
+}
+
+// @Summary Restart a Coolify Application
+// @Description Restart a Coolify Application by app UUID
+//
+// @ID          RestartCoolifyApplication
+// @Tags        Widgets
+// @Produce     json
+// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
+// @Param       app_uuid            path         string                         true "Application UUID"
+// @Success     200                 {object}     CoolifyActionResponse
+// @Failure     400                 {object}     CoolifyActionResponse
+// @Failure     401                 {object}     CoolifyActionResponse
+// @Failure     403                 {object}     CoolifyActionResponse
+// @Failure     500                 {object}     CoolifyActionResponse
+// @Router      /widgets/{user_widget_id}/coolify/applications/{app_uuid}/restart [post]
+func (wc WidgetController) RestartCoolifyApplication(ctx echo.Context) error {
+	widget := handlers.NewReadUserWidgetHandler(
+		ctx,
+		wc.WidgetService,
+		wc.AuthService,
+	).Handle()
+
+	if widget.Error() != nil {
+		return widget.JSON()
+	}
+
+	appUUID := ctx.Param("app_uuid")
+	return handlers.CoolifyApplicationRestartJsonHandler(
+		ctx,
+		widget.Data().(*repository.UserWidget),
+		appUUID,
+	)
+}
+
+// @Summary Get a Users Coolify Services 
+// @Description Get a Users Coolify Services by their auth token
+//
+// @ID          GetUserCoolifyServices 
+// @Tags        Widgets
+// @Produce     json
+// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
+// @Success     200                 {object}     CoolifyWidgetServiceResponse
+// @Failure     401                 {object}     CoolifyWidgetServiceResponse
+// @Failure     403                 {object}     CoolifyWidgetServiceResponse
+// @Failure     500                 {object}     CoolifyWidgetServiceResponse
+// @Router      /widgets/{user_widget_id}/coolify/services [get]
+func (wc WidgetController) CoolifyWidgetServices(ctx echo.Context) error {
+	widget := handlers.NewReadUserWidgetHandler(
+		ctx,
+		wc.WidgetService,
+		wc.AuthService,
+	).Handle()
+	
+	if widget.Error() != nil {
+		return widget.JSON()
+	}
+
+	return handlers.CoolifyWidgetServicesJsonHandler(
+		ctx,
+		widget.Data().(*repository.UserWidget),
+	)
+}
+//endregion
+
 
 func (wc WidgetController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	api := e.Group("/api" + wc.Name)
@@ -184,5 +411,12 @@ func (wc WidgetController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareF
 	api.GET("", wc.Read, authMiddleware)
 	api.GET("/:user_widget_id", wc.ReadById, authMiddleware)
 	api.GET("/github/:user_widget_id", wc.GithubWidget, authMiddleware)
+	api.GET("/:user_widget_id/github/profile", wc.GithubProfileWidget, authMiddleware)
+	api.GET("/:user_widget_id/github/commits", wc.GithubCommitsWidget, authMiddleware)
+	api.GET("/:user_widget_id/coolify/applications", wc.CoolifyWidgetApplications, authMiddleware)
+	api.GET("/:user_widget_id/coolify/services", wc.CoolifyWidgetServices, authMiddleware)
+	api.POST("/:user_widget_id/coolify/applications/:app_uuid/start", wc.StartCoolifyApplication, authMiddleware)
+	api.POST("/:user_widget_id/coolify/applications/:app_uuid/stop", wc.StopCoolifyApplication, authMiddleware)
+	api.POST("/:user_widget_id/coolify/applications/:app_uuid/restart", wc.RestartCoolifyApplication, authMiddleware)
 	api.POST("", wc.AddWidget, authMiddleware)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"sort"
 	"time"
@@ -245,7 +246,7 @@ func NewCoolifyClient(pat string, baseUrl string, opts ...CoolifyClientOption) *
 		httpClient:          &http.Client{},
 		personalAccessToken: pat,
 		defaultTimeout:      30 * time.Second, // Default timeout
-		baseUrl:             baseUrl
+		baseUrl:             baseUrl,
 	}
 
 	for _, opt := range opts {
@@ -291,7 +292,7 @@ func (c *CoolifyClient) doRequest(ctx context.Context, url string, acceptHeader 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("Coolify API error: %d", resp.StatusCode)
 	}
-	return nil, nil
+	return io.ReadAll(resp.Body)
 }
 
 func (c *CoolifyClient) CoolifyHealthCheck(ctx echo.Context) error {
