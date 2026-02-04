@@ -1,10 +1,11 @@
 import { A } from '@solidjs/router';
-import { createEffect, createSignal, Show } from 'solid-js';
+import { createEffect, createSignal, For, Show } from 'solid-js';
 import {
 	BookmarksApi,
 	FoldersApi,
 	type ResponseError,
 	type ResponsesFolderData,
+
 } from '@/api';
 import Components from '@/components';
 import { Button } from '@/components/atoms';
@@ -18,99 +19,99 @@ import { useBackgroundStyle } from '@/hooks/useBackground';
 import { EmptyGuid } from '@/utils';
 
 const Home = () => {
-	const auth = useAuth();
-	const backgroundStyle = useBackgroundStyle();
-	const [folders, setFolders] = createSignal<ResponsesFolderData[]>([]);
-	const [focusedNodeId, setFocusedNodeId] = createSignal<string>('');
-	const [isLoadingFolders, setIsLoadingFolders] = createSignal(false);
-	const [showCreateFolder, setShowCreateFolder] = createSignal(false);
-	const [showCreateBookmark, setShowCreateBookmark] = createSignal(false);
-	const [isDragOverRoot, setIsDragOverRoot] = createSignal(false);
-	const foldersApi = new FoldersApi();
-	const user = auth.user();
+    const auth = useAuth();
+    const backgroundStyle = useBackgroundStyle();
+    const [folders, setFolders] = createSignal<ResponsesFolderData[]>([]);
+    const [focusedNodeId, setFocusedNodeId] = createSignal<string>('');
+    const [isLoadingFolders, setIsLoadingFolders] = createSignal(false);
+    const [showCreateFolder, setShowCreateFolder] = createSignal(false);
+    const [showCreateBookmark, setShowCreateBookmark] = createSignal(false);
+    const [isDragOverRoot, setIsDragOverRoot] = createSignal(false);
+    const foldersApi = new FoldersApi();
+    const user = auth.user();
 
-	createEffect(() => {
-		fetchRootFolders();
-	});
+    createEffect(() => {
+        fetchRootFolders();
+    });
 
-	createEffect(() => {
-		if (focusedNodeId() === EmptyGuid) {
-			setFocusedNodeId('');
-		}
-		if (showCreateFolder()) {
-			setShowCreateBookmark(false);
-		}
-		if (showCreateBookmark()) {
-			setShowCreateFolder(false);
-		}
-	});
+    createEffect(() => {
+        if (focusedNodeId() === EmptyGuid) {
+            setFocusedNodeId('');
+        }
+        if (showCreateFolder()) {
+            setShowCreateBookmark(false);
+        }
+        if (showCreateBookmark()) {
+            setShowCreateFolder(false);
+        }
+    });
 
-	// Debug effect to track selected node ID changes
-	createEffect(() => {
-		const currentId = focusedNodeId();
-		console.log(`id_change::selected_node: ${currentId || 'none'}`);
-	});
+    // Debug effect to track selected node ID changes
+    createEffect(() => {
+        const currentId = focusedNodeId();
+        console.log(`id_change::selected_node: ${currentId || 'none'}`);
+    });
 
-	const fetchRootFolders = async () => {
-		if (!auth.token()) return;
-		setIsLoadingFolders(true);
-		try {
-			const response = await foldersApi.getRootFolders({
-				authorization: `Bearer ${auth.token()}`,
-			});
-			if (response.success && response.data) {
-				const folders = response.data;
-				folders.sort((a, b) => a.name!.localeCompare(b.name!));
+    const fetchRootFolders = async () => {
+        if (!auth.token()) return;
+        setIsLoadingFolders(true);
+        try {
+            const response = await foldersApi.getRootFolders({
+                authorization: `Bearer ${auth.token()}`,
+            });
+            if (response.success && response.data) {
+                const folders = response.data;
+                folders.sort((a, b) => a.name!.localeCompare(b.name!));
 
-				// Removed auto-selection to ensure no node is selected on page load
-				setFolders(folders);
-			}
-		} catch (error) {
-			console.error('Failed to fetch folders:', error);
-			(error as ResponseError).response.status === 401 && auth.logout();
-		} finally {
-			setIsLoadingFolders(false);
-		}
-	};
+                // Removed auto-selection to ensure no node is selected on page load
+                setFolders(folders);
+            }
+        } catch (error) {
+            console.error('Failed to fetch folders:', error);
+            (error as ResponseError).response.status === 401 && auth.logout();
+        } finally {
+            setIsLoadingFolders(false);
+        }
+    };
 
-	const deleteFolder = async (folderId: string) => {
-		if (!auth.token() || !folderId) return;
+    const deleteFolder = async (folderId: string) => {
+        if (!auth.token() || !folderId) return;
 
-		try {
-			const response = await foldersApi.deleteFolder({
-				folderId,
-				authorization: `Bearer ${auth.token()}`,
-			});
-			if (response.success) {
-				await fetchRootFolders();
-				if (focusedNodeId() === folderId) {
-					setFocusedNodeId('');
-				}
-			}
-		} catch (error) {
-			console.error('Failed to delete folder:', error);
-		}
-	};
+        try {
+            const response = await foldersApi.deleteFolder({
+                folderId,
+                authorization: `Bearer ${auth.token()}`,
+            });
+            if (response.success) {
+                await fetchRootFolders();
+                if (focusedNodeId() === folderId) {
+                    setFocusedNodeId('');
+                }
+            }
+        } catch (error) {
+            console.error('Failed to delete folder:', error);
+        }
+    };
 
-	const deleteBookmark = async (bookmarkId: string) => {
-		if (!auth.token() || !bookmarkId) return;
+    const deleteBookmark = async (bookmarkId: string) => {
+        if (!auth.token() || !bookmarkId) return;
 
-		try {
-			const bookmarksApi = new BookmarksApi();
-			const response = await bookmarksApi.deleteBookmark({
-				bookmarkId: bookmarkId,
-				authorization: `Bearer ${auth.token()}`,
-			});
+        try {
+            const bookmarksApi = new BookmarksApi();
+            const response = await bookmarksApi.deleteBookmark({
+                bookmarkId: bookmarkId,
+                authorization: `Bearer ${auth.token()}`,
+            });
 
-			if (response.success) {
-				await fetchRootFolders(); // Refresh the data
-			} else {
-				console.error('Failed to delete bookmark:', response.message);
-			}
-		} catch (error) {
-			console.error('Failed to delete bookmark:', error);
-		}
-	};
+            if (response.success) {
+                await fetchRootFolders(); // Refresh the data
+            } else {
+                console.error('Failed to delete bookmark:', response.message);
+            }
+        } catch (error) {
+            console.error('Failed to delete bookmark:', error);
+        }
+    };
 
 	if (!auth.isAuthenticated() || !user) {
 		return (
@@ -127,21 +128,21 @@ const Home = () => {
 		);
 	}
 
-	// set overwritable callback for create bookmark component
-	let bookmarkRefresh: () => void = () => {};
-	const openCreateBookmarkComponent = (folderBookmarkRefresh?: () => void) => {
-		setShowCreateBookmark(true);
-		setShowCreateFolder(false);
-		if (folderBookmarkRefresh) {
-			bookmarkRefresh = folderBookmarkRefresh;
-		}
-	};
+    // set overwritable callback for create bookmark component
+    let bookmarkRefresh: () => void = () => { };
+    const openCreateBookmarkComponent = (folderBookmarkRefresh?: () => void) => {
+        setShowCreateBookmark(true);
+        setShowCreateFolder(false);
+        if (folderBookmarkRefresh) {
+            bookmarkRefresh = folderBookmarkRefresh;
+        }
+    };
 
-	const closeCreateBookmarkComponent = () => {
-		setShowCreateBookmark(false);
-		bookmarkRefresh();
-		bookmarkRefresh = () => {};
-	};
+    const closeCreateBookmarkComponent = () => {
+        setShowCreateBookmark(false);
+        bookmarkRefresh();
+        bookmarkRefresh = () => { };
+    };
 
 	const handleRootDragOver = (e: DragEvent) => {
 		// Only handle if the target is the root container or empty space, not folder cards
@@ -254,60 +255,24 @@ const Home = () => {
 							</Button>
 						</div>
 
-						<Show when={showCreateFolder()}>
-							<CreateFolderComponent
-								userId={user.id || EmptyGuid}
-								parentId={focusedNodeId()}
-								auth={auth}
-								setShowCreateFolder={setShowCreateFolder}
-								folderAPIRef={foldersApi}
-								refresh={fetchRootFolders}
-							/>
-						</Show>
+    const handleRootDrop = async (e: DragEvent) => {
+        // Only handle if the target is actually the root container or empty space
+        const target = e.target as HTMLElement;
+        const isOverFolderCard = target.closest('[draggable="true"]') !== null;
 
-						<Show when={showCreateBookmark()}>
-							<CreateBookmarkComponent
-								userId={user.id || EmptyGuid}
-								parentId={focusedNodeId()}
-								auth={auth}
-								close={closeCreateBookmarkComponent}
-								refreshBookmarks={bookmarkRefresh}
-							/>
-						</Show>
+        if (isOverFolderCard) {
+            // Let the folder card handle this drop
+            return;
+        }
 
-						<Show
-							when={!isLoadingFolders()}
-							fallback={
-								<div class="text-center py-4 text-foreground/60">
-									Loading folders...
-								</div>
-							}
-						>
-							<Show
-								when={folders().length > 0}
-								fallback={
-									<div class="text-center py-4 text-foreground/60">
-										No folders yet. Create your first folder!
-									</div>
-								}
-							>
-								<div class="space-y-4">
-									{folders().map((folder) => (
-										<FolderComponent
-											folder={folder}
-											selectedFolder={focusedNodeId}
-											setSelectedFolder={setFocusedNodeId}
-											deleteFolder={deleteFolder}
-											deleteBookmark={deleteBookmark}
-											showCreateFolder={openCreateBookmarkComponent}
-											indent={0}
-										/>
-									))}
-								</div>
-							</Show>
-						</Show>
-					</div>
-				</div>
+        e.preventDefault();
+        setIsDragOverRoot(false);
+        try {
+            const data = JSON.parse(e.dataTransfer!.getData('text/plain'));
+            console.log('Drop data to root:', data);
+            console.log(
+                `id_change::dragged_in_node: ${data.id} (${data.type}) -> root`,
+            );
 
 				<Components.WidgetContainer />
 			</div>
