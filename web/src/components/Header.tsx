@@ -146,7 +146,7 @@ export const Header: Component = () => {
 
 						{/* Dropdown Menu */}
 						<Show when={isDropdownOpen()}>
-							<div class="absolute right-0 top-full mt-2 w-48 bg-glass-strang backdrop-blur-md border border-white/30 rounded-xl shadow-lg z-50 dark:shadow-black/30">
+							<div class="absolute right-0 top-full mt-2 w-48 bg-glass-bg-strong backdrop-blur-md border border-white/30 rounded-xl shadow-lg z-50 dark:shadow-black/30">
 								<div class="py-2">
 									<A
 										href="/edit-profile"

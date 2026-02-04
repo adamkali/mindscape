@@ -28,7 +28,7 @@
 	/* Glass theming - Light mode */
 	--glass-bg: rgba(255, 255, 255, 0.2);
 	--glass-bg-hover: rgba(255, 255, 255, 0.3);
-	--glass-bg-strong: rgba(255, 255, 255, 0.95);
+	--glass-bg-strong: rgba(255, 255, 255, 0.5);
 	--glass-bg-modal: rgba(255, 255, 255, 0);
 	--glass-border: rgba(255, 255, 255, 0.3);
 	--glass-border-hover: rgba(255, 255, 255, 0.5);
