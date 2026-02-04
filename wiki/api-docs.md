@@ -425,6 +425,7 @@
      }
 ```
 
+
 ### Response Models
 
 
@@ -608,6 +609,7 @@
        "user_id": "string"
      }
 ```
+
 
 ## Authentication Flow
 

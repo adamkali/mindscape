@@ -129,7 +129,7 @@
         "categories": {
           "type": "array",
           "items": {"type": "string"},
-          "description": "Enabled search categories"
+	"description": "Enabled search categories"
         }
       },
       "required": ["serverUrl"]
@@ -238,7 +238,7 @@
     type IWidgetService interface {
         GetUserWidgets(userID string) ([]WidgetConfig, error)
         CreateWidget(userID, widgetType string, config map[string]interface{}) error
-        UpdateWidget(userID, widgetID string, config map[string]interface{}) error
+		UpdateWidget(userID, widgetID string, config map[string]interface{}) error
         DeleteWidget(userID, widgetID string) error
         GetWidgetSchema(widgetType string) (*WidgetSchema, error)
         ValidateWidgetConfig(widgetType string, config map[string]interface{}) error
