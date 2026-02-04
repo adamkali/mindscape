@@ -27,6 +27,7 @@ func RegisterRoutes(e *echo.Echo, config *configuration.Configuration) {
 		BuildUserController(params),
 		BuildFolderController(params),
 		BuildBookmarkController(params),
+		BuildWidgetController(params),
 	)
 
 	// Static middleware disabled - using explicit static routes instead

@@ -1,5 +1,5 @@
+import { type ComponentProps, type JSX, splitProps } from 'solid-js';
 import { cn } from '@/utils/cn';
-import { splitProps, type ComponentProps, type JSX } from 'solid-js';
 
 /**
  * Props for the CardHeader component
@@ -42,14 +42,8 @@ export default function CardHeader(props: CardHeaderProps): JSX.Element {
 		>
 			<div class="flex items-start justify-between">
 				<div class="flex-1">
-					{title && (
-						<h3 class="text-lg font-semibold leading-6">
-							{title}
-						</h3>
-					)}
-					{subtitle && (
-						<p class="text-sm opacity-70 mt-1">{subtitle}</p>
-					)}
+					{title && <h3 class="text-lg font-semibold leading-6">{title}</h3>}
+					{subtitle && <p class="text-sm opacity-70 mt-1">{subtitle}</p>}
 				</div>
 				{children && <div class="ml-4 flex-shrink-0">{children}</div>}
 			</div>

@@ -62,3 +62,19 @@ type User struct {
 	Admin           bool       `json:"admin"`
 	Background      *string    `json:"background"`
 }
+
+type UserWidget struct {
+	ID              uuid.UUID  `json:"id"`
+	UserID          uuid.UUID  `json:"user_id"`
+	SchemaID        uuid.UUID  `json:"schema_id"`
+	Config          []byte     `json:"config"`
+	PositionX       int32      `json:"position_x"`
+	PositionY       int32      `json:"position_y"`
+	Width           int32      `json:"width"`
+	Height          int32      `json:"height"`
+	ZIndex          int32      `json:"z_index"`
+	IsVisible       bool       `json:"is_visible"`
+	CreatedDatetime *time.Time `json:"created_datetime"`
+	UpdatedDatetime *time.Time `json:"updated_datetime"`
+	SchemaTitle     *string    `json:"schema_title"`
+}

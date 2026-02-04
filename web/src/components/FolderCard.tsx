@@ -1,7 +1,7 @@
+import { type ComponentProps, createSignal } from 'solid-js';
 import type { ResponsesFolderData } from '@/api';
-import { createSignal, type ComponentProps } from 'solid-js';
 import { Button, Card } from './atoms';
-import { DeleteIcon, AddBookmarkIcon } from './icons';
+import { AddBookmarkIcon, DeleteIcon } from './icons';
 
 interface FolderCardProps extends ComponentProps<'div'> {
 	folder: ResponsesFolderData;
@@ -19,7 +19,7 @@ export default function FolderCard(props: FolderCardProps) {
 
 	const handleDragStart = (e: DragEvent) => {
 		if (!props.draggable) return;
-		
+
 		setIsDragging(true);
 		e.dataTransfer!.setData(
 			'text/plain',
@@ -63,25 +63,26 @@ export default function FolderCard(props: FolderCardProps) {
 	};
 
 	const cardClasses = () => {
-		let classes = 'w-64 hover:scale-105 active:scale-95 cursor-pointer transition-all duration-300';
-		
+		let classes =
+			'w-64 hover:scale-105 active:scale-95 cursor-pointer transition-all duration-300';
+
 		if (props.isSelected) {
 			classes += ' ring-2 ring-white/50 bg-white/40';
 		}
-		
+
 		if (isDragOver()) {
 			classes += ' ring-2 ring-blue-400 bg-blue-100/20';
 		}
-		
+
 		if (isDragging()) {
 			classes += ' opacity-50';
 		}
-		
+
 		return classes;
 	};
 
 	return (
-		<Card 
+		<Card
 			variant="glass"
 			class={cardClasses()}
 			draggable={props.draggable}
@@ -101,7 +102,7 @@ export default function FolderCard(props: FolderCardProps) {
 				<div class="flex items-center flex-1">
 					<span class="text-base font-bold truncate">{props.folder.name}</span>
 				</div>
-				
+
 				<div class="flex items-center space-x-1 flex-shrink-0">
 					{props.onCreateBookmark && (
 						<div class="relative group">

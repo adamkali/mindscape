@@ -1,0 +1,51 @@
+{
+  "id": "dc5cba03-3e9c-4be4-872c-b9cbc5c78592",
+  "type": "githubprofile-lg",
+  "title": "GitHub Profile Widget Schema",
+  "description": "Configuration schema for GitHub profile integration large variant",
+  "layout": {
+    "defaultSize": {
+      "width": 9,
+      "height": 9
+    },
+    "minSize": {
+      "width": 9,
+      "height": 9
+    },
+    "maxSize": {
+      "width": 9,
+      "height": 9
+    },
+    "resizable": false
+  },
+  "properties": {
+    "username": {
+      "label": "GitHub Username",
+      "value": "",
+      "type": "string",
+      "format": "string",
+      "description": "The GitHub username to display profile for",
+      "enum": []
+    },
+    "showStats": {
+      "label": "Show Stats",
+      "value": true,
+      "type": "boolean",
+      "format": "boolean",
+      "description": "Toggle displaying follower count, repo count, and stars",
+      "enum": []
+    },
+    "personalAccessToken": {
+      "label": "GitHub Personal Access Token",
+      "value": "",
+      "type": "string",
+      "format": "password",
+      "description": "Optional GitHub PAT for higher rate limits and private data (classic token with public_repo scope)",
+      "enum": []
+    }
+  },
+  "required": [
+    "username"
+  ]
+}
+

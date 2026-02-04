@@ -58,7 +58,7 @@ const Signup = () => {
 
 	return (
 		<div
-			class="min-h-screen flex items-center justify-center px-4"
+			class="h-screen overflow-hidden flex items-center justify-center px-4"
 			style={backgroundStyle()}
 		>
 			<div class="max-w-md w-full space-y-8 bg-white/20 backdrop-blur-md border border-white/30 rounded-xl p-8 shadow-lg">

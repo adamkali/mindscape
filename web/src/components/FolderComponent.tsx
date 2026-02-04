@@ -1,13 +1,13 @@
-import { type ResponsesFolderData, type RepositoryBookmark } from '@/api';
-import { useAuth } from '@/contexts/AuthContext';
-import { useAuthenticatedApi } from '@/utils/useApi';
 import {
+	type ComponentProps,
 	createMemo,
 	createSignal,
 	For,
 	Show,
-	type ComponentProps,
 } from 'solid-js';
+import type { RepositoryBookmark, ResponsesFolderData } from '@/api';
+import { useAuth } from '@/contexts/AuthContext';
+import { useAuthenticatedApi } from '@/utils/useApi';
 import { Button } from './atoms';
 import BookmarkComponent from './BookmarkComponent';
 import FolderCard from './FolderCard';
@@ -134,18 +134,19 @@ export default function FolderComponent(props: FolderComponentProps) {
 			);
 		}, [children]);
 
-
 	const handleDrop = async (data: any) => {
 		console.log('Drop data:', data, 'into folder:', folder.id);
-		console.log(`id_change::dragged_in_node: ${data.id} (${data.type}) -> ${folder.id}`);
-		
+		console.log(
+			`id_change::dragged_in_node: ${data.id} (${data.type}) -> ${folder.id}`,
+		);
+
 		if (data.type === 'folder' && data.id && folder.id) {
 			// Prevent dropping folder into itself
 			if (data.id === folder.id) {
 				alert('Cannot move folder into itself');
 				return;
 			}
-			
+
 			try {
 				const response = await api.folders.moveFolder({
 					moveFolderRequest: {
@@ -155,7 +156,7 @@ export default function FolderComponent(props: FolderComponentProps) {
 					},
 					authorization: `Bearer ${auth.token()}`,
 				});
-				
+
 				if (response.success) {
 					console.log('Folder moved successfully:', response.data);
 					// Refresh the folder to show the moved item
@@ -178,7 +179,7 @@ export default function FolderComponent(props: FolderComponentProps) {
 					},
 					authorization: `Bearer ${auth.token()}`,
 				});
-				
+
 				if (response.success) {
 					console.log('Bookmark moved successfully:', response.data);
 					// Refresh the folder to show the moved item

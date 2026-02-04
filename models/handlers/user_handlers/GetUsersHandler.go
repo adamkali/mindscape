@@ -14,7 +14,7 @@ import (
 )
 
 type GetUsersHandler struct {
-	Users       []repository.User
+	Users      []repository.User
 	Context     echo.Context
 	err         error
 	code        int

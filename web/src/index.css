@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-	--background: #FdceFd;
+	--background: rgba(255, 255, 255, 0.2);
 	--foreground: #000000;
 	--card: #ad7ead;
 	--card-foreground: #000000;
@@ -24,9 +24,21 @@
 	--error-foreground: #e04545;
     --error-hover: #f07575;
     --error-hover-foreground: #f06060;
+
+	/* Glass theming - Light mode */
+	--glass-bg: rgba(255, 255, 255, 0.2);
+	--glass-bg-hover: rgba(255, 255, 255, 0.3);
+	--glass-bg-strong: rgba(255, 255, 255, 0.5);
+	--glass-bg-modal: rgba(255, 255, 255, 0);
+	--glass-border: rgba(255, 255, 255, 0.3);
+	--glass-border-hover: rgba(255, 255, 255, 0.5);
+	--glass-text: #000000;
+	--glass-text-muted: rgba(0, 0, 0, 0.7);
+	--scrollbar-thumb: rgba(0, 0, 0, 0.3);
+	--scrollbar-thumb-hover: rgba(0, 0, 0, 0.4);
 }
 .dark {
-    --background: #000000;
+    --background: rgba(0, 0, 0, 0.4);
     --foreground: #ffffff;
     --card: #714071;
     --card-foreground: #ffffff;
@@ -46,6 +58,17 @@
     --error-foreground: #b04040;
 	--error-hover: #f09090;
 	--error-hover-foreground: #d06060;
+
+	/* Glass theming - Dark mode */
+	--glass-bg: rgba(15, 23, 42, 0.4);
+	--glass-bg-hover: rgba(15, 23, 42, 0.6);
+	--glass-bg-strong: rgba(15, 23, 42, 0.95);
+	--glass-border: rgba(51, 65, 85, 0.5);
+	--glass-border-hover: rgba(71, 85, 105, 0.6);
+	--glass-text: #ffffff;
+	--glass-text-muted: rgba(255, 255, 255, 0.7);
+	--scrollbar-thumb: rgba(255, 255, 255, 0.3);
+	--scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
 }
 
 @theme inline {
@@ -69,6 +92,15 @@
 	--color-error-foreground: var(--error-foreground);
     --color-error-hover: var(--error-hover);
     --color-error-hover-foreground: var(--error-hover-foreground);
+
+	/* Glass theming */
+	--color-glass-bg: var(--glass-bg);
+	--color-glass-bg-hover: var(--glass-bg-hover);
+	--color-glass-bg-strong: var(--glass-bg-strong);
+	--color-glass-border: var(--glass-border);
+	--color-glass-border-hover: var(--glass-border-hover);
+	--color-glass-text: var(--glass-text);
+	--color-glass-text-muted: var(--glass-text-muted);
 }
 
 @layer base {
@@ -81,7 +113,7 @@
 .treeview-container {
 	/* Firefox */
 	scrollbar-width: thin;
-	scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+	scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 
 .treeview-container::-webkit-scrollbar {
@@ -93,11 +125,11 @@
 }
 
 .treeview-container::-webkit-scrollbar-thumb {
-	background: rgba(255, 255, 255, 0.3);
+	background: var(--scrollbar-thumb);
 	border-radius: 4px;
 	backdrop-filter: blur(8px);
 }
 
 .treeview-container::-webkit-scrollbar-thumb:hover {
-	background: rgba(255, 255, 255, 0.4);
+	background: var(--scrollbar-thumb-hover);
 }

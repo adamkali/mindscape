@@ -1198,9 +1198,779 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/widgets": {
+            "get": {
+                "description": "Get a Users Widgets by their auth token\nand return the list of widgets associated\nwith the user account in the request params.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Get a Users Widgets",
+                "operationId": "GetUserWidgets",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetsResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetsResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetsResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Add a Users Widget by their auth token.\nThe config is defined by the configuration parameters as defined by the user and the schema.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Add a Users Widget",
+                "operationId": "AddUserWidget",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Add Widget Request",
+                        "name": "AddUserWidgetRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/AddUserWidgetRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/widgets/github/{user_widget_id}": {
+            "get": {
+                "description": "Get a Users Github Widget by their auth token\nand a path parameter to return the GithubWidgetData\nThis is a special widget that needs authorization outside of\nthe mindscape so we use the github api to get the data.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Get a Users Github Widget",
+                "operationId": "GetGithubWidgetData",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Widget Id",
+                        "name": "user_widget_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/GithubResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/GithubResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/GithubResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/GithubResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/widgets/schemas": {
+            "get": {
+                "description": "Get all embeded widget schemas from the Schema\nStorage",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Get Widget Schemas",
+                "operationId": "GetWidgetSchemas",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WidgetsResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.WidgetsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/widgets/schemas/{schema_id}": {
+            "get": {
+                "description": "Get embeded widget schema from the Schema\nStorage by its identifier",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Get Widget Schema by ID",
+                "operationId": "GetWidgetSchemaByID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Widget Schema Id",
+                        "name": "schema_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/WidgetResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/WidgetResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/WidgetResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/widgets/{user_widget_id}": {
+            "get": {
+                "description": "Get a Users Widget by their auth token\nand a path parameter and return the\nwidget from the database.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Get a Users Widget",
+                "operationId": "GetUserWidget",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Widget Id",
+                        "name": "user_widget_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.UserWidgetResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/widgets/{user_widget_id}/coolify/applications": {
+            "get": {
+                "description": "Get a Users Coolify Applications by their auth token",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Get a Users Coolify Applications",
+                "operationId": "GetUserCoolifyApplications",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Widget Id",
+                        "name": "user_widget_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyWidgetApplicationResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyWidgetApplicationResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyWidgetApplicationResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyWidgetApplicationResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/widgets/{user_widget_id}/coolify/applications/{app_uuid}/restart": {
+            "post": {
+                "description": "Restart a Coolify Application by app UUID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Restart a Coolify Application",
+                "operationId": "RestartCoolifyApplication",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Widget Id",
+                        "name": "user_widget_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Application UUID",
+                        "name": "app_uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyActionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyActionResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyActionResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyActionResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyActionResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/widgets/{user_widget_id}/coolify/applications/{app_uuid}/start": {
+            "post": {
+                "description": "Start a Coolify Application by app UUID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Start a Coolify Application",
+                "operationId": "StartCoolifyApplication",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Widget Id",
+                        "name": "user_widget_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Application UUID",
+                        "name": "app_uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyActionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyActionResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyActionResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyActionResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyActionResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/widgets/{user_widget_id}/coolify/applications/{app_uuid}/stop": {
+            "post": {
+                "description": "Stop a Coolify Application by app UUID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Stop a Coolify Application",
+                "operationId": "StopCoolifyApplication",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Widget Id",
+                        "name": "user_widget_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Application UUID",
+                        "name": "app_uuid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyActionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyActionResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyActionResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyActionResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyActionResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/widgets/{user_widget_id}/coolify/services": {
+            "get": {
+                "description": "Get a Users Coolify Services by their auth token",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Get a Users Coolify Services",
+                "operationId": "GetUserCoolifyServices",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Widget Id",
+                        "name": "user_widget_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyWidgetServiceResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyWidgetServiceResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyWidgetServiceResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyWidgetServiceResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/widgets/{user_widget_id}/github/commits": {
+            "get": {
+                "description": "Get a Users Github Commits Widget by their auth token\nand a path parameter to return only the commits data.\nThis endpoint fetches commit history and may take longer.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Get a Users Github Commits Widget Data",
+                "operationId": "GetGithubCommitsWidgetData",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Widget Id",
+                        "name": "user_widget_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/GithubCommitsResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/GithubCommitsResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/GithubCommitsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/GithubCommitsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/widgets/{user_widget_id}/github/profile": {
+            "get": {
+                "description": "Get a Users Github Profile Widget by their auth token\nand a path parameter to return only the profile data.\nThis is a fast endpoint that returns profile info quickly.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Get a Users Github Profile Widget Data",
+                "operationId": "GetGithubProfileWidgetData",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Widget Id",
+                        "name": "user_widget_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/GithubProfileResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/GithubProfileResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/GithubProfileResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/GithubProfileResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "AddUserWidgetRequest": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "height": {
+                    "type": "integer"
+                },
+                "is_visible": {
+                    "type": "boolean"
+                },
+                "position_x": {
+                    "type": "integer"
+                },
+                "position_y": {
+                    "type": "integer"
+                },
+                "schema_id": {
+                    "type": "string"
+                },
+                "schema_title": {
+                    "type": "string"
+                },
+                "width": {
+                    "type": "integer"
+                },
+                "z_index": {
+                    "type": "integer"
+                }
+            }
+        },
         "BackgroundData": {
             "type": "object",
             "properties": {
@@ -1260,11 +2030,165 @@ const docTemplate = `{
                 }
             }
         },
+        "CoolifyActionResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.CoolifyActionData"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "CoolifyWidgetApplication": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "fqdn": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "redirect": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
+        },
+        "CoolifyWidgetApplicationResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/CoolifyWidgetApplication"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "CoolifyWidgetService": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "deleted_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "service_type": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
+        },
+        "CoolifyWidgetServiceResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/CoolifyWidgetService"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "DeleteUserResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "GithubCommitsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.GithubWidgetCommitsData"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "GithubProfileResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.GithubWidgetProfileData"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "GithubResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.GithubWidgetData"
                 },
                 "message": {
                     "type": "string"
@@ -1419,6 +2343,20 @@ const docTemplate = `{
                 }
             }
         },
+        "WidgetResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.WidgetData"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "repository.Bookmark": {
             "type": "object",
             "properties": {
@@ -1554,6 +2492,20 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.CoolifyActionData": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "app_uuid": {
+                    "type": "string"
+                },
+                "deployment_id": {
+                    "type": "string"
+                }
+            }
+        },
         "responses.FolderData": {
             "type": "object",
             "properties": {
@@ -1629,6 +2581,109 @@ const docTemplate = `{
                 }
             }
         },
+        "responses.GithubWidgetCommitsData": {
+            "type": "object",
+            "properties": {
+                "total": {
+                    "type": "integer"
+                },
+                "weeks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.GithubWidgetCommitsWeekData"
+                    }
+                }
+            }
+        },
+        "responses.GithubWidgetCommitsDayData": {
+            "type": "object",
+            "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "count": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "percent": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.GithubWidgetCommitsWeekData": {
+            "type": "object",
+            "properties": {
+                "friday": {
+                    "$ref": "#/definitions/responses.GithubWidgetCommitsDayData"
+                },
+                "monday": {
+                    "$ref": "#/definitions/responses.GithubWidgetCommitsDayData"
+                },
+                "saturday": {
+                    "$ref": "#/definitions/responses.GithubWidgetCommitsDayData"
+                },
+                "sunday": {
+                    "$ref": "#/definitions/responses.GithubWidgetCommitsDayData"
+                },
+                "thursday": {
+                    "$ref": "#/definitions/responses.GithubWidgetCommitsDayData"
+                },
+                "tuesday": {
+                    "$ref": "#/definitions/responses.GithubWidgetCommitsDayData"
+                },
+                "wednesday": {
+                    "$ref": "#/definitions/responses.GithubWidgetCommitsDayData"
+                },
+                "week_start": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.GithubWidgetData": {
+            "type": "object",
+            "properties": {
+                "commits": {
+                    "$ref": "#/definitions/responses.GithubWidgetCommitsData"
+                },
+                "profile": {
+                    "$ref": "#/definitions/responses.GithubWidgetProfileData"
+                }
+            }
+        },
+        "responses.GithubWidgetProfileData": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string"
+                },
+                "company": {
+                    "type": "string"
+                },
+                "followers": {
+                    "type": "integer"
+                },
+                "following": {
+                    "type": "integer"
+                },
+                "html_url": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "public_gists": {
+                    "type": "integer"
+                },
+                "public_repos": {
+                    "type": "integer"
+                }
+            }
+        },
         "responses.UserData": {
             "type": "object",
             "properties": {
@@ -1655,6 +2710,177 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.UserWidgetData": {
+            "type": "object",
+            "properties": {
+                "config": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "height": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_visible": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "position_x": {
+                    "type": "integer"
+                },
+                "position_y": {
+                    "type": "integer"
+                },
+                "schema_id": {
+                    "type": "string"
+                },
+                "schema_title": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "width": {
+                    "type": "integer"
+                },
+                "z_index": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.UserWidgetResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/responses.UserWidgetData"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "responses.UserWidgetsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.UserWidgetData"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "responses.WidgetData": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "layout": {
+                    "$ref": "#/definitions/schemas.WidgetLayout"
+                },
+                "properties": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/schemas.WidgetProperty"
+                    }
+                },
+                "required": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.WidgetsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/responses.WidgetData"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "schemas.WidgetLayout": {
+            "type": "object",
+            "properties": {
+                "defaultSize": {
+                    "$ref": "#/definitions/schemas.WidgetSize"
+                },
+                "maxSize": {
+                    "$ref": "#/definitions/schemas.WidgetSize"
+                },
+                "minSize": {
+                    "$ref": "#/definitions/schemas.WidgetSize"
+                },
+                "resizable": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "schemas.WidgetProperty": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "enum": {
+                    "type": "array",
+                    "items": {}
+                },
+                "format": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "value": {
+                    "description": "Changed from string to any to support different value types (string, bool, number)"
+                }
+            }
+        },
+        "schemas.WidgetSize": {
+            "type": "object",
+            "properties": {
+                "height": {
+                    "type": "integer"
+                },
+                "width": {
+                    "type": "integer"
                 }
             }
         }

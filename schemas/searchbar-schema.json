@@ -1,0 +1,49 @@
+
+{
+  "id": "0d55e5c6-daa0-4050-a382-4f6285c6a42f",
+  "type": "searchbar",
+  "title": "SearXNG Widget Schema",
+  "description": "Configuration schema for SearXNG search integration",
+  "layout": {
+    "defaultSize": {
+      "width": 12,
+      "height": 2
+    },
+    "minSize": {
+      "width": 6,
+      "height": 1
+    },
+    "maxSize": {
+      "width": 12,
+      "height": 4 
+    },
+    "resizable": true
+  },
+  "properties": {
+	  "engine": {
+	  "label": "Engine",
+	  "value": "google",
+      "type": "string",
+      "format": "string",
+      "description": "Built-in engien available to use",
+	  "enum": [
+		  "google",
+		  "bing",
+		  "duckduckgo",
+		  "searxng"
+		]
+	  },
+    "serverUrl": {
+	  "label": "Server URL",
+	  "value": "https://google.com/search&q=%s",
+      "type": "string",
+      "format": "uri",
+      "description": "The URL of the Search Provider server. By default thisis the Google search engine",
+	  "enum": []
+    }
+  },
+  "required": [
+	  "engine",
+	  "serverUrl"
+  ]
+}

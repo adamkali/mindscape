@@ -1,10 +1,10 @@
-import type { AuthContextValue } from '@/contexts/AuthContext';
-import { createSignal, type ComponentProps } from 'solid-js';
+import { type ComponentProps, createSignal } from 'solid-js';
 import {
 	BookmarksApi,
 	type CreateBookmarkRequest,
 	type RepositoryCreateBookmarkParams,
 } from '@/api';
+import type { AuthContextValue } from '@/contexts/AuthContext';
 
 interface CreateBookmarkComponentProps extends ComponentProps<'div'> {
 	userId: string;
@@ -46,16 +46,16 @@ export default function CreateBookmarkComponent(
 	return (
 		<div class="mb-4 p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl shadow-lg">
 			<div class="mb-3">
-				<h3 class="text-sm font-medium text-white/90 mb-3">Create Bookmark</h3>
+				<h3 class="text-sm font-medium text-foreground/90 mb-3">Create Bookmark</h3>
 			</div>
-			
+
 			<input
 				type="url"
 				placeholder="Enter bookmark URL"
 				value={linkUrl()}
 				onInput={(e) => setLinkUrl(e.currentTarget.value)}
-				class="w-full p-3 text-sm bg-white/20 backdrop-blur-md border border-white/30 rounded-lg mb-3 focus:outline-none focus:border-white/50 focus:bg-white/25
-				placeholder:text-white/60 text-white transition-all duration-200 shadow-sm hover:shadow-md"
+				class="w-full p-3 text-sm bg-glass-bg backdrop-blur-md border border-glass-border rounded-lg mb-3 focus:outline-none focus:border-glass-border-hover focus:bg-glass-bg-hover
+				placeholder:text-foreground/60 text-foreground transition-all duration-200 shadow-sm hover:shadow-md"
 				autofocus
 				required
 				onKeyDown={(e) => {
@@ -68,14 +68,14 @@ export default function CreateBookmarkComponent(
 					}
 				}}
 			/>
-			
+
 			<input
 				type="text"
 				placeholder="Enter bookmark name"
 				value={linkName()}
 				onInput={(e) => setLinkName(e.currentTarget.value)}
-				class="w-full p-3 text-sm bg-white/20 backdrop-blur-md border border-white/30 rounded-lg mb-3 focus:outline-none focus:border-white/50 focus:bg-white/25
-				placeholder:text-white/60 text-white transition-all duration-200 shadow-sm hover:shadow-md"
+				class="w-full p-3 text-sm bg-glass-bg backdrop-blur-md border border-glass-border rounded-lg mb-3 focus:outline-none focus:border-glass-border-hover focus:bg-glass-bg-hover
+				placeholder:text-foreground/60 text-foreground transition-all duration-200 shadow-sm hover:shadow-md"
 				onKeyDown={(e) => {
 					if (e.key === 'Enter' && linkUrl() && linkName()) {
 						create(e);
@@ -86,12 +86,12 @@ export default function CreateBookmarkComponent(
 					}
 				}}
 			/>
-			
+
 			<div class="flex space-x-2">
 				<button
 					onClick={create}
 					disabled={!linkUrl() || !linkName()}
-					class="text-xs px-3 py-1.5 bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-lg hover:bg-white/30 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-white/20"
+					class="text-xs px-3 py-1.5 bg-glass-bg backdrop-blur-md border border-glass-border text-foreground rounded-lg hover:bg-glass-bg-hover transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-glass-bg"
 				>
 					Create
 				</button>
@@ -101,7 +101,7 @@ export default function CreateBookmarkComponent(
 						setLinkUrl('');
 						setLinkName('');
 					}}
-					class="text-xs px-3 py-1.5 bg-white/15 backdrop-blur-md border border-white/25 text-white rounded-lg hover:bg-white/25 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+					class="text-xs px-3 py-1.5 bg-glass-bg/75 backdrop-blur-md border border-glass-border/85 text-foreground rounded-lg hover:bg-glass-bg-hover transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
 				>
 					Cancel
 				</button>

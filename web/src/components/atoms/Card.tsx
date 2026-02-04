@@ -1,5 +1,5 @@
+import type { ComponentProps, JSX } from 'solid-js';
 import { cn } from '@/utils/cn';
-import { type ComponentProps, type JSX } from 'solid-js';
 
 /**
  * Props for the Card component
@@ -39,7 +39,7 @@ export default function Card(props: CardProps): JSX.Element {
 	const getVariantClasses = () => {
 		switch (variant) {
 			case 'glass':
-				return 'bg-white/20 backdrop-blur-md border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300 shadow-slate-900/20 hover:bg-white/30 hover:border-white/50';
+				return 'bg-glass-bg backdrop-blur-md border border-glass-border shadow-lg hover:shadow-xl transition-all duration-300 shadow-slate-900/20 hover:bg-glass-bg-hover hover:border-glass-border-hover dark:shadow-black/30';
 			case 'outlined':
 				return 'border border-border bg-card';
 			case 'elevated':
@@ -53,8 +53,8 @@ export default function Card(props: CardProps): JSX.Element {
 	return (
 		<div
 			class={cn(
-				'text-card-foreground rounded-xl',
-				variant === 'glass' ? 'text-white' : '',
+				'text-card-foreground rounded-md',
+				variant === 'glass' ? 'text-foreground' : '',
 				getVariantClasses(),
 				className,
 			)}

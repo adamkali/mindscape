@@ -1,7 +1,7 @@
+import { type ComponentProps, createSignal } from 'solid-js';
 import type { FoldersApi } from '@/api';
 import type { AuthContextValue } from '@/contexts/AuthContext';
 import { EmptyGuid } from '@/utils';
-import { createSignal, type ComponentProps } from 'solid-js';
 
 interface CreateFolderComponentProps extends ComponentProps<'div'> {
 	userId: string;
@@ -54,8 +54,8 @@ export default function CreateFolderComponent(
 				placeholder="Enter folder name"
 				value={folderName()}
 				onInput={(e) => setFolderName(e.currentTarget.value)}
-				class="w-full p-3 text-sm bg-white/20 backdrop-blur-md border border-white/30 rounded-lg mb-3 focus:outline-none focus:border-white/50 focus:bg-white/25
-				placeholder:text-white/60 text-white transition-all duration-200 shadow-sm hover:shadow-md"
+				class="w-full p-3 text-sm bg-glass-bg backdrop-blur-md border border-glass-border rounded-lg mb-3 focus:outline-none focus:border-glass-border-hover focus:bg-glass-bg-hover
+				placeholder:text-foreground/60 text-foreground transition-all duration-200 shadow-sm hover:shadow-md"
 				autofocus
 				onKeyDown={(e) => {
 					if (e.key === 'Enter') {
@@ -69,7 +69,7 @@ export default function CreateFolderComponent(
 			<div class="flex space-x-2">
 				<button
 					onClick={create}
-					class="text-xs px-3 py-1.5 bg-white/20 backdrop-blur-md border border-white/30 text-white rounded-lg hover:bg-white/30 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+					class="text-xs px-3 py-1.5 bg-glass-bg backdrop-blur-md border border-glass-border text-foreground rounded-lg hover:bg-glass-bg-hover transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
 				>
 					Create
 				</button>
@@ -78,7 +78,7 @@ export default function CreateFolderComponent(
 						setShowCreateFolder(false);
 						setFolderName('');
 					}}
-					class="text-xs px-3 py-1.5 bg-white/15 backdrop-blur-md border border-white/25 text-white rounded-lg hover:bg-white/25 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+					class="text-xs px-3 py-1.5 bg-glass-bg/75 backdrop-blur-md border border-glass-border/85 text-foreground rounded-lg hover:bg-glass-bg-hover transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
 				>
 					Cancel
 				</button>

@@ -1,10 +1,10 @@
 import { useNavigate } from '@solidjs/router';
 import { createEffect, createSignal, Show } from 'solid-js';
-import { UsersApi,  type UpdateCredentialsRequest, ResponseError } from '@/api';
-import { useAuth } from '@/contexts/AuthContext';
-import { useBackground, useBackgroundStyle } from '@/hooks/useBackground';
-import { EmptyGuid } from '@/utils';
-import { Header } from '@/components/Header';
+import {
+	type ResponseError,
+	type UpdateCredentialsRequest,
+	UsersApi,
+} from '@/api';
 import {
 	Button,
 	Card,
@@ -14,15 +14,16 @@ import {
 	Input,
 } from '@/components/atoms';
 import BackgroundChoices from '@/components/BackgroundChoices';
+import { Header } from '@/components/Header';
+import { useAuth } from '@/contexts/AuthContext';
+import { useBackground, useBackgroundStyle } from '@/hooks/useBackground';
+import { EmptyGuid } from '@/utils';
 
 const EditProfile = () => {
 	const auth = useAuth();
 	const navigate = useNavigate();
 	const api = new UsersApi();
-	const { 
-		setUserBackground, 
-		isLoadingChoices 
-	} = useBackground();
+	const { setUserBackground, isLoadingChoices } = useBackground();
 	const backgroundStyle = useBackgroundStyle();
 
 	const user = auth.user();
@@ -41,7 +42,8 @@ const EditProfile = () => {
 	const [selectedFile, setSelectedFile] = createSignal<File | null>(null);
 	const [isLoading, setIsLoading] = createSignal(false);
 	const [isLoadingPicture, setIsLoadingPicture] = createSignal(false);
-	const [customBackgroundFile, setCustomBackgroundFile] = createSignal<File | null>(null);
+	const [customBackgroundFile, setCustomBackgroundFile] =
+		createSignal<File | null>(null);
 	const [error, setError] = createSignal('');
 	const [success, setSuccess] = createSignal('');
 
@@ -59,7 +61,6 @@ const EditProfile = () => {
 			fetchProfilePicture();
 		}
 	});
-
 
 	const fetchProfilePicture = async () => {
 		if (!auth.token()) return;
@@ -219,14 +220,15 @@ const EditProfile = () => {
 		setIsLoading(true);
 		setError('');
 		setSuccess('');
-		console.log({'Uploading custom background...': customBackgroundFile()?.name});
+		console.log({
+			'Uploading custom background...': customBackgroundFile()?.name,
+		});
 
 		try {
 			const userApi = new UsersApi();
 			await userApi.uploadBackground({
 				authorization: `Bearer ${auth.token()}`,
 				file: customBackgroundFile()!,
-
 			});
 			setSuccess('Custom background uploaded successfully!');
 		} catch (error: any) {
@@ -242,22 +244,23 @@ const EditProfile = () => {
 	}
 
 	return (
-		<div 
-			class="min-h-screen bg-background"
+		<div
+			class="h-screen overflow-hidden bg-background"
 			style={backgroundStyle()}
 		>
 			<Header />
-			<div class="max-w-2xl mx-auto mt-4 space-y-4">
+			<div class="max-w-2xl mx-auto mt-4 space-y-4 overflow-y-auto max-h-[calc(100vh-4rem)] pb-4">
 				<Card variant="glass">
-					<CardHeader title="Edit Profile" subtitle="Update your profile information" />
+					<CardHeader
+						title="Edit Profile"
+						subtitle="Update your profile information"
+					/>
 					<form class="space-y-6" onSubmit={handleSubmit}>
 						<CardBody padding="lg" class="flex flex-row space-x-4">
 							<div class="flex flex-row items-center justify-evenly space-y-4">
 								<div class="w-32 h-32 rounded-full overflow-hidden bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
 									{isLoadingPicture() ? (
-										<div class="text-white/70">
-											Loading...
-										</div>
+										<div class="text-white/70">Loading...</div>
 									) : profilePicture() ? (
 										<img
 											src={profilePicture()}
@@ -300,13 +303,18 @@ const EditProfile = () => {
 					</form>
 				</Card>
 				<Card variant="glass">
-					<CardHeader title="Account Credentials" subtitle="Update your account information and change your password" />
+					<CardHeader
+						title="Account Credentials"
+						subtitle="Update your account information and change your password"
+					/>
 					<form class="space-y-6" onSubmit={handleCredentialsSubmit}>
 						<CardBody padding="lg">
 							<div class="space-y-6">
 								{/* Account Information */}
 								<div>
-									<h3 class="text-lg font-medium text-white mb-4">Account Information</h3>
+									<h3 class="text-lg font-medium text-white mb-4">
+										Account Information
+									</h3>
 									<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 										<Input
 											id="username"
@@ -333,7 +341,9 @@ const EditProfile = () => {
 
 								{/* Password Section */}
 								<div>
-									<h3 class="text-lg font-medium text-white mb-4">Change Password</h3>
+									<h3 class="text-lg font-medium text-white mb-4">
+										Change Password
+									</h3>
 									<div class="space-y-4">
 										<Input
 											id="currentPassword"
@@ -365,27 +375,39 @@ const EditProfile = () => {
 											/>
 										</div>
 										{!passwordMatch() && (
-											<div class="text-red-400 text-sm mt-2">Passwords do not match</div>
+											<div class="text-red-400 text-sm mt-2">
+												Passwords do not match
+											</div>
 										)}
 										<div class="text-sm text-white/70">
-											Leave password fields blank if you don't want to change your password.
+											Leave password fields blank if you don't want to change
+											your password.
 										</div>
 									</div>
 								</div>
 							</div>
 						</CardBody>
 						<CardFooter>
-							<Button type="submit" disabled={isLoading() || !passwordMatch()} variant="secondary">
+							<Button
+								type="submit"
+								disabled={isLoading() || !passwordMatch()}
+								variant="secondary"
+							>
 								{isLoading() ? 'Updating...' : 'Update Credentials'}
 							</Button>
-							<Button type="button" onClick={handleCancel}>Cancel</Button>
+							<Button type="button" onClick={handleCancel}>
+								Cancel
+							</Button>
 						</CardFooter>
 					</form>
 				</Card>
 
 				{/* Background Selection Section */}
 				<Card variant="glass">
-					<CardHeader title="Background Settings" subtitle="Choose from available backgrounds or upload a custom one" />
+					<CardHeader
+						title="Background Settings"
+						subtitle="Choose from available backgrounds or upload a custom one"
+					/>
 					<CardBody padding="lg">
 						{/* Custom Background Upload */}
 						<div class="mb-6">
@@ -400,7 +422,7 @@ const EditProfile = () => {
 									onChange={handleCustomBackgroundFileSelect}
 								/>
 								<Show when={customBackgroundFile()}>
-									<Button 
+									<Button
 										onClick={handleCustomBackgroundUpload}
 										disabled={isLoading()}
 										variant="secondary"
@@ -419,7 +441,9 @@ const EditProfile = () => {
 							<Show when={isLoadingChoices()}>
 								<div class="text-white/70">Loading backgrounds...</div>
 							</Show>
-							<BackgroundChoices handleBackgroundSelect={handleBackgroundSelect} />
+							<BackgroundChoices
+								handleBackgroundSelect={handleBackgroundSelect}
+							/>
 						</div>
 					</CardBody>
 				</Card>
@@ -429,7 +453,9 @@ const EditProfile = () => {
 					<Card variant="glass">
 						<CardBody padding="md">
 							{error() && <div class="text-red-400 text-sm">{error()}</div>}
-							{success() && <div class="text-green-400 text-sm">{success()}</div>}
+							{success() && (
+								<div class="text-green-400 text-sm">{success()}</div>
+							)}
 						</CardBody>
 					</Card>
 				)}

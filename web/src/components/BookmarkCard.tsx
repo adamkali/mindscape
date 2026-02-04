@@ -1,6 +1,6 @@
-import type { RepositoryBookmark } from '@/api';
 import { A } from '@solidjs/router';
 import { type ComponentProps, createMemo, createSignal } from 'solid-js';
+import type { RepositoryBookmark } from '@/api';
 import { Button, Card } from './atoms';
 import { DeleteIcon } from './icons';
 
@@ -10,11 +10,11 @@ interface BookmarkCardProps extends ComponentProps<'div'> {
 	draggable?: boolean;
 }
 
-const faviconeUrl = "https://favicone.com/"
+const faviconeUrl = 'https://favicone.com/';
 const getFaviconUrl = (url: string): string => {
 	try {
 		const urlObj = new URL(url);
-		return `${faviconeUrl}${urlObj.hostname}`
+		return `${faviconeUrl}${urlObj.hostname}`;
 	} catch {
 		return '';
 	}
@@ -26,7 +26,7 @@ export default function BookmarkCard(props: BookmarkCardProps) {
 
 	const handleDragStart = (e: DragEvent) => {
 		if (!props.draggable) return;
-		
+
 		setIsDragging(true);
 		e.dataTransfer!.setData(
 			'text/plain',
@@ -45,7 +45,7 @@ export default function BookmarkCard(props: BookmarkCardProps) {
 	};
 
 	return (
-		<Card 
+		<Card
 			variant="glass"
 			class={`w-64 hover:scale-105 active:scale-95 cursor-pointer ${isDragging() ? 'opacity-50' : ''}`}
 			draggable={props.draggable}
@@ -70,9 +70,11 @@ export default function BookmarkCard(props: BookmarkCardProps) {
 							}}
 						/>
 					)}
-					<span class="text-base font-bold truncate">{props.bookmark.name}</span>
+					<span class="text-base font-bold truncate">
+						{props.bookmark.name}
+					</span>
 				</A>
-				
+
 				{props.onDelete && (
 					<Button
 						variant="danger"

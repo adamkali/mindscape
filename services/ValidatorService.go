@@ -15,6 +15,7 @@ import (
 	"github.com/adamkali/mindscape/cmd/configuration"
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/requests"
+	"github.com/adamkali/mindscape/schemas"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
@@ -270,22 +271,22 @@ func (r ValidatorService) ValidateMoveFolderRequest(e echo.Context) (*requests.M
 	if err := e.Bind(&validRequest); err != nil {
 		return nil, err
 	}
-	
+
 	// Validate User ID
 	if validRequest.UserID == uuid.Nil {
 		return nil, errors.New("User ID cannot be null")
 	}
-	
+
 	// Validate Folder ID
 	if validRequest.FolderID == uuid.Nil {
 		return nil, errors.New("Folder ID cannot be null")
 	}
-	
+
 	// Validate that folder is not being moved to itself
 	if validRequest.NewParentID != nil && *validRequest.NewParentID == validRequest.FolderID {
 		return nil, errors.New("Cannot move folder to itself")
 	}
-	
+
 	return validRequest, nil
 }
 
@@ -295,21 +296,58 @@ func (r ValidatorService) ValidateMoveBookmarkRequest(e echo.Context) (*requests
 		return nil, err
 	}
 	fmt.Printf("[INFO] ValidatorService.ValidateMoveBookmarkRequest{ validRequest: %v }\n", validRequest)
-	
+
 	// Validate User ID
 	if validRequest.UserID == uuid.Nil {
 		return nil, errors.New("User ID cannot be null")
 	}
-	
+
 	// Validate Bookmark ID
 	if validRequest.BookmarkID == uuid.Nil {
 		return nil, errors.New("Bookmark ID cannot be null")
 	}
-	
+
 	// Validate New Parent ID (bookmarks cannot be moved to root, must have a parent folder)
 	if validRequest.NewParentID == uuid.Nil {
 		return nil, errors.New("New parent folder ID cannot be null - bookmarks must belong to a folder")
 	}
-	
+
+	return validRequest, nil
+}
+
+func (r ValidatorService) ValidateAddUserWidgetRequest(e echo.Context) (*requests.AddUserWidgetRequst, error) {
+	validRequest := new(requests.AddUserWidgetRequst)
+
+	// Bind the request body first to populate validRequest fields
+	if err := e.Bind(&validRequest); err != nil {
+		return nil, err
+	}
+
+	storage, err := schemas.EmbeddedScemas()
+	if err != nil {
+		return nil, err
+	}
+
+	// get the schema by id from request
+	widgetSchema, err := storage.Get(validRequest.SchemaID)
+	if err != nil {
+		return nil, err
+	}
+
+	// check that the size is less than or equal the max size
+	if validRequest.Height > ((int32)(widgetSchema.Layout.MaxSize.Height)) {
+		return nil, fmt.Errorf("Validation failed. Configured Size is greater than Max Size (%d > %d)", validRequest.Height, widgetSchema.Layout.MaxSize.Height)
+	}
+	if validRequest.Width > ((int32)(widgetSchema.Layout.MaxSize.Width)) {
+		return nil, fmt.Errorf("Validation failed. Configured Size is greater than Max Size (%d > %d)", validRequest.Width, widgetSchema.Layout.MaxSize.Width)
+	}
+	if validRequest.Height < ((int32)(widgetSchema.Layout.MinSize.Height)) {
+		return nil, fmt.Errorf("Validation failed. Configured Size is less than Min Size (%d < %d)", validRequest.Height, widgetSchema.Layout.MinSize.Height)
+	}
+	if validRequest.Width < ((int32)(widgetSchema.Layout.MinSize.Width)) {
+		return nil, fmt.Errorf("Validation failed. Configured Size is less than Min Size (%d < %d)", validRequest.Width, widgetSchema.Layout.MinSize.Width)
+	}
+	// ==================================================
+
 	return validRequest, nil
 }
