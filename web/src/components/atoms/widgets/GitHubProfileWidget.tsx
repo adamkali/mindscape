@@ -211,7 +211,7 @@ export default function GitHubProfileWidget(props: GitHubProfileWidgetProps) {
 					</div>
 				}
 			>
-				<div class="w-full p-4 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg text-white">
+				<div class="w-full p-4 bg-gradient-to-br bg-glass-bg rounded-lg text-foreground">
 					{/* Profile Header */}
 					<div class="flex items-center gap-4 mb-4">
 						<img
@@ -228,12 +228,12 @@ export default function GitHubProfileWidget(props: GitHubProfileWidgetProps) {
 								{profile()?.name}
 							</h3>
 							<Show when={profile()?.company}>
-								<p class="text-sm text-gray-400 truncate">
+								<p class="text-sm text-glass-text-muted truncate">
 									{profile()?.company}
 								</p>
 							</Show>
 							<Show when={profile()?.bio}>
-								<p class="text-sm text-gray-300 line-clamp-2 mt-1">
+								<p class="text-sm text-glass-text line-clamp-2 mt-1">
 									{profile()?.bio}
 								</p>
 							</Show>

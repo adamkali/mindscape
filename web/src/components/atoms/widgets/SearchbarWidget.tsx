@@ -37,7 +37,7 @@ export default function SearchbarWidget(props: SearchbarWidgetProps) {
 				id="search"
 				type="text"
 				placeholder={`🔍 Search with ${props.engine}... `}
-				class="h-full w-full px-4 py-2 rounded-lg bg-slate-300/10 text-foreground focus:outline-none"
+				class="h-full w-full px-4 py-2 rounded-lg bg-glass-bg text-foreground focus:outline-none"
 				value={searchQuery()}
 				onInput={(e) => setSearchQuery(e.currentTarget.value)}
 			/>

@@ -55,10 +55,10 @@ export default function WidgetContainer(props: WidgetContainerProps) {
 
     return (
         <div
-            class="bg-white/10 backdrop-blur-lg border border-white/20 w-full flex flex-col m-2 rounded-lg backdrop-blur-sm p-4 max-h-[calc(100vh-2rem)] dark:bg-slate-900/40 dark:border-slate-700/50 dark:shadow-black/30"
+            class="bg-background backdrop-blur-lg border border-white/20 w-full flex flex-col m-2 rounded-lg backdrop-blur-sm p-4 max-h-[calc(100vh-2rem)] dark:border-slate-700/50 dark:shadow-black/30"
             id="widget-container"
         >
-            <div class="mb-4 text-white flex justify-between items-center gap-4">
+            <div class="mb-4 text-foreground flex justify-between items-center gap-4">
                 <Input
                     label="Search widgets"
                     variant="glass"
@@ -95,7 +95,7 @@ export default function WidgetContainer(props: WidgetContainerProps) {
             <div class="flex-1 overflow-y-auto overflow-x-hidden treeview-container">
                 <Suspense
                     fallback={
-                        <div class="text-white text-center py-8">Loading widgets...</div>
+                        <div class="text-foreground text-center py-8">Loading widgets...</div>
                     }
                 >
                     {widgetsFiltered().length > 0 ? (
@@ -109,10 +109,10 @@ export default function WidgetContainer(props: WidgetContainerProps) {
                             </For>
                         </div>
                     ) : (
-                        <div class="bg-yellow-500/20 border-2 border-yellow-500/50 rounded-xl p-8 text-white text-center">
+                        <div class="bg-yellow-500/20 border-2 border-yellow-500/50 rounded-xl p-8 text-foreground text-center">
                             <div class="text-4xl mb-4">📦</div>
                             <h3 class="text-xl font-bold mb-2">No Widgets Found</h3>
-                            <p class="text-sm text-white/70">
+                            <p class="text-sm text-foreground/70">
                                 No widgets are currently assigned to your account.
                             </p>
                         </div>

@@ -134,7 +134,7 @@ export default function CoolifyWidget(props: CoolifyWidgetProps) {
 								href={app.fqdn}
 								target="_blank"
 								rel="noopener noreferrer"
-								class="text-xs text-blue-400 hover:text-blue-300 truncate block"
+								class="text-xs text-primary hover:text-primary-hover -blue-300 truncate block"
 							>
 								{app.fqdn}
 							</a>
@@ -206,7 +206,7 @@ export default function CoolifyWidget(props: CoolifyWidgetProps) {
 	);
 
 	return (
-		<div class="w-full p-4 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg text-white">
+		<div class="w-full p-4 bg-glass-bg rounded-lg glass-text">
 			{/* Header */}
 			<div class="flex items-center justify-between mb-4">
 				<h3 class="text-lg font-bold">Coolify Dashboard</h3>

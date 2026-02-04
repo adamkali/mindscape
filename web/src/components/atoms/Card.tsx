@@ -39,7 +39,7 @@ export default function Card(props: CardProps): JSX.Element {
 	const getVariantClasses = () => {
 		switch (variant) {
 			case 'glass':
-				return 'bg-white/20 backdrop-blur-md border border-white/30 shadow-lg hover:shadow-xl transition-all duration-300 shadow-slate-900/20 hover:bg-white/30 hover:border-white/50 dark:bg-slate-900/40 dark:border-slate-700/50 dark:hover:bg-slate-900/60 dark:hover:border-slate-600/60 dark:shadow-black/30';
+				return 'bg-glass-bg backdrop-blur-md border border-glass-border shadow-lg hover:shadow-xl transition-all duration-300 shadow-slate-900/20 hover:bg-glass-bg-hover hover:border-glass-border-hover dark:shadow-black/30';
 			case 'outlined':
 				return 'border border-border bg-card';
 			case 'elevated':
@@ -54,7 +54,7 @@ export default function Card(props: CardProps): JSX.Element {
 		<div
 			class={cn(
 				'text-card-foreground rounded-md',
-				variant === 'glass' ? 'text-white dark:text-white' : '',
+				variant === 'glass' ? 'text-foreground' : '',
 				getVariantClasses(),
 				className,
 			)}

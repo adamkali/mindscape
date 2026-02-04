@@ -235,7 +235,7 @@ const Home = () => {
 
 			<div class="flex h-screen flex-row">
 				<div
-					class={`treeview-container m-2 p-4 rounded-lg overflow-y-auto bg-white/30 backdrop-blur-lg border border-white/20 max-h-[calc(100vh-2rem)] min-w-80 shadow-2xl shadow-slate-900/30 dark:bg-slate-900/30 dark:border-slate-700/50 dark:shadow-black/30 ${
+					class={`treeview-container m-2 p-4 rounded-lg overflow-y-auto bg-background backdrop-blur-lg border border-white/20 max-h-[calc(100vh-2rem)] min-w-80 shadow-2xl shadow-slate-900/30 dark:border-slate-700/50 dark:shadow-black/30 ${
 						isDragOverRoot() ? 'ring-2 ring-blue-400 bg-blue-100/20' : ''
 					}`}
 					onDragOver={handleRootDragOver}
