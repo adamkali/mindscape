@@ -1,0 +1,53 @@
+@BASE_URL=http://localhost:60000/api
+
+### Health Check 
+GET {{BASE_URL}}/_health
+
+### Register User (Should succeed)
+POST {{BASE_URL}}/signup
+Content-Type: application/json
+{
+	"email": "Gyf3r@example.com",
+	"username": "test",
+	"password": "TESTpasswrd1234!"
+}
+
+### Register User (Will not validate email)
+POST {{BASE_URL}}/signup
+Content-Type: application/json
+{
+	"email": "test",
+	"username": "test",
+	"password": "TESTpasswrd1234!"
+}
+
+### Register User (Will not validate username)
+POST {{BASE_URL}}/signup
+Content-Type: application/json
+{
+	"email": "Gyf3r@example.com",
+	"username": "",
+	"password": "TESTpasswrd1234!"
+}
+
+### Register User (Will not validate password length)
+POST {{BASE_URL}}/signup
+Content-Type: application/json
+{
+	"email": "Gyf3r@example.com",
+	"username": "test",
+	"password": ""
+}
+
+### Login
+POST {{BASE_URL}}/login
+Content-Type: application/json
+{
+	"email": "Gyf3r@example.com",
+	"password": "TESTpasswrd1234!"
+}
+
+### Current Logged in User
+GET {{BASE_URL}}/users/current
+Authorization: Bearer {{Login.response.body.$.json.jwt}}
+
