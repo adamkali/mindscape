@@ -1,13 +1,13 @@
 services:
   backend:
     build:
-      context: .
-      dockerfile: dev.Dockerfile
+      context: ..
+      dockerfile: images/dev.Dockerfile
     container_name: mindscape-backend
     ports:
       - "60000:60000"  # Backend API port
     volumes:
-      - ./:/app
+      - ../:/app
       - /app/tmp
       - /app/web/node_modules
     cap_add:
@@ -33,14 +33,14 @@ services:
 
   frontend:
     build:
-      context: .
-      dockerfile: web.Dockerfile
+      context: ..
+      dockerfile: images/web.Dockerfile
     container_name: mindscape-frontend
     ports:
       - "5173:5173"  # Frontend dev server port
     volumes:
       # Mount web source code for hot reloading
-      - ./web:/app/web
+      - ../web:/app/web
       # Exclude node_modules to use container's version
       - /app/web/node_modules
     environment:

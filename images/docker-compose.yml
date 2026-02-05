@@ -1,7 +1,7 @@
 services:
   web:
     build:
-      context: .
+      context: ..
       dockerfile: Dockerfile
     container_name: mindscape
     ports:
@@ -10,7 +10,7 @@ services:
       - EGG_CACHE_DB=${EGG_CACHE_DB}
       - EGG_CACHE_HOST=${EGG_CACHE_HOST}
       - EGG_CACHE_PASSWORD=${EGG_CACHE_PASSWORD}
-      - EGG_CACHE_PORT=${EGG_CACHE_PORT}  
+      - EGG_CACHE_PORT=${EGG_CACHE_PORT}
       - EGG_CACHE_USERNAME=${EGG_CACHE_USERNAME}
       - EGG_COPYRIGHT_AUTHOR=${EGG_COPYRIGHT_AUTHOR}
       - EGG_COPYRIGHT_YEAR=${EGG_COPYRIGHT_YEAR}
@@ -42,8 +42,7 @@ services:
         - CMD
         - curl
         - -f
-        - http://127.0.0.1:60000/_health
+        - http://127.0.0.1:60000/api/_health
       interval: 5s
       timeout: 20s
       retries: 10
-
