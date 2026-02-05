@@ -46,6 +46,7 @@ type Configuration struct {
 		URL    string `yaml:"url"`
 		Access string `yaml:"access"`
 		Secret string `yaml:"secret"`
+		Secure bool   `yaml:"secure"`
 	} `yaml:"s3"`
 }
 

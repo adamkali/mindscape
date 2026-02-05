@@ -24,7 +24,7 @@ RUN go install github.com/adamkali/egg_cli@latest
 # Final image 
 FROM alpine:latest AS app
 
-RUN apk add --no-cache ffmpeg make
+RUN apk add --no-cache ffmpeg make curl wget
 ## If you are not using React or any other frontend you can comment out this section
 COPY --from=node_builder /usr/src/web/dist /app/web/dist
 COPY --from=go_builder /usr/src/mindscape /app/

@@ -25,7 +25,7 @@ func CreateMinioService(ctx context.Context, config *configuration.Configuration
 	// Initialize minio client object.
 	minioClient, err := minio.New(config.S3.URL, &minio.Options{
 		Creds:  credentials.NewStaticV4(config.S3.Access, config.S3.Secret, ""),
-		Secure: true,
+		Secure: config.S3.Secure,
 	})
 	if err != nil {
 		panic(err.Error())

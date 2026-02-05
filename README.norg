@@ -102,13 +102,13 @@ But like sillicon valley startups the dream was not meant to be and the dragon w
       year: 2025
       author: Adam Kali
     server:
-      jwt: DZ4Z^v7repAumVj6S@7Q4Fc1c8@1VEVed8EdTrpDcx3a^SYY6Gq1Szv@NRgxWGtH
+	  jwt: # 
       port: 60000
       frontend:
         dir: web/dist
         api: web/src/api
     database:
-      url: postgres://postgres:86NGOnu0Ney0fsHNltw22pUF7jypreoe55zug9pLJ54AYSlUa98DIa58bTxkmzcq@snickers:60001/postgres
+	  url: # 
       sqlc:
         repository: db/repository
         schema: postgresql
@@ -118,9 +118,9 @@ But like sillicon valley startups the dream was not meant to be and the dragon w
         protocol: postgres
         destination: db/migrations
     cache:
-      url: redis://:8xcUUZD3e4EHNHFetARc27hsZ6rAGdo8f1bUFg7zifqNCoHXoYDpg5rzqHmDxtzs@snickers:60002/0
+	  url: redis://:#@snickers:60002/0
     s3:
       url: minio-j8s8okssws040w0goggko4gg.kalilarosa.xyz
-      access: 2uAhQRZBzDT63ezNgg6rns92YhNqZNhU
-      secret: yrKfzEKHADbWa4VTUeFnh8sqSShcKEE2
+	  access: # 
+	  secret: # 
     @end
