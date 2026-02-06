@@ -39,3 +39,8 @@ mindscape
 \#*\#
 .\#*
 
+# erl crash 
+erl_crash.dump
+
+# taskfile
+.task/
