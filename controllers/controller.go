@@ -13,32 +13,20 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type Registrar struct {
-	Config           *configuration.Configuration
-	AuthService      services.IAuthService
-	BookmarkService  services.IBookmarkService
-	FolderService    services.IFolderService
-	MinioService     services.IMinioService
-	NoteService      services.INoteService
-	RedisService     services.IRedisService
-	UserService      services.IUserService
-	WidgetService    services.IWidgetService
-	ValidatorService *services.ValidatorService
-}
 
 type IController interface {
 	Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc)
 	ControllerName() string
 }
 
-func createControllerParams(config *configuration.Configuration) (*Registrar, error) {
+func createControllerParams(config *configuration.Configuration) (*services.Registrar, error) {
 	ctx := context.Background()
 	db, err := pgxpool.New(ctx, config.Database.URL)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Registrar{
+	return &services.Registrar{
 		Config:           config,
 		AuthService:      services.CreateAuthService(ctx, db, config),
 		BookmarkService:  services.CreateBookmarkService(ctx, db),

@@ -22,7 +22,7 @@ func (uc FolderController) ControllerName() string {
 	return uc.Name
 }
 
-func BuildFolderController(p *Registrar) FolderController {
+func BuildFolderController(p *services.Registrar) FolderController {
 	return FolderController{
 		Name:             "/folders",
 		Config:           p.Config,

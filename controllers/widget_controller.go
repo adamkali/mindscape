@@ -12,7 +12,7 @@ func (uc WidgetController) ControllerName() string {
 	return uc.Name
 }
 
-func BuildWidgetController(p *Registrar) WidgetController {
+func BuildWidgetController(p *services.Registrar) WidgetController {
 	return WidgetController{
 		Name:             "/widgets",
 		Config:           p.Config,

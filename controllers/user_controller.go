@@ -25,7 +25,7 @@ func (uc UserController) ControllerName() string {
 	return uc.Name
 }
 
-func BuildUserController(p *Registrar) UserController {
+func BuildUserController(p *services.Registrar) UserController {
 	return UserController{
 		Name:             "/users",
 		Config:           p.Config,
