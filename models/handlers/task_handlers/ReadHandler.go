@@ -2,6 +2,7 @@ package task_handlers
 
 import (
 	"github.com/adamkali/mindscape/models/handlers"
+	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
@@ -39,10 +40,10 @@ func (h *ReadHandler) Error() error                         { return h.err }
 func (h *ReadHandler) Data() any                            { return h.result }
 
 func (h *ReadHandler) JSON() error {
-	if h.err == nil {
-		return nil
+	if h.err != nil {
+		return responses.NewTasksResponse().Fail(h.ctx, h.code, h.err)
 	}
-	return nil
+	return responses.NewTasksResponse().Successful(h.ctx, h.result)
 }
 
 func (h *ReadHandler) Handle() handlers.IHandler {
