@@ -351,3 +351,36 @@ func (r ValidatorService) ValidateAddUserWidgetRequest(e echo.Context) (*request
 
 	return validRequest, nil
 }
+
+func (s ValidatorService) CreateTaskRequestValidator(e echo.Context) (*requests.CreateTaskRequest, error) {
+	validRequest := new(requests.CreateTaskRequest)
+	if err := e.Bind(&validRequest); err != nil {
+		return nil, err
+	}
+	// TODO: add validation to description and name to make sure that they are sql safe, 
+	// TODO: make sure that Name is not null or empty
+
+    switch validRequest.TaskTypeID {
+	case uuid.MustParse("07bae843-7049-449c-a23e-ab78a571d7ca"): // Cancelled
+		return validRequest, nil
+	case uuid.MustParse("106e703a-4dd4-4737-b38b-e4a0000ff158"): // Urgent
+		return validRequest, nil
+	case uuid.MustParse("11360cdc-f811-425f-b565-8b014c45ec25"): // Pending / In Progress
+		return validRequest, nil
+	case uuid.MustParse("546d40a2-aebd-4c3e-b1b3-3fd835211c74"): // Done
+		return validRequest, nil
+	case uuid.MustParse("56fabcc6-9703-43b5-96fc-2876646a26b9"): // Hold
+		return validRequest, nil
+	case uuid.MustParse("99dee5b2-7ac9-4b02-a3e5-a1c917d90009"): // Undone
+		return validRequest, nil
+	case uuid.MustParse("e56fd149-24de-4835-9dad-ae861a7c3155"): // Ambiguous
+		return validRequest, nil
+	case uuid.MustParse("f1559502-fa64-419b-9b55-57842e1af279"): // Recurrig
+		return validRequest, nil
+	case uuid.Nil:
+		return nil, errors.New("Task Type ID cannot be null")
+	default:
+		return nil, errors.New("Invalid Task Type ID")
+	}
+}
+
