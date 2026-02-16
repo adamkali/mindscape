@@ -1,5 +1,6 @@
 apis/BackgroundApi.ts
 apis/BookmarksApi.ts
+apis/DefaultApi.ts
 apis/FoldersApi.ts
 apis/UsersApi.ts
 apis/WidgetsApi.ts
@@ -27,7 +28,10 @@ models/RepositoryBookmark.ts
 models/RepositoryCreateBookmarkParams.ts
 models/RepositoryCreateFolderParams.ts
 models/RepositoryFolder.ts
+models/RepositoryInsertNewTaskParams.ts
 models/RepositoryNote.ts
+models/RepositoryTaskType.ts
+models/RepositoryUpdateTaskContentParams.ts
 models/RequestsMoveFolderRequest.ts
 models/ResponsesCoolifyActionData.ts
 models/ResponsesFolderData.ts
@@ -38,6 +42,8 @@ models/ResponsesGithubWidgetCommitsDayData.ts
 models/ResponsesGithubWidgetCommitsWeekData.ts
 models/ResponsesGithubWidgetData.ts
 models/ResponsesGithubWidgetProfileData.ts
+models/ResponsesTaskResponse.ts
+models/ResponsesTasksResponse.ts
 models/ResponsesUserData.ts
 models/ResponsesUserWidgetData.ts
 models/ResponsesUserWidgetResponse.ts
@@ -47,6 +53,7 @@ models/ResponsesWidgetsResponse.ts
 models/SchemasWidgetLayout.ts
 models/SchemasWidgetProperty.ts
 models/SchemasWidgetSize.ts
+models/ServicesTaskDTO.ts
 models/StringResponse.ts
 models/UpdateCredentialsRequest.ts
 models/UpdateUserResponse.ts

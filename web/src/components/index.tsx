@@ -1,4 +1,5 @@
 import AdminRoute from './AdminRoute';
+import AgendaContainer from './AgendaContainer';
 import * as atoms from './atoms';
 import BookmarkCard from './BookmarkCard';
 import BookmarkComponent from './BookmarkComponent';
@@ -12,6 +13,7 @@ import WidgetContainer from './WidgetContainer';
 
 const Components = {
 	AdminRoute,
+	AgendaContainer,
 	CreateFolderComponent,
 	FolderComponent,
 	FolderCard,

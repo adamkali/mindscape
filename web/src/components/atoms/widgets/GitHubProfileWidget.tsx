@@ -1,9 +1,9 @@
 import { createSignal, For, onMount, Show } from 'solid-js';
 import { Configuration, WidgetsApi } from '@/api';
 import type {
+	ResponsesGithubWidgetCommitsData,
 	ResponsesGithubWidgetCommitsDayData,
 	ResponsesGithubWidgetCommitsWeekData,
-	ResponsesGithubWidgetCommitsData,
 	ResponsesGithubWidgetProfileData,
 } from '@/api/models';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,8 +14,10 @@ interface GitHubProfileWidgetProps {
 }
 
 export default function GitHubProfileWidget(props: GitHubProfileWidgetProps) {
-	const [profile, setProfile] = createSignal<ResponsesGithubWidgetProfileData | null>(null);
-	const [commits, setCommits] = createSignal<ResponsesGithubWidgetCommitsData | null>(null);
+	const [profile, setProfile] =
+		createSignal<ResponsesGithubWidgetProfileData | null>(null);
+	const [commits, setCommits] =
+		createSignal<ResponsesGithubWidgetCommitsData | null>(null);
 	const [profileLoading, setProfileLoading] = createSignal(true);
 	const [commitsLoading, setCommitsLoading] = createSignal(true);
 	const [profileError, setProfileError] = createSignal<string | null>(null);
@@ -29,30 +31,36 @@ export default function GitHubProfileWidget(props: GitHubProfileWidgetProps) {
 		const api = new WidgetsApi(config);
 
 		// Fetch profile (fast)
-		api.getGithubProfileWidgetData({
-			authorization: `Bearer ${auth.token()}`,
-			userWidgetId: props.widgetId,
-		}).then(response => {
-			if (response.success && response.data) {
-				setProfile(response.data);
-			} else {
-				setProfileError(response.message || 'Failed to load profile');
-			}
-		}).catch(err => setProfileError(err.message))
-		  .finally(() => setProfileLoading(false));
+		api
+			.getGithubProfileWidgetData({
+				authorization: `Bearer ${auth.token()}`,
+				userWidgetId: props.widgetId,
+			})
+			.then((response) => {
+				if (response.success && response.data) {
+					setProfile(response.data);
+				} else {
+					setProfileError(response.message || 'Failed to load profile');
+				}
+			})
+			.catch((err) => setProfileError(err.message))
+			.finally(() => setProfileLoading(false));
 
 		// Fetch commits (slow, loads in background)
-		api.getGithubCommitsWidgetData({
-			authorization: `Bearer ${auth.token()}`,
-			userWidgetId: props.widgetId,
-		}).then(response => {
-			if (response.success && response.data) {
-				setCommits(response.data);
-			} else {
-				setCommitsError(response.message || 'Failed to load commits');
-			}
-		}).catch(err => setCommitsError(err.message))
-		  .finally(() => setCommitsLoading(false));
+		api
+			.getGithubCommitsWidgetData({
+				authorization: `Bearer ${auth.token()}`,
+				userWidgetId: props.widgetId,
+			})
+			.then((response) => {
+				if (response.success && response.data) {
+					setCommits(response.data);
+				} else {
+					setCommitsError(response.message || 'Failed to load commits');
+				}
+			})
+			.catch((err) => setCommitsError(err.message))
+			.finally(() => setCommitsLoading(false));
 	});
 
 	const handleClick = () => {
@@ -135,9 +143,7 @@ export default function GitHubProfileWidget(props: GitHubProfileWidgetProps) {
 										<div class="flex flex-col gap-0.5">
 											<For each={Array(7).fill(null)}>
 												{() => (
-													<div
-														class="w-3 h-3 rounded-sm bg-gray-700 animate-pulse"
-													/>
+													<div class="w-3 h-3 rounded-sm bg-gray-700 animate-pulse" />
 												)}
 											</For>
 										</div>
@@ -156,7 +162,9 @@ export default function GitHubProfileWidget(props: GitHubProfileWidgetProps) {
 						}
 					>
 						<div class="flex items-center justify-between mb-2">
-							<span class="text-sm text-gray-400">{total()} commits this year</span>
+							<span class="text-sm text-gray-400">
+								{total()} commits this year
+							</span>
 							<div class="flex items-center gap-1 text-xs text-gray-500">
 								<span>Less</span>
 								<For each={legendColors()}>

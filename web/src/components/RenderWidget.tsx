@@ -127,10 +127,7 @@ export default function RenderWidget({
 								sanitizedConfig().serverUrl ||
 								'https://www.google.com/search?q=%s'
 							}
-							engine={
-								sanitizedConfig().engine ||
-								"Google"
-							}
+							engine={sanitizedConfig().engine || 'Google'}
 						/>
 					</div>
 				</Match>

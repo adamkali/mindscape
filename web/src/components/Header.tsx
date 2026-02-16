@@ -8,6 +8,8 @@ import {
 } from 'solid-js';
 import { UsersApi } from '@/api';
 import { useAuth } from '../contexts/AuthContext';
+import { useView } from '../contexts/ViewContext';
+import { AgendaIcon, WidgetIcon } from './icons';
 
 interface SearchEngine {
 	name: string;
@@ -51,6 +53,7 @@ export const Header: Component = () => {
 	};
 
 	const auth = useAuth();
+	const view = useView();
 	const user = auth.user();
 
 	const [profilePicture, setProfilePicture] = createSignal<string>('');
@@ -113,6 +116,36 @@ export const Header: Component = () => {
 				<a href="/">
 					<img width={175} src={'banner.svg'} alt="Mindscape" />
 				</a>
+
+				{/* View Switcher */}
+				<div class="flex items-center rounded-lg border border-glass-border bg-glass-bg/30 backdrop-blur-md overflow-hidden">
+					<button
+						type="button"
+						onClick={() => view.setActiveView('widgets')}
+						disabled={view.activeView() === 'widgets'}
+						class={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-all duration-200 ${
+							view.activeView() === 'widgets'
+								? 'bg-glass-bg-hover text-foreground'
+								: 'text-foreground/50 hover:text-foreground/80'
+						}`}
+					>
+						<WidgetIcon class="text-base" />
+						Widgets
+					</button>
+					<button
+						type="button"
+						onClick={() => view.setActiveView('agenda')}
+						disabled={view.activeView() === 'agenda'}
+						class={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium transition-all duration-200 ${
+							view.activeView() === 'agenda'
+								? 'bg-glass-bg-hover text-foreground'
+								: 'text-foreground/50 hover:text-foreground/80'
+						}`}
+					>
+						<AgendaIcon class="text-base" />
+						Agenda
+					</button>
+				</div>
 
 				<div class="flex items-center space-x-4">
 					{/* Profile section with dropdown */}

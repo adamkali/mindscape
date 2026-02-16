@@ -46,7 +46,9 @@ export default function CreateBookmarkComponent(
 	return (
 		<div class="mb-4 p-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl shadow-lg">
 			<div class="mb-3">
-				<h3 class="text-sm font-medium text-foreground/90 mb-3">Create Bookmark</h3>
+				<h3 class="text-sm font-medium text-foreground/90 mb-3">
+					Create Bookmark
+				</h3>
 			</div>
 
 			<input

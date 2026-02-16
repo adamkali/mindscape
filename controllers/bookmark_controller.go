@@ -22,7 +22,7 @@ func (uc BookmarkController) ControllerName() string {
 	return uc.Name	
 }
 
-func BuildBookmarkController(p *Registrar) BookmarkController {
+func BuildBookmarkController(p *services.Registrar) BookmarkController {
 	return BookmarkController {
 		Name:             "/bookmarks",
 		Config:           p.Config,

@@ -7,6 +7,7 @@ import {
 	type ResponsesFolderData,
 } from '@/api';
 import Components from '@/components';
+import AgendaContainer from '@/components/AgendaContainer';
 import { Button } from '@/components/atoms';
 import CreateBookmarkComponent from '@/components/CreateBookmarkComponent';
 import CreateFolderComponent from '@/components/CreateFolderComponent';
@@ -14,11 +15,21 @@ import FolderComponent from '@/components/FolderComponent';
 import { Header } from '@/components/Header';
 import { AddFolder } from '@/components/icons';
 import { useAuth } from '@/contexts/AuthContext';
+import { useView, ViewProvider } from '@/contexts/ViewContext';
 import { useBackgroundStyle } from '@/hooks/useBackground';
 import { EmptyGuid } from '@/utils';
 
 const Home = () => {
+	return (
+		<ViewProvider>
+			<HomeInner />
+		</ViewProvider>
+	);
+};
+
+const HomeInner = () => {
 	const auth = useAuth();
+	const { activeView } = useView();
 	const backgroundStyle = useBackgroundStyle();
 	const [folders, setFolders] = createSignal<ResponsesFolderData[]>([]);
 	const [focusedNodeId, setFocusedNodeId] = createSignal<string>('');
@@ -309,7 +320,12 @@ const Home = () => {
 					</div>
 				</div>
 
-				<Components.WidgetContainer />
+				<div class={activeView() === 'widgets' ? 'w-full' : 'hidden'}>
+					<Components.WidgetContainer />
+				</div>
+				<div class={activeView() === 'agenda' ? 'w-full' : 'hidden'}>
+					<AgendaContainer />
+				</div>
 			</div>
 		</div>
 	);

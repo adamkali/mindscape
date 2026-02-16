@@ -50,20 +50,20 @@ type Task struct {
 	TaskTypeID  uuid.UUID          `json:"task_type_id"`
 	Name        *string            `json:"name"`
 	Description *string            `json:"description"`
-	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	CreatedAt   *time.Time         `json:"created_at"`
 	DueAt       pgtype.Timestamptz `json:"due_at"`
 	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
 	CompletedAt pgtype.Timestamptz `json:"completed_at"`
 }
 
 type TaskType struct {
-	ID              uuid.UUID          `json:"id"`
-	Name            *string            `json:"name"`
-	ShowInScheduled bool               `json:"show_in_scheduled"`
-	ShowInCompleted bool               `json:"show_in_completed"`
-	ShowInAvailable bool               `json:"show_in_available"`
-	ShowInCancelled bool               `json:"show_in_cancelled"`
-	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+	ID              uuid.UUID  `json:"id"`
+	Name            *string    `json:"name"`
+	ShowInScheduled bool       `json:"show_in_scheduled"`
+	ShowInCompleted bool       `json:"show_in_completed"`
+	ShowInAvailable bool       `json:"show_in_available"`
+	ShowInCancelled bool       `json:"show_in_cancelled"`
+	CreatedAt       *time.Time `json:"created_at"`
 }
 
 type Token struct {

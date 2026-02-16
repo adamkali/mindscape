@@ -611,6 +611,471 @@
                 }
             }
         },
+        "/tasks": {
+            "get": {
+                "description": "Read all tasks that are available to the user",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Read all tasks",
+                "operationId": "ReadTasks",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TasksResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TasksResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TasksResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a Task by Authorization Header",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update a Task",
+                "operationId": "UpdateTask",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "UpdateTaskRequest",
+                        "name": "UpdateTaskRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/repository.UpdateTaskContentParams"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new Task by Authorization Header",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create a new Task",
+                "operationId": "CreateTask",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "CreateTaskRequest",
+                        "name": "CreateTaskRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/repository.InsertNewTaskParams"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/tasks/queue": {
+            "get": {
+                "description": "Get Tasks By Queue Type with a Queue Type Char",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get Tasks By Queue Type",
+                "operationId": "GetTasksByQueueType",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "a",
+                        "description": "Queue Type Char",
+                        "name": "queueType",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TasksResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TasksResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TasksResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TasksResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TasksResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/tasks/status": {
+            "get": {
+                "description": "Get Tasks By Task Type with a Task Type Char",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get Tasks By Task Type",
+                "operationId": "GetTasksByTaskType",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "a",
+                        "description": "Task Type Char",
+                        "name": "taskType",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TasksResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TasksResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TasksResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TasksResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TasksResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/tasks/{taskId}": {
+            "get": {
+                "description": "Read by a TaskID",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Read by a TaskID",
+                "operationId": "ReadTask",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "TaskID",
+                        "name": "taskId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update Task Status with a Status Char and optional Due Date",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Update Task Status",
+                "operationId": "UpdateTaskStatus",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "TaskID",
+                        "name": "taskId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "a",
+                        "description": "Status char",
+                        "name": "status",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Due Date",
+                        "name": "dueDate",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.TaskResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a Task by Authorization Header",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a Task",
+                "operationId": "DeleteTask",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "TaskID",
+                        "name": "taskId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users/": {
             "get": {
                 "description": "Get All Users. Must be Admin using the new mediator pattern",
@@ -2445,6 +2910,23 @@
                 }
             }
         },
+        "repository.InsertNewTaskParams": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "task_type_id": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "repository.Note": {
             "type": "object",
             "properties": {
@@ -2470,6 +2952,46 @@
                     "type": "string"
                 },
                 "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "repository.TaskType": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "show_in_available": {
+                    "type": "boolean"
+                },
+                "show_in_cancelled": {
+                    "type": "boolean"
+                },
+                "show_in_completed": {
+                    "type": "boolean"
+                },
+                "show_in_scheduled": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "repository.UpdateTaskContentParams": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }
@@ -2680,6 +3202,37 @@
                 }
             }
         },
+        "responses.TaskResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/services.TaskDTO"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "responses.TasksResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/services.TaskDTO"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "responses.UserData": {
             "type": "object",
             "properties": {
@@ -2877,6 +3430,41 @@
                 },
                 "width": {
                     "type": "integer"
+                }
+            }
+        },
+        "services.TaskDTO": {
+            "type": "object",
+            "properties": {
+                "completed_at": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "due_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "task_type": {
+                    "$ref": "#/definitions/repository.TaskType"
+                },
+                "task_type_id": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
                 }
             }
         }

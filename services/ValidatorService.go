@@ -384,3 +384,10 @@ func (s ValidatorService) CreateTaskRequestValidator(e echo.Context) (*requests.
 	}
 }
 
+func (s ValidatorService) UpdateTaskContentRequest(e echo.Context) (*requests.UpdateTaskContentRequest, error) {
+	validRequest := new(requests.UpdateTaskContentRequest)
+	if err := e.Bind(&validRequest); err != nil {
+		return nil, err
+	}
+	return validRequest, nil
+}
