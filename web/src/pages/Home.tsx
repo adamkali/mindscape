@@ -229,7 +229,7 @@ const HomeInner = () => {
 
 	return (
 		<div
-			class="h-screen overflow-hidden bg-background"
+			class="h-screen overflow-hidden bg-background flex flex-col"
 			style={backgroundStyle()}
 			onClick={(e) => {
 				// Deselect node when clicking on background areas
@@ -244,9 +244,9 @@ const HomeInner = () => {
 		>
 			<Header />
 
-			<div class="flex h-screen flex-row">
+			<div class="flex flex-1 min-h-0 flex-row">
 				<div
-					class={`treeview-container m-2 p-4 rounded-lg overflow-y-auto bg-background backdrop-blur-lg border border-white/20 max-h-[calc(100vh-2rem)] min-w-80 shadow-2xl shadow-slate-900/30 dark:border-slate-700/50 dark:shadow-black/30 ${
+					class={`treeview-container m-2 p-4 rounded-lg overflow-y-auto bg-background backdrop-blur-lg border border-white/20 flex-1 min-w-80 max-w-80 shadow-2xl shadow-slate-900/30 dark:border-slate-700/50 dark:shadow-black/30 ${
 						isDragOverRoot() ? 'ring-2 ring-blue-400 bg-blue-100/20' : ''
 					}`}
 					onDragOver={handleRootDragOver}
@@ -320,10 +320,10 @@ const HomeInner = () => {
 					</div>
 				</div>
 
-				<div class={activeView() === 'widgets' ? 'w-full' : 'hidden'}>
+				<div class={activeView() === 'widgets' ? 'w-full flex' : 'hidden'}>
 					<Components.WidgetContainer />
 				</div>
-				<div class={activeView() === 'agenda' ? 'w-full' : 'hidden'}>
+				<div class={activeView() === 'agenda' ? 'w-full flex' : 'hidden'}>
 					<AgendaContainer />
 				</div>
 			</div>

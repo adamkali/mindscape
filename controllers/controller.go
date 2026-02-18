@@ -37,6 +37,7 @@ func createControllerParams(config *configuration.Configuration) (*services.Regi
 		MinioService:     services.CreateMinioService(ctx, config),
 		NoteService:      services.CreateNoteService(ctx, db),
 		RedisService:     redisService,
+		TaskService:      services.CreateTaskService(ctx, db),
 		UserService:      services.CreateUserService(ctx, db),
 		WidgetService:    services.CreateWidgetService(ctx, db),
 		ValidatorService: &services.ValidatorService{},

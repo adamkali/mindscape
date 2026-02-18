@@ -1,6 +1,8 @@
 package task_handlers
 
 import (
+	"fmt"
+
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/requests"
@@ -58,7 +60,7 @@ func (h *UpdateTaskContentHandler) Handle() handlers.IHandler {
 		return handlers.Lock(h, 404, err)
 	}
 	if h.result.UserID != userID {
-		return handlers.Lock(h, 403, err)
+		return handlers.Lock(h, 403, fmt.Errorf("forbidden: task does not belong to user"))
 	}
 	if h.result, err = h.services.TaskService.UpdateTaskContent(repository.UpdateTaskContentParams{
 		ID: request.ID,

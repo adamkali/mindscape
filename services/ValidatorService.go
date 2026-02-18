@@ -360,6 +360,8 @@ func (s ValidatorService) CreateTaskRequestValidator(e echo.Context) (*requests.
 	// TODO: add validation to description and name to make sure that they are sql safe, 
 	// TODO: make sure that Name is not null or empty
 
+	fmt.Printf("[INFO] ValidatorService.CreateTaskRequestValidator{ validRequest: %v }\n", validRequest)
+
     switch validRequest.TaskTypeID {
 	case uuid.MustParse("07bae843-7049-449c-a23e-ab78a571d7ca"): // Cancelled
 		return validRequest, nil

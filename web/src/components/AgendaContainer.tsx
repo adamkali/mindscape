@@ -32,7 +32,7 @@ export default function AgendaContainer() {
 
 	return (
 		<div
-			class="bg-background backdrop-blur-lg border border-white/20 w-full flex flex-col m-2 rounded-lg p-4 max-h-[calc(100vh-2rem)] dark:border-slate-700/50 dark:shadow-black/30"
+			class="relative overflow-hidden bg-background backdrop-blur-lg border border-white/20 w-full flex flex-col flex-1 m-2 rounded-lg p-4 dark:border-slate-700/50 dark:shadow-black/30"
 			id="agenda-container"
 		>
 			<div class="mb-4 text-foreground flex justify-between items-center gap-4">

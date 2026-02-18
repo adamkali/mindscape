@@ -14,14 +14,54 @@ interface TaskModalProps {
 }
 
 const TASK_STATUSES = [
-	{ char: 'a', label: 'Ambiguous' },
-	{ char: 'c', label: 'Cancelled' },
-	{ char: 'd', label: 'Done' },
-	{ char: 'h', label: 'Hold' },
-	{ char: 'p', label: 'Pending' },
-	{ char: 'r', label: 'Recurring' },
-	{ char: 'u', label: 'Undone' },
-	{ char: 'i', label: 'Urgent' },
+	{
+		char: 'a',
+		label: 'Ambiguous',
+		id: 'e56fd149-24de-4835-9dad-ae861a7c3155',
+		color: '#f59e0b',
+	},
+	{
+		char: 'c',
+		label: 'Cancelled',
+		id: '07bae843-7049-449c-a23e-ab78a571d7ca',
+		color: '#6b7280',
+	},
+	{
+		char: 'd',
+		label: 'Done',
+		id: '546d40a2-aebd-4c3e-b1b3-3fd835211c74',
+		color: '#22c55e',
+	},
+	{
+		char: 'h',
+		label: 'Hold',
+		id: '56fabcc6-9703-43b5-96fc-2876646a26b9',
+		color: '#eab308',
+	},
+	{
+		char: 'p',
+		label: 'Pending',
+		id: '11360cdc-f811-425f-b565-8b014c45ec25',
+		color: '#3b82f6',
+	},
+	{
+		char: 'r',
+		label: 'Recurring',
+		id: 'f1559502-fa64-419b-9b55-57842e1af279',
+		color: '#a855f7',
+	},
+	{
+		char: 'u',
+		label: 'Undone',
+		id: '99dee5b2-7ac9-4b02-a3e5-a1c917d90009',
+		color: '#e2e8f0',
+	},
+	{
+		char: 'i',
+		label: 'Urgent',
+		id: '106e703a-4dd4-4737-b38b-e4a0000ff158',
+		color: '#ef4444',
+	},
 ];
 
 export default function TaskModal(props: TaskModalProps) {
@@ -31,12 +71,19 @@ export default function TaskModal(props: TaskModalProps) {
 
 	const [name, setName] = createSignal('');
 	const [description, setDescription] = createSignal('');
+	const [taskTypeId, setTaskTypeId] = createSignal(TASK_STATUSES[4].id); // default: Pending
 	const [showStatusDropdown, setShowStatusDropdown] = createSignal(false);
 	const [showDeleteConfirm, setShowDeleteConfirm] = createSignal(false);
+
+	const statusColor = () => {
+		const id = props.task?.taskTypeId || taskTypeId();
+		return TASK_STATUSES.find((s) => s.id === id)?.color ?? '#3b82f6';
+	};
 
 	const resetForm = () => {
 		setName('');
 		setDescription('');
+		setTaskTypeId(TASK_STATUSES[4].id);
 		setShowStatusDropdown(false);
 		setShowDeleteConfirm(false);
 	};
@@ -55,6 +102,7 @@ export default function TaskModal(props: TaskModalProps) {
 			name: name().trim(),
 			description: description().trim(),
 			userId: user?.id,
+			taskTypeId: taskTypeId(),
 		});
 		resetForm();
 		props.onClose();
@@ -90,25 +138,28 @@ export default function TaskModal(props: TaskModalProps) {
 	const startEdit = () => {
 		setName(props.task?.name || '');
 		setDescription(props.task?.description || '');
+		const match = TASK_STATUSES.find((s) => s.id === props.task?.taskTypeId);
+		setTaskTypeId(match?.id || TASK_STATUSES[4].id);
 		props.onEdit();
 	};
 
 	return (
 		<Show when={props.mode !== 'closed'}>
 			<div
-				class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+				class="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 rounded-lg"
 				role="dialog"
 				aria-modal="true"
 				onClick={handleBackdropClick}
 				onKeyDown={(e) => e.key === 'Escape' && props.onClose()}
 			>
 				<div
-					class="bg-gradient-to-br from-card to-card/80 backdrop-blur-lg border-2 border-slate-700/20 rounded-2xl shadow-2xl w-full max-w-md p-6"
+					class="bg-glass-bg-strong backdrop-blur-lg border-2 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6"
+					style={{ 'border-color': statusColor() }}
 					role="document"
 				>
 					{/* Header */}
 					<div class="flex justify-between items-center mb-6">
-						<h2 class="text-2xl font-bold text-card-foreground">
+						<h2 class="text-2xl font-bold" style={{ color: statusColor() }}>
 							{props.mode === 'create'
 								? 'New Task'
 								: props.mode === 'edit'
@@ -151,14 +202,26 @@ export default function TaskModal(props: TaskModalProps) {
 								>
 									Name
 								</label>
-								<input
-									id="task-name"
-									type="text"
-									class="w-full px-4 py-3 rounded-lg border-2 bg-slate-300/30 text-foreground focus:outline-none transition-all"
-									value={name()}
-									onInput={(e) => setName(e.currentTarget.value)}
-									placeholder="Task name..."
-								/>
+								<div class="flex rounded-lg border-2 border-glass-border bg-slate-300/30 overflow-hidden focus-within:border-glass-border-hover transition-all">
+									<select
+										value={taskTypeId()}
+										onChange={(e) => setTaskTypeId(e.currentTarget.value)}
+										class="px-3 py-3 bg-glass-bg text-foreground text-sm font-medium border-r border-glass-border cursor-pointer focus:outline-none appearance-none"
+										aria-label="Task status type"
+									>
+										{TASK_STATUSES.map((s) => (
+											<option value={s.id}>{s.label}</option>
+										))}
+									</select>
+									<input
+										id="task-name"
+										type="text"
+										class="flex-1 px-4 py-3 bg-transparent text-foreground focus:outline-none"
+										value={name()}
+										onInput={(e) => setName(e.currentTarget.value)}
+										placeholder="Task name..."
+									/>
+								</div>
 							</div>
 							<div>
 								<label
@@ -209,14 +272,26 @@ export default function TaskModal(props: TaskModalProps) {
 								>
 									Name
 								</label>
-								<input
-									id="task-name-edit"
-									type="text"
-									class="w-full px-4 py-3 rounded-lg border-2 bg-slate-300/30 text-foreground focus:outline-none transition-all"
-									value={name()}
-									onInput={(e) => setName(e.currentTarget.value)}
-									placeholder="Task name..."
-								/>
+								<div class="flex rounded-lg border-2 border-glass-border bg-slate-300/30 overflow-hidden focus-within:border-glass-border-hover transition-all">
+									<select
+										value={taskTypeId()}
+										onChange={(e) => setTaskTypeId(e.currentTarget.value)}
+										class="px-3 py-3 bg-glass-bg text-foreground text-sm font-medium border-r border-glass-border cursor-pointer focus:outline-none appearance-none"
+										aria-label="Task status type"
+									>
+										{TASK_STATUSES.map((s) => (
+											<option value={s.id}>{s.label}</option>
+										))}
+									</select>
+									<input
+										id="task-name-edit"
+										type="text"
+										class="flex-1 px-4 py-3 bg-transparent text-foreground focus:outline-none"
+										value={name()}
+										onInput={(e) => setName(e.currentTarget.value)}
+										placeholder="Task name..."
+									/>
+								</div>
 							</div>
 							<div>
 								<label
@@ -261,7 +336,14 @@ export default function TaskModal(props: TaskModalProps) {
 								<div class="text-xs text-card-foreground/50 uppercase tracking-wider mb-1">
 									Status
 								</div>
-								<div class="text-sm text-card-foreground">
+								<div
+									class="flex items-center gap-2 text-sm font-medium"
+									style={{ color: statusColor() }}
+								>
+									<span
+										class="inline-block w-2.5 h-2.5 rounded-full"
+										style={{ 'background-color': statusColor() }}
+									/>
 									{props.task?.taskType?.name || 'Pending'}
 								</div>
 							</div>
@@ -315,7 +397,7 @@ export default function TaskModal(props: TaskModalProps) {
 							</div>
 
 							{/* Footer Actions */}
-							<div class="flex gap-2 pt-4 border-t border-white/10">
+							<div class="flex gap-2 pt-4 border-t border-glass-border">
 								<Button variant="primary" onClick={startEdit} class="flex-1">
 									Edit
 								</Button>
@@ -336,8 +418,12 @@ export default function TaskModal(props: TaskModalProps) {
 													<button
 														type="button"
 														onClick={() => handleStatusChange(s.char)}
-														class="block w-full text-left px-4 py-2 text-sm text-foreground hover:bg-glass-bg-hover transition-colors"
+														class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-foreground hover:bg-glass-bg-hover transition-colors"
 													>
+														<span
+															class="inline-block w-2.5 h-2.5 rounded-full flex-shrink-0"
+															style={{ 'background-color': s.color }}
+														/>
 														{s.label}
 													</button>
 												))}

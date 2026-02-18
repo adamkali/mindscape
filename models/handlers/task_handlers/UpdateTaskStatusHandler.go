@@ -53,44 +53,42 @@ func (h *UpdateTaskStatusHandler) Handle() handlers.IHandler {
 	}
 	// get task status
 	taskStatus := h.ctx.QueryParam("status")
-	taskStatusDate := h.ctx.QueryParam("due")
-	dueAt, err := time.Parse(taskStatusDate, "2006-01-02") 
-	if err != nil {
-		return handlers.Lock(h, 400, err)
-	}
 	switch taskStatus {
 	case "a":
-	    h.result, err = h.services.TaskService.UpdateAsAmbiguous(parsedTaskId)
-		break
+		h.result, err = h.services.TaskService.UpdateAsAmbiguous(parsedTaskId)
 	case "c":
-	    h.result, err = h.services.TaskService.UpdateAsCancelled(parsedTaskId)
-		break
+		h.result, err = h.services.TaskService.UpdateAsCancelled(parsedTaskId)
 	case "d":
 		h.result, err = h.services.TaskService.UpdateAsDone(parsedTaskId)
-		break
 	case "h":
 		h.result, err = h.services.TaskService.UpdateAsHold(parsedTaskId)
-		break
 	case "p":
+		dueAt, parseErr := time.Parse("2006-01-02", h.ctx.QueryParam("due"))
+		if parseErr != nil {
+			return handlers.Lock(h, 400, parseErr)
+		}
 		h.result, err = h.services.TaskService.UpdateAsPending(repository.UpdateAsPendingParams{
-			ID: parsedTaskId,
-			DueAt:    pgtype.Timestamptz{ Time: dueAt, Valid: true },
+			ID:    parsedTaskId,
+			DueAt: pgtype.Timestamptz{Time: dueAt, Valid: true},
 		})
-		break
 	case "r":
 		h.result, err = h.services.TaskService.UpdateAsRecurring(parsedTaskId)
-		break
 	case "u":
+		dueAt, parseErr := time.Parse("2006-01-02", h.ctx.QueryParam("due"))
+		if parseErr != nil {
+			return handlers.Lock(h, 400, parseErr)
+		}
 		h.result, err = h.services.TaskService.UpdateAsUndone(repository.UpdateAsUndoneParams{
-			ID: parsedTaskId,
-			DueAt:    pgtype.Timestamptz{ Time: dueAt, Valid: true },
+			ID:    parsedTaskId,
+			DueAt: pgtype.Timestamptz{Time: dueAt, Valid: true},
 		})
-		break
 	case "i":
 		h.result, err = h.services.TaskService.UpdateAsUrgent(parsedTaskId)
-		break
 	default:
-		handlers.Lock(h, 400, fmt.Errorf("invalid status"))
+		return handlers.Lock(h, 400, fmt.Errorf("invalid status"))
+	}
+	if err != nil {
+		return handlers.Lock(h, 500, err)
 	}
 	return h
 }

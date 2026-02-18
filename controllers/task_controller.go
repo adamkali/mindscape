@@ -159,7 +159,7 @@ func (c TaskController) GetTasksByTaskType(e echo.Context) error {
 }
 
 func (c TaskController) Attatch(e *echo.Echo, middlewares ...echo.MiddlewareFunc) {
-	api := e.Group("/api" + c.Name)
+	api := e.Group("/api/" + c.Name)
 	// many
 	api.GET("", c.Read, middlewares...)
 	api.GET("/queue", c.GetTasksByQueueType, middlewares...)

@@ -189,6 +189,14 @@ export const Header: Component = () => {
 										<div class="w-4 h-4 mr-3 text-center">👤</div>
 										Edit Profile
 									</A>
+									<A
+										href="/api-keys"
+										class="flex items-center px-4 py-2 text-sm text-foreground transition-all duration-200"
+										onClick={closeDropdown}
+									>
+										<div class="w-4 h-4 mr-3 text-center">🔑</div>
+										API Keys
+									</A>
 									<button
 										onClick={() => {
 											toggleDarkMode();

@@ -14,9 +14,9 @@ type TaskDTO struct {
 	Name        *string             `json:"name"`
 	Description *string             `json:"description"`
 	CreatedAt   time.Time           `json:"created_at"`
-	DueAt       time.Time           `json:"due_at"`
-	UpdatedAt   time.Time           `json:"updated_at"`
-	CompletedAt time.Time           `json:"completed_at"`
+	DueAt       *time.Time          `json:"due_at"`
+	UpdatedAt   *time.Time          `json:"updated_at"`
+	CompletedAt *time.Time          `json:"completed_at"`
 	TaskType    repository.TaskType `json:"task_type"`
 }
 

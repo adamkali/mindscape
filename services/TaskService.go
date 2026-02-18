@@ -2,11 +2,20 @@ package services
 
 import (
 	"context"
+	"time"
 
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+func timestamptzToPtr(ts pgtype.Timestamptz) *time.Time {
+	if ts.Valid {
+		return &ts.Time
+	}
+	return nil
+}
 
 type TaskService struct {
 	ctx  context.Context
@@ -54,9 +63,9 @@ func (s *TaskService) getTaskTypesForSlice(tasks []repository.Task, repo *reposi
 				Name:        tasks[i].Name,
 				Description: tasks[i].Description,
 				CreatedAt:   *tasks[i].CreatedAt,
-				DueAt:       tasks[i].DueAt.Time,
-				UpdatedAt:   tasks[i].UpdatedAt.Time,
-				CompletedAt: tasks[i].CompletedAt.Time,
+				DueAt:       timestamptzToPtr(tasks[i].DueAt),
+				UpdatedAt:   timestamptzToPtr(tasks[i].UpdatedAt),
+				CompletedAt: timestamptzToPtr(tasks[i].CompletedAt),
 				TaskType:    taskType,
 			}
 		case err := <-errChans:
@@ -106,9 +115,9 @@ func (s *TaskService) GetById(taskId uuid.UUID) (TaskDTO, error) {
 		Name:        task.Name,
 		Description: task.Description,
 		CreatedAt:   *task.CreatedAt,
-		DueAt:       task.DueAt.Time,
-		UpdatedAt:   task.UpdatedAt.Time,
-		CompletedAt: task.CompletedAt.Time,
+		DueAt:       timestamptzToPtr(task.DueAt),
+		UpdatedAt:   timestamptzToPtr(task.UpdatedAt),
+		CompletedAt: timestamptzToPtr(task.CompletedAt),
 		TaskType:    taskType,
 	}
 	tx.Commit(s.ctx)
@@ -220,9 +229,9 @@ func (s *TaskService) Create(params repository.InsertNewTaskParams) (TaskDTO, er
 		Name:        task.Name,
 		Description: task.Description,
 		CreatedAt:   *task.CreatedAt,
-		DueAt:       task.DueAt.Time,
-		UpdatedAt:   task.UpdatedAt.Time,
-		CompletedAt: task.CompletedAt.Time,
+		DueAt:       timestamptzToPtr(task.DueAt),
+		UpdatedAt:   timestamptzToPtr(task.UpdatedAt),
+		CompletedAt: timestamptzToPtr(task.CompletedAt),
 		TaskType:    taskType,
 	}
 	tx.Commit(s.ctx)
@@ -266,9 +275,9 @@ func (s *TaskService) UpdateAsAmbiguous(taskId uuid.UUID) (TaskDTO, error) {
 		Name:        task.Name,
 		Description: task.Description,
 		CreatedAt:   *task.CreatedAt,
-		DueAt:       task.DueAt.Time,
-		UpdatedAt:   task.UpdatedAt.Time,
-		CompletedAt: task.CompletedAt.Time,
+		DueAt:       timestamptzToPtr(task.DueAt),
+		UpdatedAt:   timestamptzToPtr(task.UpdatedAt),
+		CompletedAt: timestamptzToPtr(task.CompletedAt),
 		TaskType:    taskType,
 	}
 	tx.Commit(s.ctx)
@@ -297,9 +306,9 @@ func (s *TaskService) UpdateAsCancelled(taskId uuid.UUID) (TaskDTO, error) {
 		Name:        task.Name,
 		Description: task.Description,
 		CreatedAt:   *task.CreatedAt,
-		DueAt:       task.DueAt.Time,
-		UpdatedAt:   task.UpdatedAt.Time,
-		CompletedAt: task.CompletedAt.Time,
+		DueAt:       timestamptzToPtr(task.DueAt),
+		UpdatedAt:   timestamptzToPtr(task.UpdatedAt),
+		CompletedAt: timestamptzToPtr(task.CompletedAt),
 		TaskType:    taskType,
 	}
 	tx.Commit(s.ctx)
@@ -328,9 +337,9 @@ func (s *TaskService) UpdateAsDone(taskId uuid.UUID) (TaskDTO, error) {
 		Name:        task.Name,
 		Description: task.Description,
 		CreatedAt:   *task.CreatedAt,
-		DueAt:       task.DueAt.Time,
-		UpdatedAt:   task.UpdatedAt.Time,
-		CompletedAt: task.CompletedAt.Time,
+		DueAt:       timestamptzToPtr(task.DueAt),
+		UpdatedAt:   timestamptzToPtr(task.UpdatedAt),
+		CompletedAt: timestamptzToPtr(task.CompletedAt),
 		TaskType:    taskType,
 	}
 	tx.Commit(s.ctx)
@@ -359,9 +368,9 @@ func (s *TaskService) UpdateAsHold(taskId uuid.UUID) (TaskDTO, error) {
 		Name:        task.Name,
 		Description: task.Description,
 		CreatedAt:   *task.CreatedAt,
-		DueAt:       task.DueAt.Time,
-		UpdatedAt:   task.UpdatedAt.Time,
-		CompletedAt: task.CompletedAt.Time,
+		DueAt:       timestamptzToPtr(task.DueAt),
+		UpdatedAt:   timestamptzToPtr(task.UpdatedAt),
+		CompletedAt: timestamptzToPtr(task.CompletedAt),
 		TaskType:    taskType,
 	}
 	tx.Commit(s.ctx)
@@ -390,9 +399,9 @@ func (s *TaskService) UpdateAsPending(params repository.UpdateAsPendingParams) (
 		Name:        task.Name,
 		Description: task.Description,
 		CreatedAt:   *task.CreatedAt,
-		DueAt:       task.DueAt.Time,
-		UpdatedAt:   task.UpdatedAt.Time,
-		CompletedAt: task.CompletedAt.Time,
+		DueAt:       timestamptzToPtr(task.DueAt),
+		UpdatedAt:   timestamptzToPtr(task.UpdatedAt),
+		CompletedAt: timestamptzToPtr(task.CompletedAt),
 		TaskType:    taskType,
 	}
 	tx.Commit(s.ctx)
@@ -420,9 +429,9 @@ func (s *TaskService) UpdateAsRecurring(taskId uuid.UUID) (TaskDTO, error) {
 		Name:        task.Name,
 		Description: task.Description,
 		CreatedAt:   *task.CreatedAt,
-		DueAt:       task.DueAt.Time,
-		UpdatedAt:   task.UpdatedAt.Time,
-		CompletedAt: task.CompletedAt.Time,
+		DueAt:       timestamptzToPtr(task.DueAt),
+		UpdatedAt:   timestamptzToPtr(task.UpdatedAt),
+		CompletedAt: timestamptzToPtr(task.CompletedAt),
 		TaskType:    taskType,
 	}
 	tx.Commit(s.ctx)
@@ -451,9 +460,9 @@ func (s *TaskService) UpdateAsUndone(params repository.UpdateAsUndoneParams) (Ta
 		Name:        task.Name,
 		Description: task.Description,
 		CreatedAt:   *task.CreatedAt,
-		DueAt:       task.DueAt.Time,
-		UpdatedAt:   task.UpdatedAt.Time,
-		CompletedAt: task.CompletedAt.Time,
+		DueAt:       timestamptzToPtr(task.DueAt),
+		UpdatedAt:   timestamptzToPtr(task.UpdatedAt),
+		CompletedAt: timestamptzToPtr(task.CompletedAt),
 		TaskType:    taskType,
 	}
 	tx.Commit(s.ctx)
@@ -481,9 +490,9 @@ func (s *TaskService) UpdateAsUrgent(userId uuid.UUID) (TaskDTO, error) {
 		Name:        task.Name,
 		Description: task.Description,
 		CreatedAt:   *task.CreatedAt,
-		DueAt:       task.DueAt.Time,
-		UpdatedAt:   task.UpdatedAt.Time,
-		CompletedAt: task.CompletedAt.Time,
+		DueAt:       timestamptzToPtr(task.DueAt),
+		UpdatedAt:   timestamptzToPtr(task.UpdatedAt),
+		CompletedAt: timestamptzToPtr(task.CompletedAt),
 		TaskType:    taskType,
 	}
 	tx.Commit(s.ctx)
@@ -512,9 +521,9 @@ func (s *TaskService) UpdateTaskContent(params repository.UpdateTaskContentParam
 		Name:        task.Name,
 		Description: task.Description,
 		CreatedAt:   *task.CreatedAt,
-		DueAt:       task.DueAt.Time,
-		UpdatedAt:   task.UpdatedAt.Time,
-		CompletedAt: task.CompletedAt.Time,
+		DueAt:       timestamptzToPtr(task.DueAt),
+		UpdatedAt:   timestamptzToPtr(task.UpdatedAt),
+		CompletedAt: timestamptzToPtr(task.CompletedAt),
 		TaskType:    taskType,
 	}
 	tx.Commit(s.ctx)

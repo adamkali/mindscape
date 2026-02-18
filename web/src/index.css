@@ -133,3 +133,57 @@
 .treeview-container::-webkit-scrollbar-thumb:hover {
 	background: var(--scrollbar-thumb-hover);
 }
+
+/* Glass-styled datetime-local inputs */
+.datetime-glass::-webkit-calendar-picker-indicator {
+	filter: var(--datetime-indicator-filter, none);
+	cursor: pointer;
+	border-radius: 4px;
+	padding: 2px;
+	transition: background 0.2s ease;
+}
+
+.datetime-glass::-webkit-calendar-picker-indicator:hover {
+	background: var(--glass-bg-hover);
+}
+
+.datetime-glass::-webkit-datetime-edit {
+	color: var(--foreground);
+}
+
+.datetime-glass::-webkit-datetime-edit-fields-wrapper {
+	color: var(--foreground);
+}
+
+.datetime-glass::-webkit-datetime-edit-text {
+	color: var(--glass-text-muted);
+}
+
+.datetime-glass::-webkit-datetime-edit-month-field,
+.datetime-glass::-webkit-datetime-edit-day-field,
+.datetime-glass::-webkit-datetime-edit-year-field,
+.datetime-glass::-webkit-datetime-edit-hour-field,
+.datetime-glass::-webkit-datetime-edit-minute-field,
+.datetime-glass::-webkit-datetime-edit-ampm-field {
+	color: var(--foreground);
+	padding: 1px 2px;
+	border-radius: 3px;
+}
+
+.datetime-glass::-webkit-datetime-edit-month-field:focus,
+.datetime-glass::-webkit-datetime-edit-day-field:focus,
+.datetime-glass::-webkit-datetime-edit-year-field:focus,
+.datetime-glass::-webkit-datetime-edit-hour-field:focus,
+.datetime-glass::-webkit-datetime-edit-minute-field:focus,
+.datetime-glass::-webkit-datetime-edit-ampm-field:focus {
+	background: var(--glass-bg-hover);
+	outline: none;
+}
+
+:root {
+	--datetime-indicator-filter: none;
+}
+
+.dark {
+	--datetime-indicator-filter: invert(1) brightness(0.9);
+}

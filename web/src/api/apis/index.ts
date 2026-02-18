@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+export * from './ApiKeysApi';
 export * from './BackgroundApi';
 export * from './BookmarksApi';
 export * from './DefaultApi';

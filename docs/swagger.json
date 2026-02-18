@@ -17,6 +17,164 @@
     },
     "basePath": "/api",
     "paths": {
+        "/apikeys": {
+            "get": {
+                "description": "List all API Keys for the current user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ApiKeys"
+                ],
+                "summary": "List API Keys",
+                "operationId": "ListApiKeys",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ApiKeysResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ApiKeysResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ApiKeysResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new API Key for programmatic access",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ApiKeys"
+                ],
+                "summary": "Create a new API Key",
+                "operationId": "CreateApiKey",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "CreateApiKeyRequest",
+                        "name": "CreateApiKeyRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/CreateApiKeyRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ApiKeyResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ApiKeyResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ApiKeyResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.ApiKeyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/apikeys/{keyId}": {
+            "delete": {
+                "description": "Delete an API Key by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ApiKeys"
+                ],
+                "summary": "Delete an API Key",
+                "operationId": "DeleteApiKey",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "Bearer token",
+                        "description": "auth header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "API Key ID",
+                        "name": "keyId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/background": {
             "get": {
                 "description": "Get Default Background",
@@ -2603,6 +2761,26 @@
                 }
             }
         },
+        "CreateApiKeyRequest": {
+            "type": "object",
+            "properties": {
+                "expiration": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "not_before": {
+                    "type": "string"
+                },
+                "read_access": {
+                    "type": "boolean"
+                },
+                "write_access": {
+                    "type": "boolean"
+                }
+            }
+        },
         "DeleteUserResponse": {
             "type": "object",
             "properties": {
@@ -3007,6 +3185,37 @@
                 },
                 "userId": {
                     "type": "string"
+                }
+            }
+        },
+        "responses.ApiKeyResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/services.ApiKeyDTO"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "responses.ApiKeysResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/services.ApiKeyDTO"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
                 }
             }
         },
@@ -3430,6 +3639,35 @@
                 },
                 "width": {
                     "type": "integer"
+                }
+            }
+        },
+        "services.ApiKeyDTO": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "expiration": {
+                    "type": "string"
+                },
+                "key_id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "not_before": {
+                    "type": "string"
+                },
+                "raw_key": {
+                    "type": "string"
+                },
+                "read_access": {
+                    "type": "boolean"
+                },
+                "write_access": {
+                    "type": "boolean"
                 }
             }
         },

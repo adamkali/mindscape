@@ -2,7 +2,7 @@ import { Route, Router } from '@solidjs/router';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { BackgroundProvider } from '@/contexts/BackgroundContext';
-import { EditProfile, Home, Login, Signup } from '@/pages';
+import { ApiKeys, EditProfile, Home, Login, Signup } from '@/pages';
 import AdminRoute from './components/AdminRoute';
 import { Showcase } from './pages/admin';
 
@@ -27,6 +27,14 @@ const App = () => {
 							component={() => (
 								<ProtectedRoute>
 									<EditProfile />
+								</ProtectedRoute>
+							)}
+						/>
+						<Route
+							path="/api-keys"
+							component={() => (
+								<ProtectedRoute>
+									<ApiKeys />
 								</ProtectedRoute>
 							)}
 						/>

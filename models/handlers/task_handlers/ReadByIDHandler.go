@@ -1,6 +1,8 @@
 package task_handlers
 
 import (
+	"fmt"
+
 	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
@@ -65,7 +67,7 @@ func (h *ReadByIDHandler) Handle() handlers.IHandler {
 		return handlers.Lock(h, 500, err)
 	}
 	if h.result.UserID != userID {
-		return handlers.Lock(h, 403, err)
+		return handlers.Lock(h, 403, fmt.Errorf("forbidden: task does not belong to user"))
 	}
 	return h
 }

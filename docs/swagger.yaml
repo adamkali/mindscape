@@ -134,6 +134,19 @@ definitions:
       success:
         type: boolean
     type: object
+  CreateApiKeyRequest:
+    properties:
+      expiration:
+        type: string
+      name:
+        type: string
+      not_before:
+        type: string
+      read_access:
+        type: boolean
+      write_access:
+        type: boolean
+    type: object
   DeleteUserResponse:
     properties:
       data:
@@ -397,6 +410,26 @@ definitions:
         type: string
       userId:
         type: string
+    type: object
+  responses.ApiKeyResponse:
+    properties:
+      data:
+        $ref: '#/definitions/services.ApiKeyDTO'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  responses.ApiKeysResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/services.ApiKeyDTO'
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
     type: object
   responses.CoolifyActionData:
     properties:
@@ -675,6 +708,25 @@ definitions:
       width:
         type: integer
     type: object
+  services.ApiKeyDTO:
+    properties:
+      created_at:
+        type: string
+      expiration:
+        type: string
+      key_id:
+        type: string
+      name:
+        type: string
+      not_before:
+        type: string
+      raw_key:
+        type: string
+      read_access:
+        type: boolean
+      write_access:
+        type: boolean
+    type: object
   services.TaskDTO:
     properties:
       completed_at:
@@ -709,6 +761,113 @@ info:
   title: mindscape
   version: 0.0.1
 paths:
+  /apikeys:
+    get:
+      description: List all API Keys for the current user
+      operationId: ListApiKeys
+      parameters:
+      - default: Bearer token
+        description: auth header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ApiKeysResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.ApiKeysResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ApiKeysResponse'
+      summary: List API Keys
+      tags:
+      - ApiKeys
+    post:
+      consumes:
+      - application/json
+      description: Create a new API Key for programmatic access
+      operationId: CreateApiKey
+      parameters:
+      - default: Bearer token
+        description: auth header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: CreateApiKeyRequest
+        in: body
+        name: CreateApiKeyRequest
+        required: true
+        schema:
+          $ref: '#/definitions/CreateApiKeyRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ApiKeyResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ApiKeyResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.ApiKeyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ApiKeyResponse'
+      summary: Create a new API Key
+      tags:
+      - ApiKeys
+  /apikeys/{keyId}:
+    delete:
+      description: Delete an API Key by its ID
+      operationId: DeleteApiKey
+      parameters:
+      - default: Bearer token
+        description: auth header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: API Key ID
+        in: path
+        name: keyId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/StringResponse'
+      summary: Delete an API Key
+      tags:
+      - ApiKeys
   /background:
     get:
       description: Get Default Background

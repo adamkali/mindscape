@@ -83,10 +83,10 @@ func (q *Queries) GetTasks(ctx context.Context) ([]Task, error) {
 
 const getTasksByAvailableTaskType = `-- name: GetTasksByAvailableTaskType :many
 SELECT id, user_id, task_type_id, name, description, created_at, due_at, updated_at, completed_at
-FROM tasks 
-WHERE (
-	SELECT (id) FROM task_types WHERE show_in_available = true
-) = task_type_id AND user_id = $1
+FROM tasks
+WHERE task_type_id IN (
+	SELECT id FROM task_types WHERE show_in_available = true
+) AND user_id = $1
 ORDER BY created_at DESC, due_at DESC
 `
 
@@ -122,10 +122,10 @@ func (q *Queries) GetTasksByAvailableTaskType(ctx context.Context, userID uuid.U
 
 const getTasksByCancelledTaskType = `-- name: GetTasksByCancelledTaskType :many
 SELECT id, user_id, task_type_id, name, description, created_at, due_at, updated_at, completed_at
-FROM tasks 
-WHERE (
-	SELECT (id) FROM task_types WHERE show_in_cancelled = true
-) = task_type_id AND user_id = $1
+FROM tasks
+WHERE task_type_id IN (
+	SELECT id FROM task_types WHERE show_in_cancelled = true
+) AND user_id = $1
 ORDER BY created_at DESC, completed_at DESC
 `
 
@@ -161,10 +161,10 @@ func (q *Queries) GetTasksByCancelledTaskType(ctx context.Context, userID uuid.U
 
 const getTasksByCompletedTaskType = `-- name: GetTasksByCompletedTaskType :many
 SELECT id, user_id, task_type_id, name, description, created_at, due_at, updated_at, completed_at
-FROM tasks 
-WHERE (
-	SELECT (id) FROM task_types WHERE show_in_completed = true
-) = task_type_id AND user_id = $1
+FROM tasks
+WHERE task_type_id IN (
+	SELECT id FROM task_types WHERE show_in_completed = true
+) AND user_id = $1
 ORDER BY updated_at DESC, completed_at DESC
 `
 
@@ -200,10 +200,10 @@ func (q *Queries) GetTasksByCompletedTaskType(ctx context.Context, userID uuid.U
 
 const getTasksByScheduledTaskType = `-- name: GetTasksByScheduledTaskType :many
 SELECT id, user_id, task_type_id, name, description, created_at, due_at, updated_at, completed_at
-FROM tasks 
-WHERE (
-	SELECT (id) FROM task_types WHERE show_in_scheduled = true
-) = task_type_id AND user_id = $1
+FROM tasks
+WHERE task_type_id IN (
+	SELECT id FROM task_types WHERE show_in_scheduled = true
+) AND user_id = $1
 ORDER BY updated_at DESC, due_at DESC
 `
 

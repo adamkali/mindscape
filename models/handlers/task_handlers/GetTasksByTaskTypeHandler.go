@@ -49,7 +49,7 @@ func (h *GetTasksByTaskTypeHandler) Handle() handlers.IHandler {
 	if err := h.services.AuthService.CheckToken(jwt_token.Raw); err != nil {
 		return handlers.Lock(h, 401, err)
 	}
-	taskTypeId := h.taskId(h.ctx.QueryParam("taskId"))
+	taskTypeId := h.taskId(h.ctx.QueryParam("status"))
 	if taskTypeId == uuid.Nil {
 		return handlers.Lock(h, 400, nil)
 	}
@@ -64,8 +64,7 @@ func (h *GetTasksByTaskTypeHandler) Handle() handlers.IHandler {
 }
 
 func (h *GetTasksByTaskTypeHandler) taskId(key string) uuid.UUID {
-	taskStatus := h.ctx.QueryParam("status")
-	switch taskStatus {
+	switch key {
 	case "a":
 		return uuid.MustParse("e56fd149-24de-4835-9dad-ae861a7c3155")
 	case "c":
