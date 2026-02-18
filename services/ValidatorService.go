@@ -391,3 +391,22 @@ func (s ValidatorService) UpdateTaskContentRequest(e echo.Context) (*requests.Up
 	}
 	return validRequest, nil
 }
+
+func (s ValidatorService) CreateApiKeyRequestValidator(e echo.Context) (*requests.CreateApiKeyRequest, error) {
+	validRequest := new(requests.CreateApiKeyRequest)
+	if err := e.Bind(&validRequest); err != nil {
+		return nil, err
+	}
+	if validRequest.Name == "" {
+		return nil, errors.New("API key name cannot be empty")
+	}
+	if !validRequest.ReadAccess && !validRequest.WriteAccess {
+		return nil, errors.New("API key must have at least one access type (read or write)")
+	}
+	if validRequest.NotBefore != nil && validRequest.Expiration != nil {
+		if validRequest.NotBefore.After(*validRequest.Expiration) {
+			return nil, errors.New("not_before must be before expiration")
+		}
+	}
+	return validRequest, nil
+}

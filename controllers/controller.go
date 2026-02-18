@@ -15,7 +15,7 @@ import (
 
 
 type IController interface {
-	Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc)
+	Attatch(e *echo.Echo, middlewares ...echo.MiddlewareFunc)
 	ControllerName() string
 }
 
@@ -26,14 +26,17 @@ func createControllerParams(config *configuration.Configuration) (*services.Regi
 		return nil, err
 	}
 
+	redisService := services.CreateRedisService(ctx, config)
+
 	return &services.Registrar{
 		Config:           config,
+		ApiKeyService:    services.CreateApiKeyService(ctx, config, redisService),
 		AuthService:      services.CreateAuthService(ctx, db, config),
 		BookmarkService:  services.CreateBookmarkService(ctx, db),
 		FolderService:    services.CreateFolderService(ctx, db),
 		MinioService:     services.CreateMinioService(ctx, config),
 		NoteService:      services.CreateNoteService(ctx, db),
-		RedisService:     services.CreateRedisService(ctx, config),
+		RedisService:     redisService,
 		UserService:      services.CreateUserService(ctx, db),
 		WidgetService:    services.CreateWidgetService(ctx, db),
 		ValidatorService: &services.ValidatorService{},

@@ -129,10 +129,10 @@ func (c BookmarkController) Move(e echo.Context) error {
 	).Handle().JSON()
 }
 
-func (c BookmarkController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
+func (c BookmarkController) Attatch(e *echo.Echo, middlewares ...echo.MiddlewareFunc) {
 	api := e.Group("/api" + c.Name)
-	api.POST("", c.Create, authMiddleware)
-	api.GET("/folder/:parent_id", c.GetByFolder, authMiddleware)
-	api.PATCH("", c.Move, authMiddleware)
-	api.DELETE("/folder/:bookmark_id", c.Delete, authMiddleware)
+	api.POST("", c.Create, middlewares...)
+	api.GET("/folder/:parent_id", c.GetByFolder, middlewares...)
+	api.PATCH("", c.Move, middlewares...)
+	api.DELETE("/folder/:bookmark_id", c.Delete, middlewares...)
 }

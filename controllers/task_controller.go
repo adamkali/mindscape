@@ -158,16 +158,16 @@ func (c TaskController) GetTasksByTaskType(e echo.Context) error {
 	return handlers.GetTasksByTaskTypeJsonHandler(e, *c.Registrar)
 }
 
-func (c TaskController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
+func (c TaskController) Attatch(e *echo.Echo, middlewares ...echo.MiddlewareFunc) {
 	api := e.Group("/api" + c.Name)
 	// many
-	api.GET("", c.Read, authMiddleware)
-	api.GET("/queue", c.GetTasksByQueueType, authMiddleware)
-	api.GET("/status", c.GetTasksByTaskType, authMiddleware)
+	api.GET("", c.Read, middlewares...)
+	api.GET("/queue", c.GetTasksByQueueType, middlewares...)
+	api.GET("/status", c.GetTasksByTaskType, middlewares...)
 	// single
-	api.GET("/:taskId", c.ReadByID, authMiddleware)
-	api.POST("", c.Create, authMiddleware)
-	api.PUT("", c.Update, authMiddleware)
-	api.PUT("/status", c.UpdateTaskStatus, authMiddleware)
-	api.DELETE("/:taskId", c.Delete, authMiddleware)
+	api.GET("/:taskId", c.ReadByID, middlewares...)
+	api.POST("", c.Create, middlewares...)
+	api.PUT("", c.Update, middlewares...)
+	api.PUT("/status", c.UpdateTaskStatus, middlewares...)
+	api.DELETE("/:taskId", c.Delete, middlewares...)
 }

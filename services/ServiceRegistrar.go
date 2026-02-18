@@ -4,6 +4,7 @@ import "github.com/adamkali/mindscape/cmd/configuration"
 
 type Registrar struct {
 	Config           *configuration.Configuration
+	ApiKeyService    IApiKeyService
 	AuthService      IAuthService
 	BookmarkService  IBookmarkService
 	FolderService    IFolderService

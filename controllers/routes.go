@@ -7,6 +7,7 @@ import (
 
 	"github.com/adamkali/mindscape/cmd/configuration"
 	"github.com/adamkali/mindscape/middlewares/configs"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	echoSwagger "github.com/swaggo/echo-swagger"
@@ -28,7 +29,39 @@ func RegisterRoutes(e *echo.Echo, config *configuration.Configuration) {
 		BuildFolderController(params),
 		BuildBookmarkController(params),
 		BuildWidgetController(params),
+		BuildApiKeyController(params),
 	)
+
+	// Task controller registered separately (pre-existing pattern)
+	taskCtrlJwt := BuildTaskController(params)
+	taskCtrlJwt.Attatch(e, echojwt.WithConfig(configs.AuthMiddlewareConfig(config)))
+
+	// API key authenticated routes
+	apiKeyMiddleware := middleware.KeyAuthWithConfig(configs.ApiKeyMiddlewareConfig(params.ApiKeyService))
+	keyGroup := e.Group("/api/key")
+	// Tasks
+	taskCtrl := BuildTaskController(params)
+	keyGroup.GET("/tasks", taskCtrl.Read, apiKeyMiddleware)
+	keyGroup.GET("/tasks/queue", taskCtrl.GetTasksByQueueType, apiKeyMiddleware)
+	keyGroup.GET("/tasks/status", taskCtrl.GetTasksByTaskType, apiKeyMiddleware)
+	keyGroup.GET("/tasks/:taskId", taskCtrl.ReadByID, apiKeyMiddleware)
+	keyGroup.POST("/tasks", taskCtrl.Create, apiKeyMiddleware)
+	keyGroup.PUT("/tasks", taskCtrl.Update, apiKeyMiddleware)
+	keyGroup.PUT("/tasks/status", taskCtrl.UpdateTaskStatus, apiKeyMiddleware)
+	keyGroup.DELETE("/tasks/:taskId", taskCtrl.Delete, apiKeyMiddleware)
+	// Folders
+	folderCtrl := BuildFolderController(params)
+	keyGroup.GET("/folders", folderCtrl.GetRootFolders, apiKeyMiddleware)
+	keyGroup.GET("/folders/:folder_id", folderCtrl.GetFolderByID, apiKeyMiddleware)
+	keyGroup.POST("/folders", folderCtrl.CreateFolder, apiKeyMiddleware)
+	keyGroup.PATCH("/folders", folderCtrl.MoveFolder, apiKeyMiddleware)
+	keyGroup.DELETE("/folders/:folder_id", folderCtrl.DeleteFolder, apiKeyMiddleware)
+	// Bookmarks
+	bmCtrl := BuildBookmarkController(params)
+	keyGroup.POST("/bookmarks", bmCtrl.Create, apiKeyMiddleware)
+	keyGroup.GET("/bookmarks/folder/:parent_id", bmCtrl.GetByFolder, apiKeyMiddleware)
+	keyGroup.PATCH("/bookmarks", bmCtrl.Move, apiKeyMiddleware)
+	keyGroup.DELETE("/bookmarks/folder/:bookmark_id", bmCtrl.Delete, apiKeyMiddleware)
 
 	// Static middleware disabled - using explicit static routes instead
 	e.Use(middleware.StaticWithConfig(configs.StaticMiddlewareConfig(config)))

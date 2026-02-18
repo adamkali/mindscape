@@ -152,11 +152,11 @@ func (folderController FolderController) MoveFolder(e echo.Context) error {
 	).Handle().JSON()
 }
 
-func (folderController FolderController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
+func (folderController FolderController) Attatch(e *echo.Echo, middlewares ...echo.MiddlewareFunc) {
 	api := e.Group("/api" + folderController.Name)
-	api.GET("", folderController.GetRootFolders, authMiddleware)
-	api.GET("/:folder_id", folderController.GetFolderByID, authMiddleware)
-	api.POST("", folderController.CreateFolder, authMiddleware)
-	api.PATCH("", folderController.MoveFolder, authMiddleware)
-	api.DELETE("/:folder_id", folderController.DeleteFolder, authMiddleware)
+	api.GET("", folderController.GetRootFolders, middlewares...)
+	api.GET("/:folder_id", folderController.GetFolderByID, middlewares...)
+	api.POST("", folderController.CreateFolder, middlewares...)
+	api.PATCH("", folderController.MoveFolder, middlewares...)
+	api.DELETE("/:folder_id", folderController.DeleteFolder, middlewares...)
 }

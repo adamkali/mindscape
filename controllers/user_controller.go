@@ -339,22 +339,22 @@ func (uc UserController) SetBackground(ctx echo.Context) error {
 	).Handle().JSON()
 }
 
-func (uc UserController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
+func (uc UserController) Attatch(e *echo.Echo, middlewares ...echo.MiddlewareFunc) {
 	e.GET("/api/background", uc.GetDefaultBackground)
 	e.GET("/api/background/choices", uc.GetBackgroundChoices)
 
 	// Register the namespaces for the endopoints
 	api := e.Group("/api" + uc.Name)
-	api.GET("", uc.GetUsers, authMiddleware)
+	api.GET("", uc.GetUsers, middlewares...)
 	api.POST("/login", uc.Login)
 	api.POST("/signup", uc.Signup)
-	api.GET("/current", uc.GetCurrent, authMiddleware)
-	api.POST("/profile", uc.UploadProfilePicture, authMiddleware)
-	api.POST("/creds", uc.UpdateUser, authMiddleware)
-	api.GET("/profile", uc.GetProfile, authMiddleware)
-	api.POST("/background", uc.UploadBackgound, authMiddleware)
-	api.PATCH("/background", uc.SetBackground, authMiddleware)
-	api.GET("/background", uc.GetBackground, authMiddleware)
-	api.GET("/background/choices", uc.GetUserBackgroundChoices, authMiddleware)
-	api.DELETE("/:user_id", uc.DeleteUser, authMiddleware)
+	api.GET("/current", uc.GetCurrent, middlewares...)
+	api.POST("/profile", uc.UploadProfilePicture, middlewares...)
+	api.POST("/creds", uc.UpdateUser, middlewares...)
+	api.GET("/profile", uc.GetProfile, middlewares...)
+	api.POST("/background", uc.UploadBackgound, middlewares...)
+	api.PATCH("/background", uc.SetBackground, middlewares...)
+	api.GET("/background", uc.GetBackground, middlewares...)
+	api.GET("/background/choices", uc.GetUserBackgroundChoices, middlewares...)
+	api.DELETE("/:user_id", uc.DeleteUser, middlewares...)
 }
