@@ -6,10 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/requests"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -82,7 +84,7 @@ func (UserService *UserService) addNewUser(
 	repo := repository.New(tx)
 	user, err = repo.CreateUser(UserService.ctx, params)
 	if err != nil {
-		return nil, err
+		return nil, wrapUniqueViolation(err)
 	}
 	tx.Commit(UserService.ctx)
 	fmt.Println(user)
@@ -101,10 +103,25 @@ func (UserService *UserService) addNewUserAdmin(
 	repo := repository.New(tx)
 	user, err = repo.CreateUserAdmin(UserService.ctx, params)
 	if err != nil {
-		return nil, err
+		return nil, wrapUniqueViolation(err)
 	}
 	tx.Commit(UserService.ctx)
 	return &user, nil
+}
+
+func wrapUniqueViolation(err error) error {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+		constraint := pgErr.ConstraintName
+		if strings.Contains(constraint, "email") {
+			return errors.New("A user with this email already exists")
+		}
+		if strings.Contains(constraint, "username") {
+			return errors.New("A user with this username already exists")
+		}
+		return errors.New("A user with these details already exists")
+	}
+	return err
 }
 
 // Login a user
