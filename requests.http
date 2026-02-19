@@ -5,8 +5,9 @@
 GET {{BASE_URL}}/_health
 
 ### Register User (Should succeed)
-POST {{BASE_URL}}/signup
+POST {{BASE_URL}}/users/signup
 Content-Type: application/json
+
 {
 	"email": "Gyf3r@example.com",
 	"username": "test",
@@ -16,6 +17,7 @@ Content-Type: application/json
 ### Register User (Will not validate email)
 POST {{BASE_URL}}/signup
 Content-Type: application/json
+
 {
 	"email": "test",
 	"username": "test",
@@ -25,6 +27,7 @@ Content-Type: application/json
 ### Register User (Will not validate username)
 POST {{BASE_URL}}/signup
 Content-Type: application/json
+
 {
 	"email": "Gyf3r@example.com",
 	"username": "",
@@ -34,6 +37,7 @@ Content-Type: application/json
 ### Register User (Will not validate password length)
 POST {{BASE_URL}}/signup
 Content-Type: application/json
+
 {
 	"email": "Gyf3r@example.com",
 	"username": "test",
@@ -41,8 +45,9 @@ Content-Type: application/json
 }
 
 ### Login
-POST {{BASE_URL}}/login
+POST {{BASE_URL}}/users/login
 Content-Type: application/json
+
 {
 	"email": "Gyf3r@example.com",
 	"password": "TESTpasswrd1234!"
@@ -57,6 +62,7 @@ Authorization: Bearer {{Login.response.body.$.json.jwt}}
 POST {{BASE_URL}}/key/tasks
 X-Api-Key: {{api-key}}
 Content-Type: application/json
+
 {
 	"name": "Set up CI/CD pipeline",
 	"description": "Configure GitHub Actions for automated testing and deployment to staging",
@@ -67,6 +73,7 @@ Content-Type: application/json
 POST {{BASE_URL}}/key/tasks
 X-Api-Key: {{api-key}}
 Content-Type: application/json
+
 {
 	"name": "Fix production login bug",
 	"description": "Users report intermittent 500 errors when logging in during peak hours",
@@ -77,6 +84,7 @@ Content-Type: application/json
 POST {{BASE_URL}}/key/tasks
 X-Api-Key: {{api-key}}
 Content-Type: application/json
+
 {
 	"name": "Add bookmark import/export",
 	"description": "Support importing bookmarks from Chrome/Firefox JSON and exporting to standard format",
@@ -88,6 +96,7 @@ Content-Type: application/json
 POST {{BASE_URL}}/key/tasks
 X-Api-Key: {{api-key}}
 Content-Type: application/json
+
 {
 	"name": "Upgrade TailwindCSS to v5",
 	"description": "Waiting on v5 stable release before upgrading - monitor changelog",
@@ -99,6 +108,7 @@ Content-Type: application/json
 POST {{BASE_URL}}/key/tasks
 X-Api-Key: {{api-key}}
 Content-Type: application/json
+
 {
 	"name": "Write unit tests for TaskService",
 	"description": "Add coverage for Create, Update, Delete and status transition methods",
@@ -110,6 +120,7 @@ Content-Type: application/json
 POST {{BASE_URL}}/key/tasks
 X-Api-Key: {{api-key}}
 Content-Type: application/json
+
 {
 	"name": "Fix memory leak in widget refresh",
 	"description": "Widget container seems to accumulate event listeners on rapid view switching",
@@ -121,6 +132,7 @@ Content-Type: application/json
 POST {{BASE_URL}}/key/tasks
 X-Api-Key: {{api-key}}
 Content-Type: application/json
+
 {
 	"name": "Design dark mode color palette",
 	"description": "Create a cohesive dark theme that works with the glass morphism UI style",
@@ -131,6 +143,7 @@ Content-Type: application/json
 POST {{BASE_URL}}/key/tasks
 X-Api-Key: {{api-key}}
 Content-Type: application/json
+
 {
 	"name": "Add bookmark import/export",
 	"description": "Support importing bookmarks from Chrome/Firefox JSON and exporting to standard format",

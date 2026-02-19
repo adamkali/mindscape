@@ -1,6 +1,8 @@
 package task_handlers
 
 import (
+	"fmt"
+
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
@@ -49,9 +51,10 @@ func (h *GetTasksByTaskTypeHandler) Handle() handlers.IHandler {
 	if err := h.services.AuthService.CheckToken(jwt_token.Raw); err != nil {
 		return handlers.Lock(h, 401, err)
 	}
+	fmt.Println(h.ctx.QueryParam("status"))
 	taskTypeId := h.taskId(h.ctx.QueryParam("status"))
 	if taskTypeId == uuid.Nil {
-		return handlers.Lock(h, 400, nil)
+		return handlers.Lock(h, 400, fmt.Errorf("invalid task type"))
 	}
 	if h.result, h.err = h.services.TaskService.GetTasksByTaskType(repository.GetTasksByTaskTypeParams{
 		UserID:     userID,

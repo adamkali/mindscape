@@ -1,6 +1,8 @@
 package task_handlers
 
 import (
+	"fmt"
+
 	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
@@ -57,7 +59,7 @@ func (h *GetTasksByQueueTypeHandler) Handle() handlers.IHandler {
 	}
 	queue := h.GetQueue()
 	if queue == nil {
-		return handlers.Lock(h, 400, nil)
+		return handlers.Lock(h, 400, fmt.Errorf("invalid queue type"))
 	}
 	if h.result, h.err = queue(userID); h.err != nil {
 		return handlers.Lock(h, 500, h.err)

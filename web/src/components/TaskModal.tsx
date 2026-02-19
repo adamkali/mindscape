@@ -344,7 +344,7 @@ export default function TaskModal(props: TaskModalProps) {
 										class="inline-block w-2.5 h-2.5 rounded-full"
 										style={{ 'background-color': statusColor() }}
 									/>
-									{props.task?.taskType?.name || 'Pending'}
+									{(props.task?.taskType?.name || 'Pending').replace('TaskStatus', '')}
 								</div>
 							</div>
 

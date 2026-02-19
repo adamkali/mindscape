@@ -35,7 +35,8 @@ function formatDate(dateStr: string): string {
 }
 
 export default function AgendaRow(props: AgendaRowProps) {
-	const statusName = () => props.task.taskType?.name || 'Pending';
+	const statusName = () =>
+		(props.task.taskType?.name || 'Pending').replace('TaskStatus', '');
 	const statusInfo = () => STATUS_ICONS[statusName()] || STATUS_ICONS.Pending;
 
 	const dateDisplay = () => {

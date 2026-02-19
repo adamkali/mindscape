@@ -41,38 +41,25 @@ func (s *TaskService) getTaskTypeById(taskId uuid.UUID, repo *repository.Queries
 }
 
 func (s *TaskService) getTaskTypesForSlice(tasks []repository.Task, repo *repository.Queries) ([]TaskDTO, error) {
-	taskTypes := make(chan repository.TaskType)
-	errChans := make(chan error)
 	taskObjects := make([]TaskDTO, len(tasks))
-	for _, task := range tasks {
-		go func() {
-			taskType, err := s.getTaskTypeById(task.TaskTypeID, repo)
-			if err != nil {
-				errChans <- err
-			}
-			taskTypes <- taskType
-		}()
-	}
-	for i := range tasks {
-		select {
-		case taskType := <-taskTypes:
-			taskObjects[i] = TaskDTO{
-				ID:          tasks[i].ID,
-				UserID:      tasks[i].UserID,
-				TaskTypeID:  tasks[i].TaskTypeID,
-				Name:        tasks[i].Name,
-				Description: tasks[i].Description,
-				CreatedAt:   *tasks[i].CreatedAt,
-				DueAt:       timestamptzToPtr(tasks[i].DueAt),
-				UpdatedAt:   timestamptzToPtr(tasks[i].UpdatedAt),
-				CompletedAt: timestamptzToPtr(tasks[i].CompletedAt),
-				TaskType:    taskType,
-			}
-		case err := <-errChans:
+	for i, task := range tasks {
+		taskType, err := s.getTaskTypeById(task.TaskTypeID, repo)
+		if err != nil {
 			return []TaskDTO{}, err
 		}
+		taskObjects[i] = TaskDTO{
+			ID:          task.ID,
+			UserID:      task.UserID,
+			TaskTypeID:  task.TaskTypeID,
+			Name:        task.Name,
+			Description: task.Description,
+			CreatedAt:   *task.CreatedAt,
+			DueAt:       timestamptzToPtr(task.DueAt),
+			UpdatedAt:   timestamptzToPtr(task.UpdatedAt),
+			CompletedAt: timestamptzToPtr(task.CompletedAt),
+			TaskType:    taskType,
+		}
 	}
-
 	return taskObjects, nil
 }
 
