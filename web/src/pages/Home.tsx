@@ -143,6 +143,17 @@ const Home = () => {
 		bookmarkRefresh = () => {};
 	};
 
+	// set overwritable callback for create folder component (parent folder refresh)
+	let folderRefresh: () => void = () => {};
+	const openCreateFolderComponent = () => {
+		setShowCreateFolder(true);
+		setShowCreateBookmark(false);
+	};
+
+	const handleFolderSelected = (refreshFn: () => Promise<void>) => {
+		folderRefresh = refreshFn;
+	};
+
 	const handleRootDragOver = (e: DragEvent) => {
 		// Only handle if the target is the root container or empty space, not folder cards
 		const target = e.target as HTMLElement;
@@ -247,7 +258,7 @@ const Home = () => {
 							<Button
 								variant="primary"
 								onClick={() => {
-									setShowCreateFolder(true);
+									openCreateFolderComponent();
 								}}
 							>
 								<AddFolder />
@@ -261,7 +272,11 @@ const Home = () => {
 								auth={auth}
 								setShowCreateFolder={setShowCreateFolder}
 								folderAPIRef={foldersApi}
-								refresh={fetchRootFolders}
+								refresh={async () => {
+								await fetchRootFolders();
+								folderRefresh();
+								folderRefresh = () => {};
+							}}
 							/>
 						</Show>
 
@@ -300,6 +315,7 @@ const Home = () => {
 											deleteFolder={deleteFolder}
 											deleteBookmark={deleteBookmark}
 											showCreateFolder={openCreateBookmarkComponent}
+											onFolderSelected={handleFolderSelected}
 											indent={0}
 										/>
 									))}

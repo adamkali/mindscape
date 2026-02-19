@@ -19,6 +19,7 @@ interface FolderComponentProps extends ComponentProps<'div'> {
 	deleteFolder: (id: string) => void;
 	deleteBookmark?: (bookmarkId: string) => void;
 	showCreateFolder: (folderBookmarkRefresh?: () => void) => void;
+	onFolderSelected?: (refreshFn: () => Promise<void>) => void;
 	indent: number;
 }
 
@@ -79,8 +80,26 @@ export default function FolderComponent(props: FolderComponentProps) {
 		}
 	};
 
+	const refreshFolder = async () => {
+		const response = await api.folders.getFolders({
+			folderId: folder.id || '',
+			authorization: `Bearer ${auth.token()}`,
+		});
+		if (response.success && response.data) {
+			setChildren(response.data.children || []);
+			setBookmarks(response.data.bookmarks || []);
+		} else {
+			console.error(
+				'Failed to refresh folder:',
+				response.message,
+				response.data,
+				response.success,
+			);
+		}
+	};
+
 	const refreshBookmarks = async () => {
-		const response = await api.bookmarks.align({
+		const response = await api.bookmarks.getBookmarks({
 			parentId: folder.id || '',
 			authorization: `Bearer ${auth.token()}`,
 		});
@@ -116,6 +135,7 @@ export default function FolderComponent(props: FolderComponentProps) {
 								deleteBookmark={props.deleteBookmark}
 								indent={indentNext()}
 								showCreateFolder={props.showCreateFolder}
+								onFolderSelected={props.onFolderSelected}
 							/>
 						)}
 					</For>
@@ -208,12 +228,13 @@ export default function FolderComponent(props: FolderComponentProps) {
 					onSelect={(folderId) => {
 						setSelectedFolder(folderId);
 						openFolder();
+						props.onFolderSelected?.(refreshFolder);
 					}}
 					onDelete={deleteFolder}
 					onCreateBookmark={(folderId) => {
 						setSelectedFolder(folderId);
 						props.showCreateFolder(async () => {
-							await refreshBookmarks();
+							await refreshFolder();
 						});
 					}}
 					onDrop={handleDrop}
