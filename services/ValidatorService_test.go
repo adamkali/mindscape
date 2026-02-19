@@ -93,6 +93,11 @@ func WithBadPassword_NoSpecial(request map[string]any) map[string]any {
 	return request
 }
 
+func WithShortMixedPassword(request map[string]any) map[string]any {
+	request["password"] = "Cheese360!"
+	return request
+}
+
 func UserRequestJson() map[string]any {
 	return map[string]any{
 		"username": "adamkali",
@@ -195,6 +200,13 @@ func Run_ValidateNewUserRequest_BadPassword_NoSpecial(v services.ValidatorServic
 		http.MethodPost,
 		CreateUser,
 		WithBadPassword_NoSpecial(UserRequestJson()))))
+}
+
+func Run_ValidateNewUserRequest_ShortMixedPassword(v services.ValidatorService) (*requests.NewUserRequest, error) {
+	return v.ValidateNewUserRequest(NewEchoContext(Request(
+		http.MethodPost,
+		CreateUser,
+		WithShortMixedPassword(UserRequestJson()))))
 }
 
 // </runners>
@@ -307,6 +319,13 @@ func ValidateNewUserRequest_BadPassword_NoLower(t *testing.T) {
 	assert.Equal(t, r.Password, "PASSWORDABC123!")
 }
 
+func ValidateNewUserRequest_ShortMixedPassword(t *testing.T) {
+	r, e := Run_ValidateNewUserRequest_ShortMixedPassword(services.ValidatorService{})
+	assert.NoError(t, e)
+	assert.NotNil(t, r)
+	assert.Equal(t, r.Password, "Cheese360!")
+}
+
 // </evaluators>
 // <map/>
 var Map_ValidateNewUserRequest = map[string]func(t *testing.T){
@@ -322,6 +341,7 @@ var Map_ValidateNewUserRequest = map[string]func(t *testing.T){
 	"BadPassword_NoSpecialCharacter":     ValidateNewUserRequest_BadPassword_NoSpecialCharacter,
 	"BadPassword_NoNumber":               ValidateNewUserRequest_BadPassword_NoNumber,
 	"BadPassword_NoLower":                ValidateNewUserRequest_BadPassword_NoLower,
+	"ShortMixedPassword":                 ValidateNewUserRequest_ShortMixedPassword,
 }
 
 // </tests>

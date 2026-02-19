@@ -43,23 +43,17 @@ func validateUsername(username string) bool {
 }
 
 func validatePassword(s string) (sevenOrMore, number, upper, special bool) {
-	letters := 0
 	for _, c := range s {
 		switch {
 		case unicode.IsNumber(c):
 			number = true
 		case unicode.IsUpper(c):
 			upper = true
-			letters++
 		case unicode.IsPunct(c) || unicode.IsSymbol(c):
 			special = true
-		case unicode.IsLetter(c) || c == ' ':
-			letters++
-		default:
-			//return false, false, false, false
 		}
 	}
-	sevenOrMore = letters > 7
+	sevenOrMore = len(s) >= 8
 	return
 }
 
@@ -70,7 +64,7 @@ func validatePassword(s string) (sevenOrMore, number, upper, special bool) {
 func (ValidatorService ValidatorService) ValidateNewUserRequest(e echo.Context) (*requests.NewUserRequest, error) {
 	validRequest := new(requests.NewUserRequest)
 	if err := e.Bind(&validRequest); err != nil {
-		return nil, err
+		return nil, errors.New("Invalid request body. Please check your input and try again")
 	}
 
 	if !validateUsername(validRequest.Username) {
