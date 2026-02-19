@@ -236,7 +236,7 @@ func (r ValidatorService) CreateBookmarkRequest(e echo.Context) (*repository.Cre
 
 	// Check for emojis in link
 	for _, r := range validRequest.Link {
-		if unicode.Is(unicode.So, r) || unicode.Is(unicode.Sm, r) {
+		if unicode.Is(unicode.So, r) {
 			return nil, errors.New("Link cannot contain emojis")
 		}
 	}

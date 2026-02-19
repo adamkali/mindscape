@@ -1336,6 +1336,11 @@ func WithEmojiInLink(request map[string]any) map[string]any {
 	return request
 }
 
+func WithQueryParamsLink(request map[string]any) map[string]any {
+	request["link"] = "https://us-east-1.console.aws.amazon.com/s3/object/bucket?region=us-east-1&prefix=CA/court/"
+	return request
+}
+
 func WithValidHTTPLink(request map[string]any) map[string]any {
 	request["link"] = "http://example.com"
 	return request
@@ -1444,6 +1449,14 @@ func Run_CreateBookmarkRequest_WithEmojiInLink(s services.ValidatorService) (*re
 		http.MethodPost,
 		"/api/bookmarks/create",
 		WithEmojiInLink(CreateBookmarkRequestJson()),
+	)))
+}
+
+func Run_CreateBookmarkRequest_WithQueryParamsLink(s services.ValidatorService) (*repository.CreateBookmarkParams, error) {
+	return s.CreateBookmarkRequest(NewEchoContext(Request(
+		http.MethodPost,
+		"/api/bookmarks/create",
+		WithQueryParamsLink(CreateBookmarkRequestJson()),
 	)))
 }
 
@@ -1602,6 +1615,14 @@ func CreateBookmarkRequest_WithEmojiInLink(t *testing.T) {
 	assert.Nil(t, r)
 }
 
+func CreateBookmarkRequest_WithQueryParamsLink(t *testing.T) {
+	r, e := Run_CreateBookmarkRequest_WithQueryParamsLink(services.ValidatorService{})
+	assert.NoError(t, e)
+	assert.NotNil(t, r)
+	assert.Equal(t, r.Name, "My Bookmark")
+	assert.Equal(t, r.Link, "https://us-east-1.console.aws.amazon.com/s3/object/bucket?region=us-east-1&prefix=CA/court/")
+}
+
 func CreateBookmarkRequest_WithValidHTTPLink(t *testing.T) {
 	r, e := Run_CreateBookmarkRequest_WithValidHTTPLink(services.ValidatorService{})
 	assert.NoError(t, e)
@@ -1697,6 +1718,7 @@ var Map_CreateBookmarkRequest = map[string]func(*testing.T){
 	"WithInvalidLink":            CreateBookmarkRequest_WithInvalidLink,
 	"WithEmojiInBookmarkName":    CreateBookmarkRequest_WithEmojiInBookmarkName,
 	"WithEmojiInLink":            CreateBookmarkRequest_WithEmojiInLink,
+	"WithQueryParamsLink":        CreateBookmarkRequest_WithQueryParamsLink,
 	"WithValidHTTPLink":          CreateBookmarkRequest_WithValidHTTPLink,
 	"WithValidHTTPSLink":         CreateBookmarkRequest_WithValidHTTPSLink,
 	"WithJavascriptLink":         CreateBookmarkRequest_WithJavascriptLink,
