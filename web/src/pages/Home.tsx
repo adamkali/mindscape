@@ -261,7 +261,6 @@ const Home = () => {
         }
     };
 
-
     return (
         <div
             class="h-screen overflow-hidden bg-background"
@@ -367,43 +366,42 @@ const Home = () => {
                     </div>
 
                     <div class="treeview-scroll-wrapper relative flex-1 min-h-0">
-                    <div class="treeview-scroll p-2 pt-0 overflow-y-auto h-full">
-                        <Show
-                            when={!isLoadingFolders()}
-                            fallback={
-                                <div class="text-center py-4 text-foreground/60">
-                                    Loading folders...
-                                </div>
-                            }
-                        >
+                        <div class="treeview-scroll p-2 pt-0 overflow-y-auto h-full">
                             <Show
-                                when={folders().length > 0}
+                                when={!isLoadingFolders()}
                                 fallback={
                                     <div class="text-center py-4 text-foreground/60">
-                                        No folders yet. Create your first folder!
+                                        Loading folders...
                                     </div>
                                 }
                             >
-                                <div class="space-y-4">
-                                    {folders().map((folder) => (
-                                        <FolderComponent
-                                            folder={folder}
-                                            selectedFolder={focusedNodeId}
-                                            setSelectedFolder={setFocusedNodeId}
-                                            deleteFolder={deleteFolder}
-                                            deleteBookmark={deleteBookmark}
-                                            showCreateFolder={openCreateBookmarkComponent}
-                                            onFolderSelected={handleFolderSelected}
-                                            indent={0}
-                                        />
-                                    ))}
-                                </div>
+                                <Show
+                                    when={folders().length > 0}
+                                    fallback={
+                                        <div class="text-center py-4 text-foreground/60">
+                                            No folders yet. Create your first folder!
+                                        </div>
+                                    }
+                                >
+                                    <div class="space-y-4">
+                                        {folders().map((folder) => (
+                                            <FolderComponent
+                                                folder={folder}
+                                                selectedFolder={focusedNodeId}
+                                                setSelectedFolder={setFocusedNodeId}
+                                                deleteFolder={deleteFolder}
+                                                deleteBookmark={deleteBookmark}
+                                                showCreateFolder={openCreateBookmarkComponent}
+                                                onFolderSelected={handleFolderSelected}
+                                                indent={0}
+                                            />
+                                        ))}
+                                    </div>
+                                </Show>
                             </Show>
-                        </Show>
-                    </div>
+                        </div>
                     </div>
                 </div>
-
 
                 <Components.WidgetContainer />
             </div>
