@@ -7,12 +7,12 @@ import {
 	type ResponsesFolderData,
 } from '@/api';
 import Components from '@/components';
-import { Button } from '@/components/atoms';
+import { Button, Input } from '@/components/atoms';
 import CreateBookmarkComponent from '@/components/CreateBookmarkComponent';
 import CreateFolderComponent from '@/components/CreateFolderComponent';
 import FolderComponent from '@/components/FolderComponent';
 import { Header } from '@/components/Header';
-import { AddFolder } from '@/components/icons';
+import { AddFolder, EditIcon, SaveIcon } from '@/components/icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBackgroundStyle } from '@/hooks/useBackground';
 import { EmptyGuid } from '@/utils';
@@ -26,6 +26,9 @@ const Home = () => {
 	const [showCreateFolder, setShowCreateFolder] = createSignal(false);
 	const [showCreateBookmark, setShowCreateBookmark] = createSignal(false);
 	const [isDragOverRoot, setIsDragOverRoot] = createSignal(false);
+	const [focusedFolderName, setFocusedFolderName] = createSignal('');
+	const [isEditingFolderName, setIsEditingFolderName] = createSignal(false);
+	const [editFolderName, setEditFolderName] = createSignal('');
 	const foldersApi = new FoldersApi();
 	const user = auth.user();
 
@@ -150,8 +153,39 @@ const Home = () => {
 		setShowCreateBookmark(false);
 	};
 
-	const handleFolderSelected = (refreshFn: () => Promise<void>) => {
+	const handleFolderSelected = (
+		refreshFn: () => Promise<void>,
+		folderName: string,
+	) => {
 		folderRefresh = refreshFn;
+		setFocusedFolderName(folderName);
+		setIsEditingFolderName(false);
+	};
+
+	const handleSaveFolderName = async () => {
+		const folderId = focusedNodeId();
+		const newName = editFolderName().trim();
+		if (!folderId || !newName || !auth.token()) return;
+
+		try {
+			const response = await foldersApi.updateFolder({
+				folderId,
+				updateFolderRequest: {
+					userId: user?.id,
+					folderId,
+					name: newName,
+				},
+				authorization: `Bearer ${auth.token()}`,
+			});
+			if (response.success) {
+				setFocusedFolderName(newName);
+				setIsEditingFolderName(false);
+				await fetchRootFolders();
+				folderRefresh();
+			}
+		} catch (error) {
+			console.error('Failed to rename folder:', error);
+		}
 	};
 
 	const handleRootDragOver = (e: DragEvent) => {
@@ -253,8 +287,8 @@ const Home = () => {
 					onDragLeave={handleRootDragLeave}
 					onDrop={handleRootDrop}
 				>
-					<div class="p-2">
-						<div class="flex items-center justify-between mb-4">
+					<div class="sticky top-0 z-10 bg-background/95 backdrop-blur-sm pb-2 p-2">
+						<div class="flex items-center justify-between mb-2">
 							<Button
 								variant="primary"
 								onClick={() => {
@@ -263,6 +297,48 @@ const Home = () => {
 							>
 								<AddFolder />
 							</Button>
+
+							<Show when={focusedNodeId()}>
+								<div class="flex items-center gap-2 ml-2 min-w-0 flex-1">
+									<Show
+										when={isEditingFolderName()}
+										fallback={
+											<span class="text-sm font-semibold text-foreground truncate">
+												{focusedFolderName()}
+											</span>
+										}
+									>
+										<Input
+											label="Folder name"
+											type="text"
+											value={editFolderName()}
+											onInput={(e) => setEditFolderName(e.currentTarget.value)}
+											onKeyDown={(e) => {
+												if (e.key === 'Enter') handleSaveFolderName();
+												if (e.key === 'Escape') setIsEditingFolderName(false);
+											}}
+											class="text-sm h-7 min-w-0 flex-1"
+										/>
+									</Show>
+									<Button
+										variant="secondary"
+										class="p-1 text-xs flex-shrink-0"
+										onClick={(e) => {
+											e.stopPropagation();
+											if (isEditingFolderName()) {
+												handleSaveFolderName();
+											} else {
+												setEditFolderName(focusedFolderName());
+												setIsEditingFolderName(true);
+											}
+										}}
+									>
+										<Show when={isEditingFolderName()} fallback={<EditIcon />}>
+											<SaveIcon />
+										</Show>
+									</Button>
+								</div>
+							</Show>
 						</div>
 
 						<Show when={showCreateFolder()}>
@@ -273,10 +349,10 @@ const Home = () => {
 								setShowCreateFolder={setShowCreateFolder}
 								folderAPIRef={foldersApi}
 								refresh={async () => {
-								await fetchRootFolders();
-								folderRefresh();
-								folderRefresh = () => {};
-							}}
+									await fetchRootFolders();
+									folderRefresh();
+									folderRefresh = () => {};
+								}}
 							/>
 						</Show>
 
@@ -289,7 +365,9 @@ const Home = () => {
 								refreshBookmarks={bookmarkRefresh}
 							/>
 						</Show>
+					</div>
 
+					<div class="p-2 pt-0">
 						<Show
 							when={!isLoadingFolders()}
 							fallback={

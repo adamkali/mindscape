@@ -67,7 +67,7 @@ export default function FolderCard(props: FolderCardProps) {
 			'w-64 hover:scale-105 active:scale-95 cursor-pointer transition-all duration-300';
 
 		if (props.isSelected) {
-			classes += ' ring-2 ring-white/50 bg-white/40';
+			classes += ' ring-2 ring-white/50 dark:bg-white/20 bg-black/10';
 		}
 
 		if (isDragOver()) {

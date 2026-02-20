@@ -29,6 +29,7 @@ models/RepositoryCreateFolderParams.ts
 models/RepositoryFolder.ts
 models/RepositoryNote.ts
 models/RequestsMoveFolderRequest.ts
+models/RequestsUpdateFolderRequest.ts
 models/ResponsesCoolifyActionData.ts
 models/ResponsesFolderData.ts
 models/ResponsesFolderResponse.ts

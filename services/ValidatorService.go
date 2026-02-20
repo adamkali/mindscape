@@ -284,6 +284,34 @@ func (r ValidatorService) ValidateMoveFolderRequest(e echo.Context) (*requests.M
 	return validRequest, nil
 }
 
+func (r ValidatorService) ValidateUpdateFolderRequest(e echo.Context) (*requests.UpdateFolderRequest, error) {
+	validRequest := new(requests.UpdateFolderRequest)
+	if err := e.Bind(&validRequest); err != nil {
+		return nil, err
+	}
+
+	// Validate User ID
+	if validRequest.UserID == uuid.Nil {
+		return nil, errors.New("User ID cannot be null")
+	}
+
+	// Validate Folder ID
+	if validRequest.FolderID == uuid.Nil {
+		return nil, errors.New("Folder ID cannot be null")
+	}
+
+	// Validate Name
+	if validRequest.Name == "" {
+		return nil, errors.New("Folder name cannot be empty")
+	}
+
+	if strings.ContainsAny(validRequest.Name, "/\\:*?\"<>|") {
+		return nil, errors.New("Folder name cannot contain any special characters")
+	}
+
+	return validRequest, nil
+}
+
 func (r ValidatorService) ValidateMoveBookmarkRequest(e echo.Context) (*requests.MoveBookmarkRequest, error) {
 	validRequest := new(requests.MoveBookmarkRequest)
 	if err := e.Bind(&validRequest); err != nil {

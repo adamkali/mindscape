@@ -361,6 +361,17 @@ definitions:
       userId:
         type: string
     type: object
+  requests.UpdateFolderRequest:
+    properties:
+      description:
+        type: string
+      folderId:
+        type: string
+      name:
+        type: string
+      userId:
+        type: string
+    type: object
   responses.CoolifyActionData:
     properties:
       action:
@@ -1040,6 +1051,60 @@ paths:
           schema:
             $ref: '#/definitions/responses.FolderResponse'
       summary: Get the Folders associated with the user under A Parent Folder
+      tags:
+      - Folders
+    put:
+      consumes:
+      - application/json
+      description: Update a Folder's name and description by Authorization Header
+      operationId: UpdateFolder
+      parameters:
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Folder ID
+        in: path
+        name: folder_id
+        required: true
+        type: string
+      - description: Update Folder Request
+        in: body
+        name: UpdateFolderRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateFolderRequest'
+      - default: '"Bearer token"'
+        description: Authorization Header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+      summary: Update a Folder
       tags:
       - Folders
   /users/:

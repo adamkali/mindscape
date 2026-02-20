@@ -24,6 +24,7 @@ export * from './RepositoryCreateFolderParams';
 export * from './RepositoryFolder';
 export * from './RepositoryNote';
 export * from './RequestsMoveFolderRequest';
+export * from './RequestsUpdateFolderRequest';
 export * from './ResponsesCoolifyActionData';
 export * from './ResponsesFolderData';
 export * from './ResponsesFolderResponse';

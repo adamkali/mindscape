@@ -19,7 +19,10 @@ interface FolderComponentProps extends ComponentProps<'div'> {
 	deleteFolder: (id: string) => void;
 	deleteBookmark?: (bookmarkId: string) => void;
 	showCreateFolder: (folderBookmarkRefresh?: () => void) => void;
-	onFolderSelected?: (refreshFn: () => Promise<void>) => void;
+	onFolderSelected?: (
+		refreshFn: () => Promise<void>,
+		folderName: string,
+	) => void;
 	indent: number;
 }
 
@@ -228,7 +231,7 @@ export default function FolderComponent(props: FolderComponentProps) {
 					onSelect={(folderId) => {
 						setSelectedFolder(folderId);
 						openFolder();
-						props.onFolderSelected?.(refreshFolder);
+						props.onFolderSelected?.(refreshFolder, folder.name || '');
 					}}
 					onDelete={deleteFolder}
 					onCreateBookmark={(folderId) => {
