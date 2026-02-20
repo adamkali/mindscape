@@ -28,7 +28,7 @@
 	/* Glass theming - Light mode */
 	--glass-bg: rgba(255, 255, 255, 0.2);
 	--glass-bg-hover: rgba(255, 255, 255, 0.3);
-	--glass-bg-strong: rgba(255, 255, 255, 0.5);
+	--glass-bg-strong: rgba(255, 255, 255, 0.85);
 	--glass-bg-modal: rgba(255, 255, 255, 0);
 	--glass-border: rgba(255, 255, 255, 0.3);
 	--glass-border-hover: rgba(255, 255, 255, 0.5);
@@ -62,7 +62,7 @@
 	/* Glass theming - Dark mode */
 	--glass-bg: rgba(15, 23, 42, 0.4);
 	--glass-bg-hover: rgba(15, 23, 42, 0.6);
-	--glass-bg-strong: rgba(15, 23, 42, 0.95);
+	--glass-bg-strong: rgba(15, 23, 42, 1);
 	--glass-border: rgba(51, 65, 85, 0.5);
 	--glass-border-hover: rgba(71, 85, 105, 0.6);
 	--glass-text: #ffffff;

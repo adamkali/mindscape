@@ -286,7 +286,7 @@ const Home = () => {
                     onDragLeave={handleRootDragLeave}
                     onDrop={handleRootDrop}
                 >
-                    <div class="sticky top-0 z-10 pb-2 p-2">
+                    <div class="sticky top-0 z-10 pb-2 p-2 bg-glass-bg-strong backdrop-blur-lg rounded-md">
                         <div class="flex items-center justify-between mb-2">
                             <Button
                                 class="p-1 text-xs flex-shrink-0"
