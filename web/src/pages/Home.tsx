@@ -280,13 +280,13 @@ const Home = () => {
 
             <div class="flex h-screen flex-row">
                 <div
-                    class={`treeview-container m-2 p-4 rounded-lg overflow-y-auto bg-background backdrop-blur-lg border border-white/20 max-h-[calc(100vh-2rem)] min-w-80 shadow-2xl shadow-slate-900/30 dark:border-slate-700/50 dark:shadow-black/30 ${isDragOverRoot() ? 'ring-2 ring-blue-400 bg-blue-100/20' : ''
+                    class={`treeview-container m-2 p-4 rounded-lg flex flex-col overflow-hidden bg-background backdrop-blur-lg border border-white/20 max-h-[calc(100vh-2rem)] min-w-80 shadow-2xl shadow-slate-900/30 dark:border-slate-700/50 dark:shadow-black/30 ${isDragOverRoot() ? 'ring-2 ring-blue-400 bg-blue-100/20' : ''
                         }`}
                     onDragOver={handleRootDragOver}
                     onDragLeave={handleRootDragLeave}
                     onDrop={handleRootDrop}
                 >
-                    <div class="sticky top-0 z-10 pb-2 p-2 bg-glass-bg-strong backdrop-blur-lg rounded-md">
+                    <div class="pb-4 p-2 bg-glass-bg rounded-md flex-shrink-0">
                         <div class="flex items-center justify-between mb-2">
                             <Button
                                 class="p-1 text-xs flex-shrink-0"
@@ -365,7 +365,7 @@ const Home = () => {
                         </Show>
                     </div>
 
-                    <div class="p-2 pt-0">
+                    <div class="treeview-scroll p-2 pt-0 overflow-y-auto flex-1 min-h-0">
                         <Show
                             when={!isLoadingFolders()}
                             fallback={
