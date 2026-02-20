@@ -39,6 +39,8 @@ export default function CreateFolderComponent(
 		if (response.success) {
 			setFolderName('');
 			setFolderDescription('');
+			refresh?.();
+			setShowCreateFolder(false);
 		} else {
 			console.error('Failed to create folder:', response.message);
 			return;
