@@ -261,6 +261,7 @@ const Home = () => {
         }
     };
 
+
     return (
         <div
             class="h-screen overflow-hidden bg-background"
@@ -365,7 +366,8 @@ const Home = () => {
                         </Show>
                     </div>
 
-                    <div class="treeview-scroll p-2 pt-0 overflow-y-auto flex-1 min-h-0">
+                    <div class="treeview-scroll-wrapper relative flex-1 min-h-0">
+                    <div class="treeview-scroll p-2 pt-0 overflow-y-auto h-full">
                         <Show
                             when={!isLoadingFolders()}
                             fallback={
@@ -399,7 +401,9 @@ const Home = () => {
                             </Show>
                         </Show>
                     </div>
+                    </div>
                 </div>
+
 
                 <Components.WidgetContainer />
             </div>

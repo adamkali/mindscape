@@ -138,3 +138,18 @@
 .treeview-scroll::-webkit-scrollbar-thumb:hover {
 	background: var(--scrollbar-thumb-hover);
 }
+
+/* Bottom fade on the scroll area */
+.treeview-scroll-wrapper::after {
+	content: '';
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	height: 4rem;
+	border-radius: 0 0 0.5rem 0.5rem;
+	background: linear-gradient(to top, var(--glass-bg), transparent);
+	backdrop-filter: blur(8px);
+	pointer-events: none;
+	z-index: 1;
+}
