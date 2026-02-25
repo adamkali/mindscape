@@ -1,0 +1,30 @@
+namespace: github.com/adamkali/mindscape
+name: mindscape
+semver: 0.1.0
+license: MIT
+copyright:
+  year: 2025
+  author: Adam Kali
+server:
+  jwt: DZ4Z^v7repAumVj6S@7Q4Fc1c8@1VEVed8EdTrpDcx3a^SYY6Gq1Szv@NRgxWGtH
+  port: 60000
+  frontend:
+    dir: web/dist
+    api: web/src/api
+database:
+  url: postgres://postgres:86NGOnu0Ney0fsHNltw22pUF7jypreoe55zug9pLJ54AYSlUa98DIa58bTxkmzcq@gsk8owg40g8w80ck4wcc8o4k:5432/postgres
+  sqlc:
+    repository: db/repository
+    schema: postgresql
+    sql_or_go: sql
+  queries: db/queries
+  migration:
+    protocol: postgres
+    destination: db/migrations
+cache:
+  url: redis://:8xcUUZD3e4EHNHFetARc27hsZ6rAGdo8f1bUFg7zifqNCoHXoYDpg5rzqHmDxtzs@e0kkgg8gw0wgwogogok0c0w0:6379/0
+s3:
+  url: minio-j8s8okssws040w0goggko4gg.kalilarosa.xyz
+  access: 2uAhQRZBzDT63ezNgg6rns92YhNqZNhU
+  secret: yrKfzEKHADbWa4VTUeFnh8sqSShcKEE2
+  secure: true
