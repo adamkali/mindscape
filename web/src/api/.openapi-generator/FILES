@@ -49,6 +49,7 @@ models/SchemasWidgetLayout.ts
 models/SchemasWidgetProperty.ts
 models/SchemasWidgetSize.ts
 models/StringResponse.ts
+models/UpdateBookmarkRequest.ts
 models/UpdateCredentialsRequest.ts
 models/UpdateUserResponse.ts
 models/UserResponse.ts

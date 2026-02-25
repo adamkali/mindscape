@@ -2,11 +2,12 @@ import { A } from '@solidjs/router';
 import { type ComponentProps, createMemo, createSignal } from 'solid-js';
 import type { RepositoryBookmark } from '@/api';
 import { Button, Card } from './atoms';
-import { DeleteIcon } from './icons';
+import { DeleteIcon, EditIcon } from './icons';
 
 interface BookmarkCardProps extends ComponentProps<'div'> {
 	bookmark: RepositoryBookmark;
 	onDelete?: (bookmarkId: string, parentFolderId: string) => void;
+	onEdit?: (bookmark: RepositoryBookmark) => void;
 	draggable?: boolean;
 }
 
@@ -74,6 +75,20 @@ export default function BookmarkCard(props: BookmarkCardProps) {
 						{props.bookmark.name}
 					</span>
 				</A>
+
+				{props.onEdit && (
+					<Button
+						variant="secondary"
+						class="p-1 ml-2 text-xs flex-shrink-0"
+						onClick={(e) => {
+							e.preventDefault();
+							e.stopPropagation();
+							props.onEdit?.(props.bookmark);
+						}}
+					>
+						<EditIcon />
+					</Button>
+				)}
 
 				{props.onDelete && (
 					<Button

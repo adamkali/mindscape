@@ -44,6 +44,7 @@ export * from './SchemasWidgetLayout';
 export * from './SchemasWidgetProperty';
 export * from './SchemasWidgetSize';
 export * from './StringResponse';
+export * from './UpdateBookmarkRequest';
 export * from './UpdateCredentialsRequest';
 export * from './UpdateUserResponse';
 export * from './UserResponse';

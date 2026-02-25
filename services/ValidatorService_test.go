@@ -975,7 +975,7 @@ func ValidateCreateFolderRequest_WithSpecialCharacterName_Slash(t *testing.T) {
 	assert.EqualError(
 		t,
 		e,
-		"Folder name cannot contain any special characters",
+		"Folder name cannot contain /\\:*?\"<>| characters",
 	)
 	assert.Nil(t, r)
 }
@@ -986,7 +986,7 @@ func ValidateCreateFolderRequest_WithSpecialCharacterName_Backslash(t *testing.T
 	assert.EqualError(
 		t,
 		e,
-		"Folder name cannot contain any special characters",
+		"Folder name cannot contain /\\:*?\"<>| characters",
 	)
 	assert.Nil(t, r)
 }
@@ -997,7 +997,7 @@ func ValidateCreateFolderRequest_WithSpecialCharacterName_Colon(t *testing.T) {
 	assert.EqualError(
 		t,
 		e,
-		"Folder name cannot contain any special characters",
+		"Folder name cannot contain /\\:*?\"<>| characters",
 	)
 	assert.Nil(t, r)
 }
@@ -1008,7 +1008,7 @@ func ValidateCreateFolderRequest_WithSpecialCharacterName_Asterisk(t *testing.T)
 	assert.EqualError(
 		t,
 		e,
-		"Folder name cannot contain any special characters",
+		"Folder name cannot contain /\\:*?\"<>| characters",
 	)
 	assert.Nil(t, r)
 }
@@ -1019,7 +1019,7 @@ func ValidateCreateFolderRequest_WithSpecialCharacterName_Question(t *testing.T)
 	assert.EqualError(
 		t,
 		e,
-		"Folder name cannot contain any special characters",
+		"Folder name cannot contain /\\:*?\"<>| characters",
 	)
 	assert.Nil(t, r)
 }
@@ -1030,7 +1030,7 @@ func ValidateCreateFolderRequest_WithSpecialCharacterName_Quote(t *testing.T) {
 	assert.EqualError(
 		t,
 		e,
-		"Folder name cannot contain any special characters",
+		"Folder name cannot contain /\\:*?\"<>| characters",
 	)
 	assert.Nil(t, r)
 }
@@ -1041,7 +1041,7 @@ func ValidateCreateFolderRequest_WithSpecialCharacterName_LessThan(t *testing.T)
 	assert.EqualError(
 		t,
 		e,
-		"Folder name cannot contain any special characters",
+		"Folder name cannot contain /\\:*?\"<>| characters",
 	)
 	assert.Nil(t, r)
 }
@@ -1052,7 +1052,7 @@ func ValidateCreateFolderRequest_WithSpecialCharacterName_GreaterThan(t *testing
 	assert.EqualError(
 		t,
 		e,
-		"Folder name cannot contain any special characters",
+		"Folder name cannot contain /\\:*?\"<>| characters",
 	)
 	assert.Nil(t, r)
 }
@@ -1063,7 +1063,7 @@ func ValidateCreateFolderRequest_WithSpecialCharacterName_Pipe(t *testing.T) {
 	assert.EqualError(
 		t,
 		e,
-		"Folder name cannot contain any special characters",
+		"Folder name cannot contain /\\:*?\"<>| characters",
 	)
 	assert.Nil(t, r)
 }

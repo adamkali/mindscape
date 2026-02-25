@@ -129,10 +129,37 @@ func (c BookmarkController) Move(e echo.Context) error {
 	).Handle().JSON()
 }
 
+// @Summary     Update a Bookmark
+// @Description Update a Bookmark's name and link by Authorization Header
+//
+// @ID          UpdateBookmark
+// @Tags        Bookmarks
+// @Accept      json
+// @Produce     json
+// @Param       UpdateBookmarkRequest body         requests.UpdateBookmarkRequest true "Update Bookmark Request"
+// @Param       Authorization       header       string                         true "Authorization Header"     default("Bearer token")
+// @Param       bookmark_id         path         string                         true "Bookmark ID"              default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
+// @Success     200                 {object}     BookmarkResponse
+// @Failure     400                 {object}     BookmarkResponse
+// @Failure     401                 {object}     BookmarkResponse
+// @Failure     403                 {object}     BookmarkResponse
+// @Failure     404                 {object}     BookmarkResponse
+// @Failure     500                 {object}     BookmarkResponse
+// @Router      /bookmarks/{bookmark_id} [put]
+func (c BookmarkController) UpdateBookmark(e echo.Context) error {
+	return bookmark_handlers.NewUpdateHandler(
+		e,
+		*c.ValidatorService,
+		c.BookmarkService,
+		c.AuthService,
+	).Handle().JSON()
+}
+
 func (c BookmarkController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	api := e.Group("/api" + c.Name)
 	api.POST("", c.Create, authMiddleware)
 	api.GET("/folder/:parent_id", c.GetByFolder, authMiddleware)
+	api.PUT("/:bookmark_id", c.UpdateBookmark, authMiddleware)
 	api.PATCH("", c.Move, authMiddleware)
 	api.DELETE("/folder/:bookmark_id", c.Delete, authMiddleware)
 }

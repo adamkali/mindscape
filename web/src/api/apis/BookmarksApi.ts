@@ -19,6 +19,7 @@ import type {
   BookmarksResponse,
   MoveBookmarkRequest,
   RepositoryCreateBookmarkParams,
+  UpdateBookmarkRequest,
 } from '../models/index';
 import {
     BookmarkResponseFromJSON,
@@ -29,6 +30,8 @@ import {
     MoveBookmarkRequestToJSON,
     RepositoryCreateBookmarkParamsFromJSON,
     RepositoryCreateBookmarkParamsToJSON,
+    UpdateBookmarkRequestFromJSON,
+    UpdateBookmarkRequestToJSON,
 } from '../models/index';
 
 export interface CreateBookmarkRequest {
@@ -49,6 +52,12 @@ export interface GetBookmarksRequest {
 export interface MoveBookmarkOperationRequest {
     authorization: string;
     moveBookmarkRequest: MoveBookmarkRequest;
+}
+
+export interface UpdateBookmarkOperationRequest {
+    authorization: string;
+    bookmarkId: string;
+    updateBookmarkRequest: UpdateBookmarkRequest;
 }
 
 /**
@@ -243,6 +252,62 @@ export class BookmarksApi extends runtime.BaseAPI {
      */
     async moveBookmark(requestParameters: MoveBookmarkOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BookmarksResponse> {
         const response = await this.moveBookmarkRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update a Bookmark\'s name and link by Authorization Header
+     * Update a Bookmark
+     */
+    async updateBookmarkRaw(requestParameters: UpdateBookmarkOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BookmarkResponse>> {
+        if (requestParameters['authorization'] == null) {
+            throw new runtime.RequiredError(
+                'authorization',
+                'Required parameter "authorization" was null or undefined when calling updateBookmark().'
+            );
+        }
+
+        if (requestParameters['bookmarkId'] == null) {
+            throw new runtime.RequiredError(
+                'bookmarkId',
+                'Required parameter "bookmarkId" was null or undefined when calling updateBookmark().'
+            );
+        }
+
+        if (requestParameters['updateBookmarkRequest'] == null) {
+            throw new runtime.RequiredError(
+                'updateBookmarkRequest',
+                'Required parameter "updateBookmarkRequest" was null or undefined when calling updateBookmark().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        }
+
+        const response = await this.request({
+            path: `/bookmarks/{bookmark_id}`.replace(`{${"bookmark_id"}}`, encodeURIComponent(String(requestParameters['bookmarkId']))),
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: UpdateBookmarkRequestToJSON(requestParameters['updateBookmarkRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => BookmarkResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Update a Bookmark\'s name and link by Authorization Header
+     * Update a Bookmark
+     */
+    async updateBookmark(requestParameters: UpdateBookmarkOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BookmarkResponse> {
+        const response = await this.updateBookmarkRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

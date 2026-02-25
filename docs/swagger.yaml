@@ -220,6 +220,17 @@ definitions:
       success:
         type: boolean
     type: object
+  UpdateBookmarkRequest:
+    properties:
+      bookmarkId:
+        type: string
+      link:
+        type: string
+      name:
+        type: string
+      userId:
+        type: string
+    type: object
   UpdateCredentialsRequest:
     properties:
       email:
@@ -765,6 +776,61 @@ paths:
           schema:
             $ref: '#/definitions/BookmarkResponse'
       summary: Create a new Bookmark
+      tags:
+      - Bookmarks
+  /bookmarks/{bookmark_id}:
+    put:
+      consumes:
+      - application/json
+      description: Update a Bookmark's name and link by Authorization Header
+      operationId: UpdateBookmark
+      parameters:
+      - description: Update Bookmark Request
+        in: body
+        name: UpdateBookmarkRequest
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateBookmarkRequest'
+      - default: '"Bearer token"'
+        description: Authorization Header
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Bookmark ID
+        in: path
+        name: bookmark_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/BookmarkResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BookmarkResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/BookmarkResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/BookmarkResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/BookmarkResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/BookmarkResponse'
+      summary: Update a Bookmark
       tags:
       - Bookmarks
   /bookmarks/folder/{bookmark_id}:
