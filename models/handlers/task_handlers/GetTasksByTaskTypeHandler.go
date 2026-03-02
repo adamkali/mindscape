@@ -51,8 +51,7 @@ func (h *GetTasksByTaskTypeHandler) Handle() handlers.IHandler {
 	if err := h.services.AuthService.CheckToken(jwt_token.Raw); err != nil {
 		return handlers.Lock(h, 401, err)
 	}
-	fmt.Println(h.ctx.QueryParam("status"))
-	taskTypeId := h.taskId(h.ctx.QueryParam("status"))
+	taskTypeId := h.taskId(h.ctx.QueryParam("taskType"))
 	if taskTypeId == uuid.Nil {
 		return handlers.Lock(h, 400, fmt.Errorf("invalid task type"))
 	}

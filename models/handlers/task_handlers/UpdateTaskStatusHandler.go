@@ -45,8 +45,11 @@ func (h *UpdateTaskStatusHandler) Handle() handlers.IHandler {
 	if err = h.services.AuthService.CheckToken(jwt_token.Raw); err != nil {
 		return handlers.Lock(h, 401, err)
 	}
-	// get task id
+	// get task id (query param for /tasks/status route, path param for /tasks/:taskId/status)
 	taskId := h.ctx.Param("taskId")
+	if taskId == "" {
+		taskId = h.ctx.QueryParam("taskId")
+	}
 	parsedTaskId, err := uuid.Parse(taskId)
 	if err != nil {
 		return handlers.Lock(h, 400, err)
