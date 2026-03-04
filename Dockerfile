@@ -18,8 +18,6 @@ COPY go.* ./
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o mindscape .
-RUN go install github.com/pressly/goose/v3/cmd/goose@latest
-RUN go install github.com/adamkali/egg_cli@latest
 
 # Final image 
 FROM alpine:latest AS app
@@ -32,13 +30,9 @@ COPY --from=go_builder /usr/src/db /app/db
 COPY --from=go_builder /usr/src/assets /app/assets
 ## Create banner.svg symlink
 RUN ln -s /app/assets/svgs/banner-logo.svg /app/banner.svg
-## Get goose and egg_cli
-COPY --from=go_builder /go/bin/goose /app/
-COPY --from=go_builder /go/bin/egg_cli /app/
 
 ## Set permissions
 RUN chmod +x /app/egg_cli
-RUN chmod +x /app/goose
 ## Add those executables to the path and user
 ENV PATH="/app:${PATH}"
 EXPOSE 60000
