@@ -43,7 +43,5 @@ RUN chmod +x /app/goose
 ENV PATH="/app:${PATH}"
 EXPOSE 60000
 WORKDIR /app
-## Copy Makefile for production setup
-COPY Makefile ./
-## Run the production setup and server
-CMD ["make", "prod-setup"]
+
+cmd ["./mindscape", "-e", "production"]
