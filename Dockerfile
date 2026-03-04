@@ -31,8 +31,6 @@ COPY --from=go_builder /usr/src/assets /app/assets
 ## Create banner.svg symlink
 RUN ln -s /app/assets/svgs/banner-logo.svg /app/banner.svg
 
-## Set permissions
-RUN chmod +x /app/egg_cli
 ## Add those executables to the path and user
 ENV PATH="/app:${PATH}"
 EXPOSE 60000
