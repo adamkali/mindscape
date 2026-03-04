@@ -37,4 +37,4 @@ EXPOSE 60000
 WORKDIR /app
 
 ## Run the production setup and server
-CMD ["./minscape", "-e", "production"]
+CMD ["./mindscape", "-e", "production"]
