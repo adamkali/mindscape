@@ -111,6 +111,12 @@ func (a *AuthService) Create(user *repository.User) (*string, error) {
 // found in the database. If the token is found but its expiration time has passed,
 // an error is also returned.
 func (a *AuthService) CheckToken(token string) error {
+	// API key authenticated requests use a synthetic token with Raw="apikey".
+	// The key has already been validated by the API key middleware.
+	if token == "apikey" {
+		return nil
+	}
+
 	tx, err := a.conn.Begin(a.ctx)
 	if err != nil {
 		return err

@@ -1,5 +1,7 @@
+apis/ApiKeysApi.ts
 apis/BackgroundApi.ts
 apis/BookmarksApi.ts
+apis/DefaultApi.ts
 apis/FoldersApi.ts
 apis/UsersApi.ts
 apis/WidgetsApi.ts
@@ -15,6 +17,7 @@ models/CoolifyWidgetApplication.ts
 models/CoolifyWidgetApplicationResponse.ts
 models/CoolifyWidgetService.ts
 models/CoolifyWidgetServiceResponse.ts
+models/CreateApiKeyRequest.ts
 models/DeleteUserResponse.ts
 models/GithubCommitsResponse.ts
 models/GithubProfileResponse.ts
@@ -27,9 +30,14 @@ models/RepositoryBookmark.ts
 models/RepositoryCreateBookmarkParams.ts
 models/RepositoryCreateFolderParams.ts
 models/RepositoryFolder.ts
+models/RepositoryInsertNewTaskParams.ts
 models/RepositoryNote.ts
+models/RepositoryTaskType.ts
+models/RepositoryUpdateTaskContentParams.ts
 models/RequestsMoveFolderRequest.ts
 models/RequestsUpdateFolderRequest.ts
+models/ResponsesApiKeyResponse.ts
+models/ResponsesApiKeysResponse.ts
 models/ResponsesCoolifyActionData.ts
 models/ResponsesFolderData.ts
 models/ResponsesFolderResponse.ts
@@ -39,6 +47,8 @@ models/ResponsesGithubWidgetCommitsDayData.ts
 models/ResponsesGithubWidgetCommitsWeekData.ts
 models/ResponsesGithubWidgetData.ts
 models/ResponsesGithubWidgetProfileData.ts
+models/ResponsesTaskResponse.ts
+models/ResponsesTasksResponse.ts
 models/ResponsesUserData.ts
 models/ResponsesUserWidgetData.ts
 models/ResponsesUserWidgetResponse.ts
@@ -48,6 +58,8 @@ models/ResponsesWidgetsResponse.ts
 models/SchemasWidgetLayout.ts
 models/SchemasWidgetProperty.ts
 models/SchemasWidgetSize.ts
+models/ServicesApiKeyDTO.ts
+models/ServicesTaskDTO.ts
 models/StringResponse.ts
 models/UpdateBookmarkRequest.ts
 models/UpdateCredentialsRequest.ts

@@ -27,6 +27,16 @@ sql:
               pointer: true
               import: "time"
               type: "Time"
+          - db_type: "timestamptz"
+            go_type:
+              pointer: true
+              import: "time"
+              type: "Time"
+          - db_type: "timestamp"
+            go_type:
+              pointer: true
+              import: "time"
+              type: "Time"
           - db_type: "text"
             go_type:
               pointer: true

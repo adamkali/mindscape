@@ -13,39 +13,31 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-type Registrar struct {
-	Config           *configuration.Configuration
-	AuthService      services.IAuthService
-	BookmarkService  services.IBookmarkService
-	FolderService    services.IFolderService
-	MinioService     services.IMinioService
-	NoteService      services.INoteService
-	RedisService     services.IRedisService
-	UserService      services.IUserService
-	WidgetService    services.IWidgetService
-	ValidatorService *services.ValidatorService
-}
 
 type IController interface {
-	Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc)
+	Attatch(e *echo.Echo, middlewares ...echo.MiddlewareFunc)
 	ControllerName() string
 }
 
-func createControllerParams(config *configuration.Configuration) (*Registrar, error) {
+func createControllerParams(config *configuration.Configuration) (*services.Registrar, error) {
 	ctx := context.Background()
 	db, err := pgxpool.New(ctx, config.Database.URL)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Registrar{
+	redisService := services.CreateRedisService(ctx, config)
+
+	return &services.Registrar{
 		Config:           config,
+		ApiKeyService:    services.CreateApiKeyService(ctx, config, redisService),
 		AuthService:      services.CreateAuthService(ctx, db, config),
 		BookmarkService:  services.CreateBookmarkService(ctx, db),
 		FolderService:    services.CreateFolderService(ctx, db),
 		MinioService:     services.CreateMinioService(ctx, config),
 		NoteService:      services.CreateNoteService(ctx, db),
-		RedisService:     services.CreateRedisService(ctx, config),
+		RedisService:     redisService,
+		TaskService:      services.CreateTaskService(ctx, db),
 		UserService:      services.CreateUserService(ctx, db),
 		WidgetService:    services.CreateWidgetService(ctx, db),
 		ValidatorService: &services.ValidatorService{},

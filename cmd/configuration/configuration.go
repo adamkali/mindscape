@@ -48,6 +48,9 @@ type Configuration struct {
 		Secret string `yaml:"secret"`
 		Secure bool   `yaml:"secure"`
 	} `yaml:"s3"`
+	ApiKey struct {
+		DefaultExpiration string `yaml:"default_expiration"`
+	} `yaml:"apikey"`
 }
 
 const ConfigurationDir = "./config/"

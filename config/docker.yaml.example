@@ -6,7 +6,7 @@ copyright:
   year: 2025
   author: Adam Kali
 server:
-  jwt: DZ4Z^v7repAumVj6S@7Q4Fc1c8@1VEVed8EdTrpDcx3a^SYY6Gq1Szv@NRgxWGtH
+  jwt:  
   port: 60000
   frontend:
     dir: web/dist
@@ -28,3 +28,4 @@ s3:
   access: minio_access_key
   secret: minio_secret_key
   secure: false
+

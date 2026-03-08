@@ -39,3 +39,10 @@ mindscape
 \#*\#
 .\#*
 
+# Task runner cache
+.task/
+
+# Unused files
+Makefile
+README.norg
+

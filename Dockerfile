@@ -36,4 +36,5 @@ ENV PATH="/app:${PATH}"
 EXPOSE 60000
 WORKDIR /app
 
-cmd ["./mindscape", "-e", "production"]
+## Run the production setup and server
+CMD ["./mindscape", "-e", "production"]

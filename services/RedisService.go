@@ -112,3 +112,19 @@ func (r *RedisService) Delete(key string) error {
 	err := r.client.Del(r.ctx, key).Err()
 	return err
 }
+
+func (r *RedisService) LPush(key string, values ...string) error {
+	args := make([]interface{}, len(values))
+	for i, v := range values {
+		args[i] = v
+	}
+	return r.client.LPush(r.ctx, key, args...).Err()
+}
+
+func (r *RedisService) LRange(key string, start, stop int64) ([]string, error) {
+	return r.client.LRange(r.ctx, key, start, stop).Result()
+}
+
+func (r *RedisService) LRem(key string, count int64, value string) error {
+	return r.client.LRem(r.ctx, key, count, value).Err()
+}

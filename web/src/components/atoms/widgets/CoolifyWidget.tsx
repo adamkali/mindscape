@@ -16,9 +16,9 @@ interface CoolifyWidgetProps {
 function getStatusColor(status: string | undefined): string {
 	if (!status) return 'bg-gray-500';
 	const s = status.toLowerCase();
-	if (s === "running:healthy") return 'bg-green-500';
-	if (s === "running:unknown") return 'bg-yellow-500';
-	if (s === "exited:unhealthy") return 'bg-red-500';
+	if (s === 'running:healthy') return 'bg-green-500';
+	if (s === 'running:unknown') return 'bg-yellow-500';
+	if (s === 'exited:unhealthy') return 'bg-red-500';
 	return 'bg-gray-500';
 }
 
@@ -29,15 +29,21 @@ function isRunning(status: string | undefined): boolean {
 }
 
 export default function CoolifyWidget(props: CoolifyWidgetProps) {
-	const [applications, setApplications] = createSignal<CoolifyWidgetApplication[]>([]);
+	const [applications, setApplications] = createSignal<
+		CoolifyWidgetApplication[]
+	>([]);
 	const [services, setServices] = createSignal<CoolifyWidgetService[]>([]);
 	const [appsLoading, setAppsLoading] = createSignal(true);
 	const [servicesLoading, setServicesLoading] = createSignal(true);
 	const [appsError, setAppsError] = createSignal<string | null>(null);
 	const [servicesError, setServicesError] = createSignal<string | null>(null);
 	const [appsExpanded, setAppsExpanded] = createSignal(!props.foldInitially);
-	const [servicesExpanded, setServicesExpanded] = createSignal(!props.foldInitially);
-	const [actionLoading, setActionLoading] = createSignal<Record<string, string | null>>({});
+	const [servicesExpanded, setServicesExpanded] = createSignal(
+		!props.foldInitially,
+	);
+	const [actionLoading, setActionLoading] = createSignal<
+		Record<string, string | null>
+	>({});
 	const auth = useAuth();
 
 	const fetchData = async () => {
@@ -47,36 +53,45 @@ export default function CoolifyWidget(props: CoolifyWidgetProps) {
 		const api = new WidgetsApi(config);
 
 		// Fetch applications
-		api.getUserCoolifyApplications({
-			authorization: `Bearer ${auth.token()}`,
-			userWidgetId: props.widgetId,
-		}).then(response => {
-			if (response.success && response.data) {
-				setApplications(response.data);
-				setAppsError(null);
-			} else {
-				setAppsError(response.message || 'Failed to load applications');
-			}
-		}).catch(err => setAppsError(err.message))
-		  .finally(() => setAppsLoading(false));
+		api
+			.getUserCoolifyApplications({
+				authorization: `Bearer ${auth.token()}`,
+				userWidgetId: props.widgetId,
+			})
+			.then((response) => {
+				if (response.success && response.data) {
+					setApplications(response.data);
+					setAppsError(null);
+				} else {
+					setAppsError(response.message || 'Failed to load applications');
+				}
+			})
+			.catch((err) => setAppsError(err.message))
+			.finally(() => setAppsLoading(false));
 
 		// Fetch services
-		api.getUserCoolifyServices({
-			authorization: `Bearer ${auth.token()}`,
-			userWidgetId: props.widgetId,
-		}).then(response => {
-			if (response.success && response.data) {
-				setServices(response.data);
-				setServicesError(null);
-			} else {
-				setServicesError(response.message || 'Failed to load services');
-			}
-		}).catch(err => setServicesError(err.message))
-		  .finally(() => setServicesLoading(false));
+		api
+			.getUserCoolifyServices({
+				authorization: `Bearer ${auth.token()}`,
+				userWidgetId: props.widgetId,
+			})
+			.then((response) => {
+				if (response.success && response.data) {
+					setServices(response.data);
+					setServicesError(null);
+				} else {
+					setServicesError(response.message || 'Failed to load services');
+				}
+			})
+			.catch((err) => setServicesError(err.message))
+			.finally(() => setServicesLoading(false));
 	};
 
-	const handleAction = async (appUuid: string, action: 'start' | 'stop' | 'restart') => {
-		setActionLoading(prev => ({ ...prev, [appUuid]: action }));
+	const handleAction = async (
+		appUuid: string,
+		action: 'start' | 'stop' | 'restart',
+	) => {
+		setActionLoading((prev) => ({ ...prev, [appUuid]: action }));
 		try {
 			const config = new Configuration({
 				basePath: '/api',
@@ -100,7 +115,7 @@ export default function CoolifyWidget(props: CoolifyWidgetProps) {
 		} catch (err) {
 			console.error(`Failed to ${action} application:`, err);
 		} finally {
-			setActionLoading(prev => ({ ...prev, [appUuid]: null }));
+			setActionLoading((prev) => ({ ...prev, [appUuid]: null }));
 		}
 	};
 
@@ -126,9 +141,13 @@ export default function CoolifyWidget(props: CoolifyWidgetProps) {
 		return (
 			<div class="flex items-center justify-between p-2 bg-black/20 rounded mb-1">
 				<div class="flex items-center gap-2 min-w-0 flex-1">
-					<div class={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusColor(app.status)}`} />
+					<div
+						class={`w-2 h-2 rounded-full flex-shrink-0 ${getStatusColor(app.status)}`}
+					/>
 					<div class="min-w-0 flex-1">
-						<div class="font-medium text-sm truncate">{truncateName(app.name || 'Unnamed')}</div>
+						<div class="font-medium text-sm truncate">
+							{truncateName(app.name || 'Unnamed')}
+						</div>
 						<Show when={app.fqdn}>
 							<a
 								href={app.fqdn}
@@ -183,7 +202,9 @@ export default function CoolifyWidget(props: CoolifyWidgetProps) {
 			<div class="flex items-center gap-2 min-w-0 flex-1">
 				<div class="w-2 h-2 rounded-full flex-shrink-0 bg-blue-500" />
 				<div class="min-w-0 flex-1">
-					<div class="font-medium text-sm truncate">{service.name || 'Unnamed'}</div>
+					<div class="font-medium text-sm truncate">
+						{service.name || 'Unnamed'}
+					</div>
 				</div>
 			</div>
 		</div>
@@ -221,13 +242,12 @@ export default function CoolifyWidget(props: CoolifyWidgetProps) {
 					onClick={() => setAppsExpanded(!appsExpanded())}
 				>
 					<span class="text-sm">{appsExpanded() ? '\u25BC' : '\u25B6'}</span>
-					<span class="font-semibold">Applications ({applications().length})</span>
+					<span class="font-semibold">
+						Applications ({applications().length})
+					</span>
 				</button>
 				<Show when={appsExpanded()}>
-					<Show
-						when={!appsLoading()}
-						fallback={<LoadingSkeleton />}
-					>
+					<Show when={!appsLoading()} fallback={<LoadingSkeleton />}>
 						<Show
 							when={!appsError()}
 							fallback={
@@ -239,12 +259,12 @@ export default function CoolifyWidget(props: CoolifyWidgetProps) {
 							<Show
 								when={applications().length > 0}
 								fallback={
-									<div class="text-sm text-gray-400 p-2">No applications configured</div>
+									<div class="text-sm text-gray-400 p-2">
+										No applications configured
+									</div>
 								}
 							>
-								<For each={applications()}>
-									{(app) => ApplicationItem(app)}
-								</For>
+								<For each={applications()}>{(app) => ApplicationItem(app)}</For>
 							</Show>
 						</Show>
 					</Show>
@@ -258,14 +278,13 @@ export default function CoolifyWidget(props: CoolifyWidgetProps) {
 					class="flex items-center gap-2 w-full text-left mb-2 hover:text-blue-400 transition-colors"
 					onClick={() => setServicesExpanded(!servicesExpanded())}
 				>
-					<span class="text-sm">{servicesExpanded() ? '\u25BC' : '\u25B6'}</span>
+					<span class="text-sm">
+						{servicesExpanded() ? '\u25BC' : '\u25B6'}
+					</span>
 					<span class="font-semibold">Services ({services().length})</span>
 				</button>
 				<Show when={servicesExpanded()}>
-					<Show
-						when={!servicesLoading()}
-						fallback={<LoadingSkeleton />}
-					>
+					<Show when={!servicesLoading()} fallback={<LoadingSkeleton />}>
 						<Show
 							when={!servicesError()}
 							fallback={
@@ -277,12 +296,12 @@ export default function CoolifyWidget(props: CoolifyWidgetProps) {
 							<Show
 								when={services().length > 0}
 								fallback={
-									<div class="text-sm text-gray-400 p-2">No services configured</div>
+									<div class="text-sm text-gray-400 p-2">
+										No services configured
+									</div>
 								}
 							>
-								<For each={services()}>
-									{(service) => ServiceItem(service)}
-								</For>
+								<For each={services()}>{(service) => ServiceItem(service)}</For>
 							</Show>
 						</Show>
 					</Show>

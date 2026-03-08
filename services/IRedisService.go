@@ -10,4 +10,7 @@ type IRedisService interface {
 	Set(key string, value string) error
 	Get(key string) (string, error)
 	Delete(key string) error
+	LPush(key string, values ...string) error
+	LRange(key string, start, stop int64) ([]string, error)
+	LRem(key string, count int64, value string) error
 }

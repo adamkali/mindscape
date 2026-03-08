@@ -12,7 +12,7 @@ func (uc WidgetController) ControllerName() string {
 	return uc.Name
 }
 
-func BuildWidgetController(p *Registrar) WidgetController {
+func BuildWidgetController(p *services.Registrar) WidgetController {
 	return WidgetController{
 		Name:             "/widgets",
 		Config:           p.Config,
@@ -403,20 +403,20 @@ func (wc WidgetController) CoolifyWidgetServices(ctx echo.Context) error {
 //endregion
 
 
-func (wc WidgetController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
+func (wc WidgetController) Attatch(e *echo.Echo, middlewares ...echo.MiddlewareFunc) {
 	api := e.Group("/api" + wc.Name)
 	api.GET("/schemas", wc.ReadSchemas)
 	api.GET("/schemas/:schema_id", wc.GetSchemaByID)
 
-	api.GET("", wc.Read, authMiddleware)
-	api.GET("/:user_widget_id", wc.ReadById, authMiddleware)
-	api.GET("/github/:user_widget_id", wc.GithubWidget, authMiddleware)
-	api.GET("/:user_widget_id/github/profile", wc.GithubProfileWidget, authMiddleware)
-	api.GET("/:user_widget_id/github/commits", wc.GithubCommitsWidget, authMiddleware)
-	api.GET("/:user_widget_id/coolify/applications", wc.CoolifyWidgetApplications, authMiddleware)
-	api.GET("/:user_widget_id/coolify/services", wc.CoolifyWidgetServices, authMiddleware)
-	api.POST("/:user_widget_id/coolify/applications/:app_uuid/start", wc.StartCoolifyApplication, authMiddleware)
-	api.POST("/:user_widget_id/coolify/applications/:app_uuid/stop", wc.StopCoolifyApplication, authMiddleware)
-	api.POST("/:user_widget_id/coolify/applications/:app_uuid/restart", wc.RestartCoolifyApplication, authMiddleware)
-	api.POST("", wc.AddWidget, authMiddleware)
+	api.GET("", wc.Read, middlewares...)
+	api.GET("/:user_widget_id", wc.ReadById, middlewares...)
+	api.GET("/github/:user_widget_id", wc.GithubWidget, middlewares...)
+	api.GET("/:user_widget_id/github/profile", wc.GithubProfileWidget, middlewares...)
+	api.GET("/:user_widget_id/github/commits", wc.GithubCommitsWidget, middlewares...)
+	api.GET("/:user_widget_id/coolify/applications", wc.CoolifyWidgetApplications, middlewares...)
+	api.GET("/:user_widget_id/coolify/services", wc.CoolifyWidgetServices, middlewares...)
+	api.POST("/:user_widget_id/coolify/applications/:app_uuid/start", wc.StartCoolifyApplication, middlewares...)
+	api.POST("/:user_widget_id/coolify/applications/:app_uuid/stop", wc.StopCoolifyApplication, middlewares...)
+	api.POST("/:user_widget_id/coolify/applications/:app_uuid/restart", wc.RestartCoolifyApplication, middlewares...)
+	api.POST("", wc.AddWidget, middlewares...)
 }
