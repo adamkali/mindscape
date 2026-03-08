@@ -3,16 +3,18 @@ import { createEffect, createSignal, Show } from 'solid-js';
 import {
 	BookmarksApi,
 	FoldersApi,
+	type RepositoryBookmark,
 	type ResponseError,
 	type ResponsesFolderData,
 } from '@/api';
 import Components from '@/components';
-import { Button } from '@/components/atoms';
+import { Button, Input } from '@/components/atoms';
 import CreateBookmarkComponent from '@/components/CreateBookmarkComponent';
 import CreateFolderComponent from '@/components/CreateFolderComponent';
+import EditBookmarkModal from '@/components/EditBookmarkModal';
 import FolderComponent from '@/components/FolderComponent';
 import { Header } from '@/components/Header';
-import { AddFolder } from '@/components/icons';
+import { AddFolder, EditIcon, SaveIcon } from '@/components/icons';
 import { useAuth } from '@/contexts/AuthContext';
 import { useBackgroundStyle } from '@/hooks/useBackground';
 import { EmptyGuid } from '@/utils';
@@ -26,6 +28,12 @@ const Home = () => {
 	const [showCreateFolder, setShowCreateFolder] = createSignal(false);
 	const [showCreateBookmark, setShowCreateBookmark] = createSignal(false);
 	const [isDragOverRoot, setIsDragOverRoot] = createSignal(false);
+	const [focusedFolderName, setFocusedFolderName] = createSignal('');
+	const [isEditingFolderName, setIsEditingFolderName] = createSignal(false);
+	const [editFolderName, setEditFolderName] = createSignal('');
+	const [editingBookmark, setEditingBookmark] =
+		createSignal<RepositoryBookmark | null>(null);
+	const [showEditBookmark, setShowEditBookmark] = createSignal(false);
 	const foldersApi = new FoldersApi();
 	const user = auth.user();
 
@@ -112,6 +120,16 @@ const Home = () => {
 		}
 	};
 
+	const handleEditBookmark = (bookmark: RepositoryBookmark) => {
+		setEditingBookmark(bookmark);
+		setShowEditBookmark(true);
+	};
+
+	const handleEditBookmarkSaved = async () => {
+		await fetchRootFolders();
+		folderRefresh();
+	};
+
 	if (!auth.isAuthenticated() || !user) {
 		return (
 			<div class="h-screen flex items-center justify-center overflow-hidden">
@@ -150,8 +168,39 @@ const Home = () => {
 		setShowCreateBookmark(false);
 	};
 
-	const handleFolderSelected = (refreshFn: () => Promise<void>) => {
+	const handleFolderSelected = (
+		refreshFn: () => Promise<void>,
+		folderName: string,
+	) => {
 		folderRefresh = refreshFn;
+		setFocusedFolderName(folderName);
+		setIsEditingFolderName(false);
+	};
+
+	const handleSaveFolderName = async () => {
+		const folderId = focusedNodeId();
+		const newName = editFolderName().trim();
+		if (!folderId || !newName || !auth.token()) return;
+
+		try {
+			const response = await foldersApi.updateFolder({
+				folderId,
+				updateFolderRequest: {
+					userId: user?.id,
+					folderId,
+					name: newName,
+				},
+				authorization: `Bearer ${auth.token()}`,
+			});
+			if (response.success) {
+				setFocusedFolderName(newName);
+				setIsEditingFolderName(false);
+				await fetchRootFolders();
+				folderRefresh();
+			}
+		} catch (error) {
+			console.error('Failed to rename folder:', error);
+		}
 	};
 
 	const handleRootDragOver = (e: DragEvent) => {
@@ -246,23 +295,64 @@ const Home = () => {
 
 			<div class="flex h-screen flex-row">
 				<div
-					class={`treeview-container m-2 p-4 rounded-lg overflow-y-auto bg-background backdrop-blur-lg border border-white/20 max-h-[calc(100vh-2rem)] min-w-80 shadow-2xl shadow-slate-900/30 dark:border-slate-700/50 dark:shadow-black/30 ${
+					class={`treeview-container m-2 p-4 rounded-lg flex flex-col overflow-hidden bg-background backdrop-blur-lg border border-white/20 max-h-[calc(100vh-2rem)] min-w-80 shadow-2xl shadow-slate-900/30 dark:border-slate-700/50 dark:shadow-black/30 ${
 						isDragOverRoot() ? 'ring-2 ring-blue-400 bg-blue-100/20' : ''
 					}`}
 					onDragOver={handleRootDragOver}
 					onDragLeave={handleRootDragLeave}
 					onDrop={handleRootDrop}
 				>
-					<div class="p-2">
-						<div class="flex items-center justify-between mb-4">
+					<div class="pb-4 p-2 bg-glass-bg rounded-md flex-shrink-0">
+						<div class="flex items-center justify-between mb-2">
 							<Button
-								variant="primary"
+								class="p-1 text-xs flex-shrink-0"
+								variant="secondary"
 								onClick={() => {
 									openCreateFolderComponent();
 								}}
 							>
 								<AddFolder />
 							</Button>
+
+							<Show when={focusedNodeId()}>
+								<Show
+									when={isEditingFolderName()}
+									fallback={
+										<span class="text-sm font-semibold text-foreground truncate">
+											{focusedFolderName()}
+										</span>
+									}
+								>
+									<Input
+										label="Folder name"
+										type="text"
+										value={editFolderName()}
+										onInput={(e) => setEditFolderName(e.currentTarget.value)}
+										onKeyDown={(e) => {
+											if (e.key === 'Enter') handleSaveFolderName();
+											if (e.key === 'Escape') setIsEditingFolderName(false);
+										}}
+										class="text-sm h-7 min-w-0 flex-1"
+									/>
+								</Show>
+								<Button
+									variant="secondary"
+									class="p-1 text-xs flex-shrink-0"
+									onClick={(e) => {
+										e.stopPropagation();
+										if (isEditingFolderName()) {
+											handleSaveFolderName();
+										} else {
+											setEditFolderName(focusedFolderName());
+											setIsEditingFolderName(true);
+										}
+									}}
+								>
+									<Show when={isEditingFolderName()} fallback={<EditIcon />}>
+										<SaveIcon />
+									</Show>
+								</Button>
+							</Show>
 						</div>
 
 						<Show when={showCreateFolder()}>
@@ -273,10 +363,10 @@ const Home = () => {
 								setShowCreateFolder={setShowCreateFolder}
 								folderAPIRef={foldersApi}
 								refresh={async () => {
-								await fetchRootFolders();
-								folderRefresh();
-								folderRefresh = () => {};
-							}}
+									await fetchRootFolders();
+									folderRefresh();
+									folderRefresh = () => {};
+								}}
 							/>
 						</Show>
 
@@ -289,44 +379,56 @@ const Home = () => {
 								refreshBookmarks={bookmarkRefresh}
 							/>
 						</Show>
+					</div>
 
-						<Show
-							when={!isLoadingFolders()}
-							fallback={
-								<div class="text-center py-4 text-foreground/60">
-									Loading folders...
-								</div>
-							}
-						>
+					<div class="treeview-scroll-wrapper relative flex-1 min-h-0">
+						<div class="treeview-scroll p-2 pt-0 overflow-y-auto h-full">
 							<Show
-								when={folders().length > 0}
+								when={!isLoadingFolders()}
 								fallback={
 									<div class="text-center py-4 text-foreground/60">
-										No folders yet. Create your first folder!
+										Loading folders...
 									</div>
 								}
 							>
-								<div class="space-y-4">
-									{folders().map((folder) => (
-										<FolderComponent
-											folder={folder}
-											selectedFolder={focusedNodeId}
-											setSelectedFolder={setFocusedNodeId}
-											deleteFolder={deleteFolder}
-											deleteBookmark={deleteBookmark}
-											showCreateFolder={openCreateBookmarkComponent}
-											onFolderSelected={handleFolderSelected}
-											indent={0}
-										/>
-									))}
-								</div>
+								<Show
+									when={folders().length > 0}
+									fallback={
+										<div class="text-center py-4 text-foreground/60">
+											No folders yet. Create your first folder!
+										</div>
+									}
+								>
+									<div class="space-y-4">
+										{folders().map((folder) => (
+											<FolderComponent
+												folder={folder}
+												selectedFolder={focusedNodeId}
+												setSelectedFolder={setFocusedNodeId}
+												deleteFolder={deleteFolder}
+												deleteBookmark={deleteBookmark}
+												editBookmark={handleEditBookmark}
+												showCreateFolder={openCreateBookmarkComponent}
+												onFolderSelected={handleFolderSelected}
+												indent={0}
+											/>
+										))}
+									</div>
+								</Show>
 							</Show>
-						</Show>
+						</div>
 					</div>
 				</div>
 
 				<Components.WidgetContainer />
 			</div>
+
+			<EditBookmarkModal
+				isOpen={showEditBookmark()}
+				onClose={() => setShowEditBookmark(false)}
+				bookmark={editingBookmark()}
+				onSaved={handleEditBookmarkSaved}
+			/>
 		</div>
 	);
 };

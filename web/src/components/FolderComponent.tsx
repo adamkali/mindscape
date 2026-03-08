@@ -1,14 +1,7 @@
-import {
-	type ComponentProps,
-	createMemo,
-	createSignal,
-	For,
-	Show,
-} from 'solid-js';
+import { type ComponentProps, createMemo, createSignal, For } from 'solid-js';
 import type { RepositoryBookmark, ResponsesFolderData } from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAuthenticatedApi } from '@/utils/useApi';
-import { Button } from './atoms';
 import BookmarkComponent from './BookmarkComponent';
 import FolderCard from './FolderCard';
 
@@ -18,8 +11,12 @@ interface FolderComponentProps extends ComponentProps<'div'> {
 	setSelectedFolder: (id: string) => void;
 	deleteFolder: (id: string) => void;
 	deleteBookmark?: (bookmarkId: string) => void;
+	editBookmark?: (bookmark: RepositoryBookmark) => void;
 	showCreateFolder: (folderBookmarkRefresh?: () => void) => void;
-	onFolderSelected?: (refreshFn: () => Promise<void>) => void;
+	onFolderSelected?: (
+		refreshFn: () => Promise<void>,
+		folderName: string,
+	) => void;
 	indent: number;
 }
 
@@ -133,6 +130,7 @@ export default function FolderComponent(props: FolderComponentProps) {
 								setSelectedFolder={setSelectedFolder}
 								deleteFolder={deleteFolder}
 								deleteBookmark={props.deleteBookmark}
+								editBookmark={props.editBookmark}
 								indent={indentNext()}
 								showCreateFolder={props.showCreateFolder}
 								onFolderSelected={props.onFolderSelected}
@@ -147,6 +145,7 @@ export default function FolderComponent(props: FolderComponentProps) {
 								setSelected={setSelectedFolder}
 								indent={indentNext()}
 								deleteBookmark={props.deleteBookmark}
+								editBookmark={props.editBookmark}
 							/>
 						)}
 					</For>
@@ -228,7 +227,7 @@ export default function FolderComponent(props: FolderComponentProps) {
 					onSelect={(folderId) => {
 						setSelectedFolder(folderId);
 						openFolder();
-						props.onFolderSelected?.(refreshFolder);
+						props.onFolderSelected?.(refreshFolder, folder.name || '');
 					}}
 					onDelete={deleteFolder}
 					onCreateBookmark={(folderId) => {

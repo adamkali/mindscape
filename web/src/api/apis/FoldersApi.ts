@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   RepositoryCreateFolderParams,
   RequestsMoveFolderRequest,
+  RequestsUpdateFolderRequest,
   ResponsesFolderResponse,
   ResponsesFoldersResponse,
 } from '../models/index';
@@ -25,6 +26,8 @@ import {
     RepositoryCreateFolderParamsToJSON,
     RequestsMoveFolderRequestFromJSON,
     RequestsMoveFolderRequestToJSON,
+    RequestsUpdateFolderRequestFromJSON,
+    RequestsUpdateFolderRequestToJSON,
     ResponsesFolderResponseFromJSON,
     ResponsesFolderResponseToJSON,
     ResponsesFoldersResponseFromJSON,
@@ -53,6 +56,12 @@ export interface GetRootFoldersRequest {
 export interface MoveFolderRequest {
     authorization: string;
     moveFolderRequest: RequestsMoveFolderRequest;
+}
+
+export interface UpdateFolderRequest {
+    folderId: string;
+    authorization: string;
+    updateFolderRequest: RequestsUpdateFolderRequest;
 }
 
 /**
@@ -286,6 +295,62 @@ export class FoldersApi extends runtime.BaseAPI {
      */
     async moveFolder(requestParameters: MoveFolderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ResponsesFolderResponse> {
         const response = await this.moveFolderRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Update a Folder\'s name and description by Authorization Header
+     * Update a Folder
+     */
+    async updateFolderRaw(requestParameters: UpdateFolderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesFolderResponse>> {
+        if (requestParameters['folderId'] == null) {
+            throw new runtime.RequiredError(
+                'folderId',
+                'Required parameter "folderId" was null or undefined when calling updateFolder().'
+            );
+        }
+
+        if (requestParameters['authorization'] == null) {
+            throw new runtime.RequiredError(
+                'authorization',
+                'Required parameter "authorization" was null or undefined when calling updateFolder().'
+            );
+        }
+
+        if (requestParameters['updateFolderRequest'] == null) {
+            throw new runtime.RequiredError(
+                'updateFolderRequest',
+                'Required parameter "updateFolderRequest" was null or undefined when calling updateFolder().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['authorization'] != null) {
+            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        }
+
+        const response = await this.request({
+            path: `/folders/{folder_id}`.replace(`{${"folder_id"}}`, encodeURIComponent(String(requestParameters['folderId']))),
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: RequestsUpdateFolderRequestToJSON(requestParameters['updateFolderRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ResponsesFolderResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Update a Folder\'s name and description by Authorization Header
+     * Update a Folder
+     */
+    async updateFolder(requestParameters: UpdateFolderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ResponsesFolderResponse> {
+        const response = await this.updateFolderRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

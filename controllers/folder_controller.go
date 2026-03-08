@@ -152,11 +152,38 @@ func (folderController FolderController) MoveFolder(e echo.Context) error {
 	).Handle().JSON()
 }
 
+// @Summary Update a Folder
+// @Description Update a Folder's name and description by Authorization Header
+//
+// @ID          UpdateFolder
+// @Tags        Folders
+// @Accept      json
+// @Produce     json
+// @Param       folder_id              path         string                              true "Folder ID"                default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
+// @Param       UpdateFolderRequest    body         requests.UpdateFolderRequest        true "Update Folder Request"
+// @Param       Authorization          header       string                              true "Authorization Header"     default("Bearer token")
+// @Success     200                    {object}     responses.FolderResponse
+// @Failure     400                    {object}     responses.FolderResponse
+// @Failure     401                    {object}     responses.FolderResponse
+// @Failure     403                    {object}     responses.FolderResponse
+// @Failure     404                    {object}     responses.FolderResponse
+// @Failure     500                    {object}     responses.FolderResponse
+// @Router      /folders/{folder_id} [put]
+func (folderController FolderController) UpdateFolder(e echo.Context) error {
+	return folder_handlers.NewUpdateHandler(
+		e,
+		*folderController.ValidatorService,
+		folderController.FolderService,
+		folderController.AuthService,
+	).Handle().JSON()
+}
+
 func (folderController FolderController) Attatch(e *echo.Echo, authMiddleware echo.MiddlewareFunc) {
 	api := e.Group("/api" + folderController.Name)
 	api.GET("", folderController.GetRootFolders, authMiddleware)
 	api.GET("/:folder_id", folderController.GetFolderByID, authMiddleware)
 	api.POST("", folderController.CreateFolder, authMiddleware)
 	api.PATCH("", folderController.MoveFolder, authMiddleware)
+	api.PUT("/:folder_id", folderController.UpdateFolder, authMiddleware)
 	api.DELETE("/:folder_id", folderController.DeleteFolder, authMiddleware)
 }

@@ -186,7 +186,7 @@ func (vs ValidatorService) ValidateCreateFolderRequest(e echo.Context) (*reposit
 		return nil, errors.New("Folder name cannot be empty")
 	}
 	if strings.ContainsAny(validRequest.Name, "/\\:*?\"<>|") {
-		return nil, errors.New("Folder name cannot contain any special characters")
+		return nil, errors.New("Folder name cannot contain /\\:*?\"<>| characters")
 	}
 	return validRequest, nil
 }
@@ -284,6 +284,34 @@ func (r ValidatorService) ValidateMoveFolderRequest(e echo.Context) (*requests.M
 	return validRequest, nil
 }
 
+func (r ValidatorService) ValidateUpdateFolderRequest(e echo.Context) (*requests.UpdateFolderRequest, error) {
+	validRequest := new(requests.UpdateFolderRequest)
+	if err := e.Bind(&validRequest); err != nil {
+		return nil, err
+	}
+
+	// Validate User ID
+	if validRequest.UserID == uuid.Nil {
+		return nil, errors.New("User ID cannot be null")
+	}
+
+	// Validate Folder ID
+	if validRequest.FolderID == uuid.Nil {
+		return nil, errors.New("Folder ID cannot be null")
+	}
+
+	// Validate Name
+	if validRequest.Name == "" {
+		return nil, errors.New("Folder name cannot be empty")
+	}
+
+	if strings.ContainsAny(validRequest.Name, "/\\:*?\"<>|") {
+		return nil, errors.New("Folder name cannot contain /\\:*?\"<>| characters")
+	}
+
+	return validRequest, nil
+}
+
 func (r ValidatorService) ValidateMoveBookmarkRequest(e echo.Context) (*requests.MoveBookmarkRequest, error) {
 	validRequest := new(requests.MoveBookmarkRequest)
 	if err := e.Bind(&validRequest); err != nil {
@@ -304,6 +332,53 @@ func (r ValidatorService) ValidateMoveBookmarkRequest(e echo.Context) (*requests
 	// Validate New Parent ID (bookmarks cannot be moved to root, must have a parent folder)
 	if validRequest.NewParentID == uuid.Nil {
 		return nil, errors.New("New parent folder ID cannot be null - bookmarks must belong to a folder")
+	}
+
+	return validRequest, nil
+}
+
+func (r ValidatorService) ValidateUpdateBookmarkRequest(e echo.Context) (*requests.UpdateBookmarkRequest, error) {
+	validRequest := new(requests.UpdateBookmarkRequest)
+	if err := e.Bind(&validRequest); err != nil {
+		return nil, err
+	}
+
+	// Validate User ID
+	if validRequest.UserID == uuid.Nil {
+		return nil, errors.New("User ID cannot be null")
+	}
+
+	// Validate Bookmark ID
+	if validRequest.BookmarkID == uuid.Nil {
+		return nil, errors.New("Bookmark ID cannot be null")
+	}
+
+	// Validate Name
+	if validRequest.Name == "" {
+		return nil, errors.New("Bookmark name cannot be empty")
+	}
+
+	// Validate Link
+	if validRequest.Link == "" {
+		return nil, errors.New("Bookmark link cannot be empty")
+	}
+
+	// Validate URL format
+	u, err := url.Parse(validRequest.Link)
+	if err != nil {
+		return nil, errors.New("Invalid URL format")
+	}
+
+	// Only allow HTTP and HTTPS
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return nil, errors.New("Only HTTP and HTTPS URLs are allowed")
+	}
+
+	// Check for emojis in link
+	for _, r := range validRequest.Link {
+		if unicode.Is(unicode.So, r) {
+			return nil, errors.New("Link cannot contain emojis")
+		}
 	}
 
 	return validRequest, nil
