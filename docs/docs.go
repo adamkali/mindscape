@@ -485,6 +485,87 @@ const docTemplate = `{
                 }
             }
         },
+        "/bookmarks/{bookmark_id}": {
+            "put": {
+                "description": "Update a Bookmark's name and link by Authorization Header",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Bookmarks"
+                ],
+                "summary": "Update a Bookmark",
+                "operationId": "UpdateBookmark",
+                "parameters": [
+                    {
+                        "description": "Update Bookmark Request",
+                        "name": "UpdateBookmarkRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UpdateBookmarkRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"Bearer token\"",
+                        "description": "Authorization Header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Bookmark ID",
+                        "name": "bookmark_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarkResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarkResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarkResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarkResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarkResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/BookmarkResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/folders": {
             "get": {
                 "description": "Get the Root Folders associated with the user by Authorization Header\nand will also try to get the children of the folder as well",
@@ -702,6 +783,85 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a Folder's name and description by Authorization Header",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Folders"
+                ],
+                "summary": "Update a Folder",
+                "operationId": "UpdateFolder",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Folder ID",
+                        "name": "folder_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update Folder Request",
+                        "name": "UpdateFolderRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateFolderRequest"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "default": "\"Bearer token\"",
+                        "description": "Authorization Header",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/responses.FolderResponse"
                         }
@@ -2918,6 +3078,23 @@ const docTemplate = `{
                 }
             }
         },
+        "UpdateBookmarkRequest": {
+            "type": "object",
+            "properties": {
+                "bookmarkId": {
+                    "type": "string"
+                },
+                "link": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
         "UpdateCredentialsRequest": {
             "type": "object",
             "properties": {
@@ -3093,21 +3270,7 @@ const docTemplate = `{
             }
         },
         "repository.InsertNewTaskParams": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "task_type_id": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
+            "type": "object"
         },
         "repository.Note": {
             "type": "object",
@@ -3165,18 +3328,7 @@ const docTemplate = `{
             }
         },
         "repository.UpdateTaskContentParams": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
+            "type": "object"
         },
         "requests.MoveFolderRequest": {
             "type": "object",
@@ -3185,6 +3337,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "newParentId": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.UpdateFolderRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "folderId": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "userId": {

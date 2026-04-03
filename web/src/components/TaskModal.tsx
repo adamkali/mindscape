@@ -72,6 +72,7 @@ export default function TaskModal(props: TaskModalProps) {
 	const [name, setName] = createSignal('');
 	const [description, setDescription] = createSignal('');
 	const [taskTypeId, setTaskTypeId] = createSignal(TASK_STATUSES[4].id); // default: Pending
+	const [dueAt, setDueAt] = createSignal('');
 	const [showStatusDropdown, setShowStatusDropdown] = createSignal(false);
 	const [showDeleteConfirm, setShowDeleteConfirm] = createSignal(false);
 
@@ -84,6 +85,7 @@ export default function TaskModal(props: TaskModalProps) {
 		setName('');
 		setDescription('');
 		setTaskTypeId(TASK_STATUSES[4].id);
+		setDueAt('');
 		setShowStatusDropdown(false);
 		setShowDeleteConfirm(false);
 	};
@@ -103,6 +105,7 @@ export default function TaskModal(props: TaskModalProps) {
 			description: description().trim(),
 			userId: user?.id,
 			taskTypeId: taskTypeId(),
+			dueAt: dueAt() ? new Date(dueAt()).toISOString() : undefined,
 		});
 		resetForm();
 		props.onClose();
@@ -115,6 +118,7 @@ export default function TaskModal(props: TaskModalProps) {
 			id: props.task.id,
 			name: name().trim(),
 			description: description().trim(),
+			dueAt: dueAt() ? new Date(dueAt()).toISOString() : undefined,
 		});
 		resetForm();
 		props.onClose();
@@ -140,6 +144,7 @@ export default function TaskModal(props: TaskModalProps) {
 		setDescription(props.task?.description || '');
 		const match = TASK_STATUSES.find((s) => s.id === props.task?.taskTypeId);
 		setTaskTypeId(match?.id || TASK_STATUSES[4].id);
+		setDueAt(props.task?.dueAt ? new Date(props.task.dueAt).toISOString().slice(0, 16) : '');
 		props.onEdit();
 	};
 
@@ -238,6 +243,21 @@ export default function TaskModal(props: TaskModalProps) {
 									placeholder="Task description..."
 								/>
 							</div>
+							<div>
+								<label
+									for="task-due-at"
+									class="block text-sm font-semibold text-card-foreground mb-2"
+								>
+									Due Date
+								</label>
+								<input
+									id="task-due-at"
+									type="datetime-local"
+									class="w-full px-4 py-3 rounded-lg border-2 bg-slate-300/30 text-foreground focus:outline-none transition-all"
+									value={dueAt()}
+									onInput={(e) => setDueAt(e.currentTarget.value)}
+								/>
+							</div>
 							<div class="flex gap-3 pt-4">
 								<Button
 									type="button"
@@ -306,6 +326,21 @@ export default function TaskModal(props: TaskModalProps) {
 									value={description()}
 									onInput={(e) => setDescription(e.currentTarget.value)}
 									placeholder="Task description..."
+								/>
+							</div>
+							<div>
+								<label
+									for="task-due-at-edit"
+									class="block text-sm font-semibold text-card-foreground mb-2"
+								>
+									Due Date
+								</label>
+								<input
+									id="task-due-at-edit"
+									type="datetime-local"
+									class="w-full px-4 py-3 rounded-lg border-2 bg-slate-300/30 text-foreground focus:outline-none transition-all"
+									value={dueAt()}
+									onInput={(e) => setDueAt(e.currentTarget.value)}
 								/>
 							</div>
 							<div class="flex gap-3 pt-4">
