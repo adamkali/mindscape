@@ -5,6 +5,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/adamkali/mindscape/db/repository"
@@ -14,33 +15,44 @@ import (
 type MockAuthService struct {
 	ctx   context.Context
 	mutex sync.RWMutex
-	
+
 	// Test behavior controls
-	ShouldFailCreate      bool
-	ShouldFailUpdate      bool
-	ShouldFailCheckToken  bool
-	
-	CreateErrorMessage     string
-	UpdateErrorMessage     string
-	CheckTokenErrorMessage string
-	
+	ShouldFailIssueSession    bool
+	ShouldFailRefreshSession  bool
+	ShouldFailRevokeSession   bool
+	ShouldFailMintAccessToken bool
+	ShouldFailCheckToken      bool
+
+	IssueSessionErrorMessage    string
+	RefreshSessionErrorMessage  string
+	RevokeSessionErrorMessage   string
+	MintAccessTokenErrorMessage string
+	CheckTokenErrorMessage      string
+
 	// Test data tracking
-	CreateCallCount     int
-	UpdateCallCount     int
-	CheckTokenCallCount int
-	
-	LastCreateUser     *repository.User
-	LastUpdateUser     repository.User
-	LastCheckToken     string
+	IssueSessionCallCount    int
+	RefreshSessionCallCount  int
+	RevokeSessionCallCount   int
+	MintAccessTokenCallCount int
+	CheckTokenCallCount      int
+
+	LastIssueSessionUser      *repository.User
+	LastIssueSessionUserAgent string
+	LastRefreshSessionToken   string
+	LastRevokeSessionToken    string
+	LastMintAccessTokenUser   *repository.User
+	LastCheckToken            string
 }
 
 // CreateMockAuthService creates a new MockAuthService with default error messages
 func CreateMockAuthService(ctx context.Context, pool interface{}) *MockAuthService {
 	return &MockAuthService{
-		ctx:                    ctx,
-		CreateErrorMessage:     "Mock Create failure",
-		UpdateErrorMessage:     "Mock Update failure", 
-		CheckTokenErrorMessage: "Mock CheckToken failure",
+		ctx:                        ctx,
+		IssueSessionErrorMessage:    "Mock IssueSession failure",
+		RefreshSessionErrorMessage:  "Mock RefreshSession failure",
+		RevokeSessionErrorMessage:   "Mock RevokeSession failure",
+		MintAccessTokenErrorMessage: "Mock MintAccessToken failure",
+		CheckTokenErrorMessage:      "Mock CheckToken failure",
 	}
 }
 
@@ -48,51 +60,85 @@ func CreateMockAuthService(ctx context.Context, pool interface{}) *MockAuthServi
 func (m *MockAuthService) Reset() {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	
+
 	// Reset call counts
-	m.CreateCallCount = 0
-	m.UpdateCallCount = 0
+	m.IssueSessionCallCount = 0
+	m.RefreshSessionCallCount = 0
+	m.RevokeSessionCallCount = 0
+	m.MintAccessTokenCallCount = 0
 	m.CheckTokenCallCount = 0
-	
+
 	// Reset last call parameters
-	m.LastCreateUser = nil
-	m.LastUpdateUser = repository.User{}
+	m.LastIssueSessionUser = nil
+	m.LastIssueSessionUserAgent = ""
+	m.LastRefreshSessionToken = ""
+	m.LastRevokeSessionToken = ""
+	m.LastMintAccessTokenUser = nil
 	m.LastCheckToken = ""
-	
+
 	// Reset failure flags
-	m.ShouldFailCreate = false
-	m.ShouldFailUpdate = false
+	m.ShouldFailIssueSession = false
+	m.ShouldFailRefreshSession = false
+	m.ShouldFailRevokeSession = false
+	m.ShouldFailMintAccessToken = false
 	m.ShouldFailCheckToken = false
 }
 
-func (m *MockAuthService) Create(user *repository.User) (*string, error) {
+func (m *MockAuthService) IssueSession(user *repository.User, userAgent string) (string, string, error) {
 	m.mutex.Lock()
-	m.CreateCallCount++
-	m.LastCreateUser = user
+	m.IssueSessionCallCount++
+	m.LastIssueSessionUser = user
+	m.LastIssueSessionUserAgent = userAgent
 	m.mutex.Unlock()
-	
-	if m.ShouldFailCreate {
-		return nil, errors.New(m.CreateErrorMessage)
+
+	if m.ShouldFailIssueSession {
+		return "", "", errors.New(m.IssueSessionErrorMessage)
 	}
-	
-	// create a dummy token that is 64 characters long
-	token := "a============================================================//a"
-	return &token, nil
+
+	// dummy access JWT and refresh token; refresh token is unique per call so
+	// tests can assert multi-session behavior
+	access := "a============================================================//a"
+	refresh := fmt.Sprintf("mock-refresh-token-%d", m.IssueSessionCallCount)
+	return access, refresh, nil
 }
 
-func (m *MockAuthService) Update(user repository.User) (*string, error) {
+func (m *MockAuthService) RefreshSession(refreshRaw string) (string, string, *repository.User, error) {
 	m.mutex.Lock()
-	m.UpdateCallCount++
-	m.LastUpdateUser = user
+	m.RefreshSessionCallCount++
+	m.LastRefreshSessionToken = refreshRaw
 	m.mutex.Unlock()
-	
-	if m.ShouldFailUpdate {
-		return nil, errors.New(m.UpdateErrorMessage)
+
+	if m.ShouldFailRefreshSession {
+		return "", "", nil, errors.New(m.RefreshSessionErrorMessage)
 	}
-	
-	// create a dummy token that is 64 characters long
-	token := "a============================================================//a"
-	return &token, nil
+
+	access := "a============================================================//a"
+	refresh := fmt.Sprintf("mock-rotated-token-%d", m.RefreshSessionCallCount)
+	return access, refresh, &repository.User{Username: "mockuser"}, nil
+}
+
+func (m *MockAuthService) RevokeSession(refreshRaw string) error {
+	m.mutex.Lock()
+	m.RevokeSessionCallCount++
+	m.LastRevokeSessionToken = refreshRaw
+	m.mutex.Unlock()
+
+	if m.ShouldFailRevokeSession {
+		return errors.New(m.RevokeSessionErrorMessage)
+	}
+	return nil
+}
+
+func (m *MockAuthService) MintAccessToken(user *repository.User) (string, error) {
+	m.mutex.Lock()
+	m.MintAccessTokenCallCount++
+	m.LastMintAccessTokenUser = user
+	m.mutex.Unlock()
+
+	if m.ShouldFailMintAccessToken {
+		return "", errors.New(m.MintAccessTokenErrorMessage)
+	}
+	return "a============================================================//a", nil
 }
 
 func (m *MockAuthService) CheckToken(token string) error {
@@ -100,10 +146,10 @@ func (m *MockAuthService) CheckToken(token string) error {
 	m.CheckTokenCallCount++
 	m.LastCheckToken = token
 	m.mutex.Unlock()
-	
+
 	if m.ShouldFailCheckToken {
 		return errors.New(m.CheckTokenErrorMessage)
 	}
-	
+
 	return nil
 }

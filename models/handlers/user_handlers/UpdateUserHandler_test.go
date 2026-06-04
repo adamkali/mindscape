@@ -141,7 +141,7 @@ func NewUpdateUserHandler(services UpdateTestServices, ctx echo.Context) *h.Upda
 type MockUpdateAuthServiceWithFailure struct {
 	services.MockAuthService
 	ShouldFailCheckToken bool
-	ShouldFailUpdate     bool
+	ShouldFailMint       bool
 }
 
 func (m *MockUpdateAuthServiceWithFailure) CheckToken(token string) error {
@@ -151,11 +151,11 @@ func (m *MockUpdateAuthServiceWithFailure) CheckToken(token string) error {
 	return nil
 }
 
-func (m *MockUpdateAuthServiceWithFailure) Update(user repository.User) (*string, error) {
-	if m.ShouldFailUpdate {
-		return nil, assert.AnError
+func (m *MockUpdateAuthServiceWithFailure) MintAccessToken(user *repository.User) (string, error) {
+	if m.ShouldFailMint {
+		return "", assert.AnError
 	}
-	return m.MockAuthService.Update(user)
+	return m.MockAuthService.MintAccessToken(user)
 }
 
 // Run_UpdateUserHandler_ValidRequest executes UpdateUserHandler with valid request
@@ -256,10 +256,10 @@ func Run_UpdateUserHandler_UserServiceFailure(t *testing.T) {
 	assert.Equal(t, http.StatusOK, result.Code())
 }
 
-// Run_UpdateUserHandler_AuthServiceUpdateFailure executes UpdateUserHandler with AuthService.Update failure
+// Run_UpdateUserHandler_AuthServiceUpdateFailure executes UpdateUserHandler with AuthService.MintAccessToken failure
 func Run_UpdateUserHandler_AuthServiceUpdateFailure(t *testing.T) {
 	testServices := CreateUpdateTestServices()
-	testServices.AuthService = &MockUpdateAuthServiceWithFailure{ShouldFailUpdate: true}
+	testServices.AuthService = &MockUpdateAuthServiceWithFailure{ShouldFailMint: true}
 	
 	req := CreateUpdateHTTPRequest(http.MethodPost, "/api/users/update", UpdateUserHandlerRequestParams(updateHandlerTestUser.ID))
 	ctx := CreateUpdateAuthenticatedContext(req)

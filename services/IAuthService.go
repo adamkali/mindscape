@@ -8,7 +8,17 @@ import (
 
 
 type IAuthService interface {
-	Create(user *repository.User) (*string, error)
- 	Update(user repository.User) (*string, error)
+	// IssueSession mints a short-lived access JWT and a refresh token backed
+	// by a new session row. One session per browser/device.
+	IssueSession(user *repository.User, userAgent string) (access string, refreshRaw string, err error)
+	// RefreshSession rotates a refresh token and mints a new access JWT for
+	// the session's user.
+	RefreshSession(refreshRaw string) (access string, newRefreshRaw string, user *repository.User, err error)
+	// RevokeSession deletes the session for the given refresh token (logout).
+	RevokeSession(refreshRaw string) error
+	// MintAccessToken signs a fresh access JWT without creating a session
+	// (used when claims change mid-session, e.g. credential updates).
+	MintAccessToken(user *repository.User) (string, error)
+	// CheckToken statelessly validates an access JWT (signature + expiry).
 	CheckToken(token string) error
 }

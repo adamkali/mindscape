@@ -4,6 +4,9 @@ package services
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/base64"
 	"fmt"
 	"time"
 
@@ -30,17 +33,11 @@ type AuthService struct {
 	config *configuration.Configuration
 }
 
-// newExpiration returns the current time plus 72 hours.
-func newExpiration() time.Time {
-	return time.Now().Add(time.Hour * 72)
-}
-
-// jwtFromUser creates a JWT token from a user object.
+// jwtFromUser creates short-lived access-token claims from a user object.
 //
-// This function creates a new JWT token with the user's ID, profile picture URL,
-// and an expiration time set to 72 hours in the future. The token is signed with
-// the server's secret key.
-func jwtFromUser(user *repository.User) *CustomJwt {
+// The expiration is driven by server.access_token_ttl (default 15 minutes);
+// long-lived auth is handled by the refresh-token session, not the JWT.
+func jwtFromUser(user *repository.User, ttl time.Duration) *CustomJwt {
 	ProfilePicUrl := "NULL"
 	if user.ProfilePicUrl != nil { ProfilePicUrl = *user.ProfilePicUrl }
 	return &CustomJwt{
@@ -49,12 +46,44 @@ func jwtFromUser(user *repository.User) *CustomJwt {
 		User: user.Username,
 		IsAdmin: user.Admin,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(newExpiration()),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(ttl)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			ID: user.ID.String(),
 			Subject: user.ID.String(),
 		},
 	}
+}
+
+// mintAccessJWT signs a short-lived access JWT for the user.
+func (a *AuthService) mintAccessJWT(user *repository.User) (string, error) {
+	claims := jwtFromUser(user, a.config.AccessTokenDuration())
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte(a.config.Server.JWT))
+}
+
+// MintAccessToken signs a fresh short-lived access JWT for the user without
+// touching any session. Used when claims change mid-session (e.g. credential
+// updates) — the existing refresh session keeps working.
+func (a *AuthService) MintAccessToken(user *repository.User) (string, error) {
+	return a.mintAccessJWT(user)
+}
+
+// generateRefreshToken returns a high-entropy opaque refresh token and the
+// SHA-256 hash that is stored at rest. Only the hash ever touches the database,
+// so a leaked sessions table does not leak usable tokens.
+func generateRefreshToken() (raw string, hash string, err error) {
+	buf := make([]byte, 32)
+	if _, err = rand.Read(buf); err != nil {
+		return "", "", err
+	}
+	raw = base64.RawURLEncoding.EncodeToString(buf)
+	return raw, hashRefreshToken(raw), nil
+}
+
+// hashRefreshToken hashes a raw refresh token for storage/lookup.
+func hashRefreshToken(raw string) string {
+	sum := sha256.Sum256([]byte(raw))
+	return base64.RawURLEncoding.EncodeToString(sum[:])
 }
 
 // CreateAuthService creates a new instance of AuthService.
@@ -65,51 +94,112 @@ func CreateAuthService(ctx context.Context, pgPool *pgxpool.Pool, config *config
 	return &AuthService{ctx, pgPool, config}
 }
 
-// Create creates a new token for a user.
+// IssueSession mints a short-lived access JWT and creates a new session row
+// holding the hash of a fresh refresh token. Each call creates an independent
+// session, so multiple browsers/devices can stay logged in concurrently.
 //
-// This function takes a user object and returns the created token as a string
-// along with an error. If an error occurs during the creation of the token,
-// the error is returned instead of the token.
-func (a *AuthService) Create(user *repository.User) (*string, error) {
-	jwttoken := jwtFromUser(user)
+// This is the single entry point for anything that establishes a session:
+// login, signup, and (in the future) passkey/WebAuthn login should all end
+// here after verifying their respective credentials.
+func (a *AuthService) IssueSession(user *repository.User, userAgent string) (access string, refreshRaw string, err error) {
+	access, err = a.mintAccessJWT(user)
+	if err != nil {
+		return "", "", err
+	}
+	refreshRaw, refreshHash, err := generateRefreshToken()
+	if err != nil {
+		return "", "", err
+	}
+
 	tx, err := a.conn.Begin(a.ctx)
 	if err != nil {
-		return nil, err
+		return "", "", err
 	}
-
 	defer tx.Rollback(a.ctx)
-	expiration := jwttoken.ExpiresAt
 
-	// Create token with claims
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwttoken)
-	// Sign it with the server JWT_TOKEN
-	t, err := token.SignedString([]byte(a.config.Server.JWT))
-	if err != nil {
-		return nil, err
-	}
-
-	params := repository.CreateTokenParams{
-		UserID:             user.ID,
-		ExpirationDatetime: &expiration.Time,
-		Token:              &t,
-	}
+	expiresAt := time.Now().Add(a.config.RefreshTokenDuration())
 	repo := repository.New(tx)
-	row, err := repo.CreateToken(a.ctx, params)
+	_, err = repo.CreateSession(a.ctx, repository.CreateSessionParams{
+		UserID:           user.ID,
+		RefreshTokenHash: &refreshHash,
+		UserAgent:        &userAgent,
+		ExpiresAt:        &expiresAt,
+	})
 	if err != nil {
-		return nil, err
+		return "", "", err
 	}
-
-	tx.Commit(a.ctx)
-	fmt.Println(row.Token)
-
-	return row.Token, nil
+	if err = tx.Commit(a.ctx); err != nil {
+		return "", "", err
+	}
+	return access, refreshRaw, nil
 }
 
-// CheckToken checks if a given token is valid.
-//
-// This function takes a token string and returns an error if the token is not
-// found in the database. If the token is found but its expiration time has passed,
-// an error is also returned.
+// RefreshSession exchanges a valid refresh token for a new access JWT and a
+// rotated refresh token. Rotation is a single atomic UPDATE keyed on the old
+// token's hash: if the row was already rotated (or expired), zero rows match
+// and an error is returned — concurrent refreshes are deterministic, exactly
+// one wins.
+func (a *AuthService) RefreshSession(refreshRaw string) (access string, newRefreshRaw string, user *repository.User, err error) {
+	oldHash := hashRefreshToken(refreshRaw)
+	newRefreshRaw, newHash, err := generateRefreshToken()
+	if err != nil {
+		return "", "", nil, err
+	}
+
+	tx, err := a.conn.Begin(a.ctx)
+	if err != nil {
+		return "", "", nil, err
+	}
+	defer tx.Rollback(a.ctx)
+	repo := repository.New(tx)
+
+	expiresAt := time.Now().Add(a.config.RefreshTokenDuration())
+	session, err := repo.RotateSession(a.ctx, repository.RotateSessionParams{
+		RefreshTokenHash:   &newHash,
+		ExpiresAt:          &expiresAt,
+		RefreshTokenHash_2: &oldHash,
+	})
+	if err != nil {
+		return "", "", nil, fmt.Errorf("invalid or expired refresh token: %w", err)
+	}
+
+	found, err := repo.FindUserByID(a.ctx, session.UserID)
+	if err != nil {
+		return "", "", nil, err
+	}
+	if err = tx.Commit(a.ctx); err != nil {
+		return "", "", nil, err
+	}
+
+	access, err = a.mintAccessJWT(&found)
+	if err != nil {
+		return "", "", nil, err
+	}
+	return access, newRefreshRaw, &found, nil
+}
+
+// RevokeSession deletes the session matching the given refresh token (logout
+// for this device only; other sessions for the same user are untouched).
+func (a *AuthService) RevokeSession(refreshRaw string) error {
+	hash := hashRefreshToken(refreshRaw)
+	tx, err := a.conn.Begin(a.ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(a.ctx)
+	repo := repository.New(tx)
+	if err = repo.DeleteSessionByHash(a.ctx, &hash); err != nil {
+		return err
+	}
+	return tx.Commit(a.ctx)
+}
+
+// CheckToken validates an access JWT statelessly: signature and expiry only,
+// no database lookup. The echo-jwt middleware has already verified the
+// signature, but handlers pass the raw token here as a final gate. Revocation
+// is handled at the refresh layer — deleting a session row stops new access
+// tokens from being minted, so a revoked user is out within one access-token
+// TTL at most.
 func (a *AuthService) CheckToken(token string) error {
 	// API key authenticated requests use a synthetic token with Raw="apikey".
 	// The key has already been validated by the API key middleware.
@@ -117,77 +207,15 @@ func (a *AuthService) CheckToken(token string) error {
 		return nil
 	}
 
-	tx, err := a.conn.Begin(a.ctx)
-	if err != nil {
-		return err
-	}
-
-	defer tx.Rollback(a.ctx)
-	repo := repository.New(tx)
-
-	_, err = repo.FindTokenByToken(a.ctx, &token)
-	if err != nil {
-		return err
-	}
-	tx.Commit(a.ctx)
-
-
-	// check if token is expired
 	claims := &CustomJwt{}
-	_, err = jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+	_, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(a.config.Server.JWT), nil
 	})
 	if err != nil {
 		return err
 	}
-	if claims.ExpiresAt.Before(time.Now()) {
-		return err
+	if claims.ExpiresAt == nil || claims.ExpiresAt.Before(time.Now()) {
+		return fmt.Errorf("token expired")
 	}
 	return nil
-}
-
-// Update updates an existing token for a user.
-//
-// This function takes a user object and returns the updated token as a string
-// along with an error. If an error occurs during the update of the token,
-// the error is returned instead of the token.
-func (a *AuthService) Update(user repository.User) (*string, error) {
-	jwttoken := jwtFromUser(&user)
-	tx, err := a.conn.Begin(a.ctx)
-	if err != nil {
-		fmt.Printf("[ERROR] AuthService.Update{ a.conn.Begin } -> Error beginning transaction: %v", err)
-		return nil, err
-	}
-
-	defer tx.Rollback(a.ctx)
-	expiration := jwttoken.ExpiresAt
-	println("starting")
-
-	// Create token with claims
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwttoken)
-	println("token created")
-	// Sign it with the server JWT_TOKEN
-	t, err := token.SignedString([]byte(a.config.Server.JWT))
-	if err != nil {
-		fmt.Printf("[ERROR] AuthService.Update{ token.SignedString } -> Error signing token: %v", err)
-		return nil, err
-	}
-	println("token signed")
-
-	fmt.Printf("[INFO] AuthService.Update{ token.SignedString } -> Token: %v TokenLength: %d", t, len(t))
-	params := repository.UpdateTokenByUserIdParams{
-		UserID:             user.ID,
-		ExpirationDatetime: &expiration.Time,
-		Token:              &t,
-	}
-	println("params created")
-	repo := repository.New(tx)
-	err = repo.UpdateTokenByUserId(a.ctx, params)
-	if err != nil {
-		fmt.Printf("[ERROR] AuthService.Update{ repo.UpdateTokenByUserId } -> Error updating token: %v", err)
-		return nil, err
-	}
-	println("token updated")
-	tx.Commit(a.ctx)
-	return &t, nil
 }
