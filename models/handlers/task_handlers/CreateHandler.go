@@ -6,6 +6,7 @@ import (
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 )
 
@@ -59,11 +60,16 @@ func (h *CreateHandler) Handle() handlers.IHandler {
 		return handlers.Lock(h, 401, err)
 	}
 
+	dueAt := pgtype.Timestamptz{}
+	if request.DueAt != nil {
+		dueAt = pgtype.Timestamptz{Time: *request.DueAt, Valid: true}
+	}
 	insertTaskParams := repository.InsertNewTaskParams{
 		UserID:      userID,
 		Name:        &request.Name,
 		Description: &request.Description,
 		TaskTypeID:  request.TaskTypeID,
+		DueAt:       dueAt,
 	}
 	h.result, err = h.services.TaskService.Create(insertTaskParams)
 	if err != nil {

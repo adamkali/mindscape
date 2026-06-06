@@ -20,25 +20,31 @@ import { mapValues } from '../runtime';
  */
 export interface RepositoryInsertNewTaskParams {
     /**
-     * 
+     *
      * @type {string}
      * @memberof RepositoryInsertNewTaskParams
      */
     description?: string;
     /**
-     * 
+     *
+     * @type {string}
+     * @memberof RepositoryInsertNewTaskParams
+     */
+    dueAt?: string;
+    /**
+     *
      * @type {string}
      * @memberof RepositoryInsertNewTaskParams
      */
     name?: string;
     /**
-     * 
+     *
      * @type {string}
      * @memberof RepositoryInsertNewTaskParams
      */
     taskTypeId?: string;
     /**
-     * 
+     *
      * @type {string}
      * @memberof RepositoryInsertNewTaskParams
      */
@@ -63,6 +69,7 @@ export function RepositoryInsertNewTaskParamsFromJSONTyped(json: any, ignoreDisc
     return {
         
         'description': json['description'] == null ? undefined : json['description'],
+        'dueAt': json['due_at'] == null ? undefined : json['due_at'],
         'name': json['name'] == null ? undefined : json['name'],
         'taskTypeId': json['task_type_id'] == null ? undefined : json['task_type_id'],
         'userId': json['user_id'] == null ? undefined : json['user_id'],
@@ -81,6 +88,7 @@ export function RepositoryInsertNewTaskParamsToJSONTyped(value?: RepositoryInser
     return {
         
         'description': value['description'],
+        'due_at': value['dueAt'],
         'name': value['name'],
         'task_type_id': value['taskTypeId'],
         'user_id': value['userId'],

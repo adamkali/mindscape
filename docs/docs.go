@@ -3322,21 +3322,7 @@ const docTemplate = `{
             }
         },
         "repository.InsertNewTaskParams": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "task_type_id": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "string"
-                }
-            }
+            "type": "object"
         },
         "repository.Note": {
             "type": "object",
@@ -3394,18 +3380,7 @@ const docTemplate = `{
             }
         },
         "repository.UpdateTaskContentParams": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
+            "type": "object"
         },
         "requests.MoveFolderRequest": {
             "type": "object",

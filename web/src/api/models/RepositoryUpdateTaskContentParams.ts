@@ -20,19 +20,25 @@ import { mapValues } from '../runtime';
  */
 export interface RepositoryUpdateTaskContentParams {
     /**
-     * 
+     *
      * @type {string}
      * @memberof RepositoryUpdateTaskContentParams
      */
     description?: string;
     /**
-     * 
+     *
+     * @type {string}
+     * @memberof RepositoryUpdateTaskContentParams
+     */
+    dueAt?: string;
+    /**
+     *
      * @type {string}
      * @memberof RepositoryUpdateTaskContentParams
      */
     id?: string;
     /**
-     * 
+     *
      * @type {string}
      * @memberof RepositoryUpdateTaskContentParams
      */
@@ -57,6 +63,7 @@ export function RepositoryUpdateTaskContentParamsFromJSONTyped(json: any, ignore
     return {
         
         'description': json['description'] == null ? undefined : json['description'],
+        'dueAt': json['due_at'] == null ? undefined : json['due_at'],
         'id': json['id'] == null ? undefined : json['id'],
         'name': json['name'] == null ? undefined : json['name'],
     };
@@ -74,6 +81,7 @@ export function RepositoryUpdateTaskContentParamsToJSONTyped(value?: RepositoryU
     return {
         
         'description': value['description'],
+        'due_at': value['dueAt'],
         'id': value['id'],
         'name': value['name'],
     };

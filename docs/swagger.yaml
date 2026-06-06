@@ -358,15 +358,6 @@ definitions:
         type: string
     type: object
   repository.InsertNewTaskParams:
-    properties:
-      description:
-        type: string
-      name:
-        type: string
-      task_type_id:
-        type: string
-      user_id:
-        type: string
     type: object
   repository.Note:
     properties:
@@ -405,13 +396,6 @@ definitions:
         type: boolean
     type: object
   repository.UpdateTaskContentParams:
-    properties:
-      description:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
     type: object
   requests.MoveFolderRequest:
     properties:
