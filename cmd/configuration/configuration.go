@@ -5,8 +5,16 @@ package configuration
 import (
 	"errors"
 	"os"
+	"time"
 
 	"gopkg.in/yaml.v3"
+)
+
+const (
+	// DefaultAccessTokenTTL is used when server.access_token_ttl is unset or invalid.
+	DefaultAccessTokenTTL = 15 * time.Minute
+	// DefaultRefreshTokenTTL is used when server.refresh_token_ttl is unset or invalid.
+	DefaultRefreshTokenTTL = 30 * 24 * time.Hour
 )
 
 type Configuration struct {
@@ -25,6 +33,16 @@ type Configuration struct {
 			Dir string `yaml:"dir"`
 			Api string `yaml:"api"`
 		} `yaml:"frontend"`
+		// AccessTokenTTL is the lifetime of the short-lived access JWT
+		// (go duration string, e.g. "15m"). Defaults to 15 minutes.
+		AccessTokenTTL string `yaml:"access_token_ttl"`
+		// RefreshTokenTTL is the lifetime of the refresh-token session
+		// (go duration string, e.g. "720h"). Defaults to 30 days.
+		RefreshTokenTTL string `yaml:"refresh_token_ttl"`
+		Cookie          struct {
+			// Secure marks the refresh cookie HTTPS-only. Enable in production.
+			Secure bool `yaml:"secure"`
+		} `yaml:"cookie"`
 	} `yaml:"server"`
 	Database struct {
 		URL                    string `yaml:"url"`
@@ -51,6 +69,24 @@ type Configuration struct {
 	ApiKey struct {
 		DefaultExpiration string `yaml:"default_expiration"`
 	} `yaml:"apikey"`
+}
+
+// AccessTokenDuration parses server.access_token_ttl, falling back to
+// DefaultAccessTokenTTL when the key is missing or malformed.
+func (configuration *Configuration) AccessTokenDuration() time.Duration {
+	if d, err := time.ParseDuration(configuration.Server.AccessTokenTTL); err == nil && d > 0 {
+		return d
+	}
+	return DefaultAccessTokenTTL
+}
+
+// RefreshTokenDuration parses server.refresh_token_ttl, falling back to
+// DefaultRefreshTokenTTL when the key is missing or malformed.
+func (configuration *Configuration) RefreshTokenDuration() time.Duration {
+	if d, err := time.ParseDuration(configuration.Server.RefreshTokenTTL); err == nil && d > 0 {
+		return d
+	}
+	return DefaultRefreshTokenTTL
 }
 
 const ConfigurationDir = "./config/"

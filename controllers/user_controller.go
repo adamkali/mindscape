@@ -71,6 +71,7 @@ func (UserController *UserController) DeleteUser(ctx echo.Context) error {
 func (UserController *UserController) Signup(ctx echo.Context) error {
 	return handlers.NewRegisterHandler(
 		ctx,
+		UserController.Config,
 		*UserController.ValidatorService,
 		UserController.UserService,
 		UserController.AuthService,
@@ -93,8 +94,46 @@ func (UserController *UserController) Signup(ctx echo.Context) error {
 func (uc *UserController) Login(ctx echo.Context) error {
 	return handlers.NewLoginHandler(
 		ctx,
+		uc.Config,
 		*uc.ValidatorService,
 		uc.UserService,
+		uc.AuthService,
+	).Handle().JSON()
+}
+
+// @Summary Refresh the access token
+// @Description Exchange the httpOnly refresh-token cookie for a new access
+// @Description JWT and a rotated refresh cookie. Unauthenticated by design:
+// @Description the refresh cookie is the credential.
+//
+// @ID          Refresh
+// @Tags        Users
+// @Produce     json
+// @Success     200             {object}    responses.LoginResponse
+// @Failure     401             {object}    responses.LoginResponse
+// @Router      /users/refresh  [post]
+func (uc *UserController) Refresh(ctx echo.Context) error {
+	return handlers.NewRefreshHandler(
+		ctx,
+		uc.Config,
+		uc.AuthService,
+	).Handle().JSON()
+}
+
+// @Summary Logout this device
+// @Description Revoke the session belonging to the refresh-token cookie and
+// @Description clear it. Other browsers/devices stay logged in.
+//
+// @ID          Logout
+// @Tags        Users
+// @Produce     json
+// @Success     200             {object}    responses.StringResponse
+// @Failure     500             {object}    responses.StringResponse
+// @Router      /users/refresh  [delete]
+func (uc *UserController) Logout(ctx echo.Context) error {
+	return handlers.NewLogoutHandler(
+		ctx,
+		uc.Config,
 		uc.AuthService,
 	).Handle().JSON()
 }
@@ -348,6 +387,11 @@ func (uc UserController) Attatch(e *echo.Echo, middlewares ...echo.MiddlewareFun
 	api.GET("", uc.GetUsers, middlewares...)
 	api.POST("/login", uc.Login)
 	api.POST("/signup", uc.Signup)
+	// Refresh/logout authenticate via the path-scoped httpOnly refresh
+	// cookie (Path=/api/users/refresh), not the access JWT — so no JWT
+	// middleware here. Logout lives on the same path so the cookie is sent.
+	api.POST("/refresh", uc.Refresh)
+	api.DELETE("/refresh", uc.Logout)
 	api.GET("/current", uc.GetCurrent, middlewares...)
 	api.POST("/profile", uc.UploadProfilePicture, middlewares...)
 	api.POST("/creds", uc.UpdateUser, middlewares...)

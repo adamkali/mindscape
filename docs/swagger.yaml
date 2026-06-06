@@ -2082,6 +2082,46 @@ paths:
       summary: Upload file
       tags:
       - Users
+  /users/refresh:
+    delete:
+      description: |-
+        Revoke the session belonging to the refresh-token cookie and
+        clear it. Other browsers/devices stay logged in.
+      operationId: Logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/StringResponse'
+      summary: Logout this device
+      tags:
+      - Users
+    post:
+      description: |-
+        Exchange the httpOnly refresh-token cookie for a new access
+        JWT and a rotated refresh cookie. Unauthenticated by design:
+        the refresh cookie is the credential.
+      operationId: Refresh
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/LoginResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/LoginResponse'
+      summary: Refresh the access token
+      tags:
+      - Users
   /users/signup:
     post:
       consumes:

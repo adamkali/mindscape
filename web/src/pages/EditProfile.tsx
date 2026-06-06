@@ -16,10 +16,21 @@ import {
 import BackgroundChoices from '@/components/BackgroundChoices';
 import { Header } from '@/components/Header';
 import { useAuth } from '@/contexts/AuthContext';
+import { ViewProvider } from '@/contexts/ViewContext';
 import { useBackground, useBackgroundStyle } from '@/hooks/useBackground';
 import { EmptyGuid } from '@/utils';
 
+// Header relies on useView, so the page must provide a ViewProvider
+// (same pattern as ApiKeys/Home)
 const EditProfile = () => {
+	return (
+		<ViewProvider>
+			<EditProfileInner />
+		</ViewProvider>
+	);
+};
+
+const EditProfileInner = () => {
 	const auth = useAuth();
 	const navigate = useNavigate();
 	const api = new UsersApi();

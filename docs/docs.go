@@ -1896,6 +1896,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/refresh": {
+            "post": {
+                "description": "Exchange the httpOnly refresh-token cookie for a new access\nJWT and a rotated refresh cookie. Unauthenticated by design:\nthe refresh cookie is the credential.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Refresh the access token",
+                "operationId": "Refresh",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/LoginResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/LoginResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Revoke the session belonging to the refresh-token cookie and\nclear it. Other browsers/devices stay logged in.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Logout this device",
+                "operationId": "Logout",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/users/signup": {
             "post": {
                 "description": "Signup using the requests.NewUserRequest",

@@ -8,6 +8,7 @@ import {
 import type { ResponsesUserData } from '@/api';
 import { UsersApi } from '@/api';
 import { getApiConfig, initializeApiConfig } from '@/utils/apiConfig';
+import { revokeSession, setTokenRefreshedHandler } from '@/utils/refreshAuth';
 
 export interface AuthContextValue {
 	user: () => ResponsesUserData | null;
@@ -40,13 +41,22 @@ export const AuthProvider: ParentComponent = (props) => {
 
 	// Create logout function that will be used by the auth interceptor
 	const logout = () => {
-		console.log('Logging out user due to authentication failure');
+		console.log('Logging out user');
+		// Best-effort: revoke this device's session server-side (other
+		// browsers/devices stay logged in), then clear local state.
+		void revokeSession();
 		setToken(null);
 		setUser(null);
 		setIsInitializing(false);
 		// Redirect to login page using window.location to avoid router dependency
 		window.location.href = '/login';
 	};
+
+	// When the interceptor silently refreshes the access token, push the new
+	// token into the auth signal so localStorage and headers stay current.
+	setTokenRefreshedHandler((newToken) => {
+		setToken(newToken);
+	});
 
 	// Initialize global API configuration with auth interceptor
 	const apiConfig = initializeApiConfig(logout);

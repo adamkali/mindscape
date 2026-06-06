@@ -4,9 +4,9 @@
 ### If you are not using a JS framework you can comment out this section
 FROM node:22-alpine AS node_builder
 WORKDIR /usr/src/web
-COPY web/package.json ./
-### use pnpm
-RUN npm install -g pnpm && pnpm install
+COPY web/package.json web/pnpm-lock.yaml ./
+### use pnpm (pinned major; lockfile enforced for reproducible builds)
+RUN npm install -g pnpm@10 && pnpm install --frozen-lockfile
 COPY web/ ./
 RUN pnpm run build
 

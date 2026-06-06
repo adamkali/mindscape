@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/adamkali/mindscape/cmd/configuration"
 	"github.com/adamkali/mindscape/db/repository"
 	i "github.com/adamkali/mindscape/models/handlers"
 	h "github.com/adamkali/mindscape/models/handlers/user_handlers"
@@ -86,17 +87,11 @@ func WithForceUserServiceFailure(userService *services.MockUserService) *service
 	return userService
 }
 
-// WithForceAuthServiceFailure modifies service to force AuthService.Update failure
-type MockAuthServiceWithFailure struct {
-	services.MockAuthService
-	ShouldFail bool
-}
-
-func (m *MockAuthServiceWithFailure) Update(user repository.User) (*string, error) {
-	if m.ShouldFail {
-		return nil, fmt.Errorf("Auth service update failure")
-	}
-	return m.MockAuthService.Update(user)
+// WithForceAuthServiceFailure modifies service to force AuthService.IssueSession failure
+func WithForceAuthServiceFailure(authService *services.MockAuthService) *services.MockAuthService {
+	authService.ShouldFailIssueSession = true
+	authService.IssueSessionErrorMessage = "Auth service issue session failure"
+	return authService
 }
 
 // <runners/>
@@ -136,6 +131,7 @@ func NewEchoContext(r *http.Request) echo.Context {
 func NewLoginHandler(r *http.Request, userService services.IUserService, authService services.IAuthService) *h.LoginHandler {
 	return h.NewLoginHandler(
 		NewEchoContext(r),
+		&configuration.Configuration{},
 		services.ValidatorService{},
 		userService,
 		authService,
@@ -309,15 +305,15 @@ func Run_LoginHandler_UserServiceFailure(t *testing.T) {
 func Run_LoginHandler_AuthServiceFailure(t *testing.T) {
 	userService := &services.MockUserService{}
 	userService.Reset()
-	authService := &MockAuthServiceWithFailure{ShouldFail: true}
-	
+	authService := WithForceAuthServiceFailure(&services.MockAuthService{})
+
 	req := NewTestRequest(http.MethodPost, "/api/users/login", LoginHandlerRequestParams())
 	handler := NewLoginHandler(req, userService, authService)
 	result := handler.Handle()
-	
+
 	assert.Error(t, result.Error())
 	assert.Equal(t, http.StatusInternalServerError, result.Code())
-	assert.Contains(t, result.Error().Error(), "Auth service update failure")
+	assert.Contains(t, result.Error().Error(), "Auth service issue session failure")
 }
 
 // <tests>

@@ -5,6 +5,7 @@ package user_handlers
 import (
 	"fmt"
 
+	"github.com/adamkali/mindscape/cmd/configuration"
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/requests"
@@ -19,6 +20,7 @@ type LoginHandler struct {
 	ctx              echo.Context
 	code             int
 	err              error
+	Config           *configuration.Configuration
 	ValidatorService services.ValidatorService
 	UserService      services.IUserService
 	AuthService      services.IAuthService
@@ -26,6 +28,7 @@ type LoginHandler struct {
 
 func NewLoginHandler(
 	ctx echo.Context,
+	config *configuration.Configuration,
 	ValidatorService services.ValidatorService,
 	UserService services.IUserService,
 	AuthService services.IAuthService,
@@ -36,6 +39,7 @@ func NewLoginHandler(
 		authenticated:    nil,
 		token:            nil,
 		err:              nil,
+		Config:           config,
 		ValidatorService: ValidatorService,
 		UserService:      UserService,
 		AuthService:      AuthService,
@@ -55,11 +59,14 @@ func (h *LoginHandler) Handle() handlers.IHandler {
 	if h.authenticated == nil {
 		return handlers.Lock(h, 401, fmt.Errorf("invalid credentials"))
 	}
-	fmt.Println(h.authenticated)
-	h.token, err = h.AuthService.Update(*h.authenticated)
+	// Each login creates its own session row, so other browsers/devices
+	// stay logged in. The refresh token travels only in the httpOnly cookie.
+	access, refreshRaw, err := h.AuthService.IssueSession(h.authenticated, h.ctx.Request().UserAgent())
 	if err != nil {
 		return handlers.Lock(h, 500, err)
 	}
+	h.token = &access
+	SetRefreshCookie(h.ctx, h.Config, refreshRaw)
 	return h
 }
 
