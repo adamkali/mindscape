@@ -8,6 +8,7 @@ import {
 import type { ResponsesUserData } from '@/api';
 import { UsersApi } from '@/api';
 import { initializeApiConfig } from '@/utils/apiConfig';
+import { setTokenRefreshedHandler } from '@/utils/refreshAuth';
 
 export interface AuthContextValue {
 	user: () => ResponsesUserData | null;
