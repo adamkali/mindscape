@@ -2,7 +2,7 @@
   "id": "704a9bfb-982b-48ff-b45e-c671f13a4b6d",
   "type": "coolify-a",
   "title": "Coolify Projects Widget Schema",
-  "description": "Configuration schema for Coolify Integration",
+  "description": "Configuration schema for Coolify Integration: application and service status plus server CPU, memory and storage usage",
   "layout": {
     "defaultSize": {
       "width": 12,
@@ -19,38 +19,38 @@
     "resizable": false
   },
   "properties": {
-	"baseUrl": {
-		"label": "Coolify Base URL",
-		"value": "",
-		"type": "string",
-		"format": "string",
-		"description": "Coolify Base URL: `https://app.coolify.io/api/v1`",
-		"enum": []
-	},
-	"foldInitially": {
-		"label": "Hide Apps and Services by Default",
-		"value": true,
-		"type": "boolean",
-		"format": "boolean",
-		"description": "On Widget load, hide all apps and services by default",
-		"enum": []
-	},
-	"applicationIds": {
-		"label": "Application IDs",
-		"value": "",
-		"type": "array",
-		"format": "array",
-		"description": "Comma separated list of project IDs, if empty, all applications will be in the list",
-		"enum": []
-	},
-	"serviceIds":{
-		"label": "Service ID",	
-		"value": "",
-		"type": "array",
-		"format": "array",
-		"description": "Comma separated list of service IDs, if empty, all services will be in the list",
-		"enum": []
-	},
+    "baseUrl": {
+      "label": "Coolify Base URL",
+      "value": "",
+      "type": "string",
+      "format": "string",
+      "description": "Coolify Base URL: `https://app.coolify.io/api/v1`",
+      "enum": []
+    },
+    "foldInitially": {
+      "label": "Hide Apps and Services by Default",
+      "value": true,
+      "type": "boolean",
+      "format": "boolean",
+      "description": "On Widget load, hide all apps and services by default",
+      "enum": []
+    },
+    "applicationIds": {
+      "label": "Application IDs",
+      "value": "",
+      "type": "array",
+      "format": "array",
+      "description": "Comma separated list of project IDs, if empty, all applications will be in the list",
+      "enum": []
+    },
+    "serviceIds": {
+      "label": "Service ID",
+      "value": "",
+      "type": "array",
+      "format": "array",
+      "description": "Comma separated list of service IDs, if empty, all services will be in the list",
+      "enum": []
+    },
     "personalAccessToken": {
       "label": "Personal Access Token With Write Access",
       "value": "",
@@ -58,10 +58,41 @@
       "format": "password",
       "description": "Personal Access Token With Write Access to Redploy and Restart Projects",
       "enum": []
+    },
+    "serverUuid": {
+      "label": "Server UUID (optional)",
+      "value": "",
+      "type": "string",
+      "format": "string",
+      "description": "Which Coolify server to report metrics for. Only needed when the token can see more than one server.",
+      "enum": []
+    },
+    "sentinelUrl": {
+      "label": "Sentinel URL (optional)",
+      "value": "",
+      "type": "string",
+      "format": "string",
+      "description": "Coolify Sentinel address for CPU and memory, e.g. http://<coolify-host>:8888. Strongly recommended: discovery derives http://<server-ip>:8888 from the Coolify API, which fails when Sentinel is not published or the server reports host.docker.internal.",
+      "enum": []
+    },
+    "sentinelToken": {
+      "label": "Sentinel Token (optional)",
+      "value": "",
+      "type": "string",
+      "format": "password",
+      "description": "Bearer token for Sentinel: the TOKEN env var on the coolify-sentinel container. Strongly recommended over discovery, since Coolify's recorded sentinel_token goes stale if the agent container was recreated after a rotation.",
+      "enum": []
+    },
+    "diskPath": {
+      "label": "Storage Path",
+      "value": "/",
+      "type": "string",
+      "format": "string",
+      "description": "Filesystem to report as storage usage. Read from the host running Mindscape, since neither Coolify nor Sentinel exposes a disk metric.",
+      "enum": []
     }
   },
   "required": [
-	"personalAccessToken"
+    "personalAccessToken"
   ]
 }
-

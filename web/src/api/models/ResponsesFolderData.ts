@@ -27,13 +27,6 @@ import {
     RepositoryBookmarkToJSON,
     RepositoryBookmarkToJSONTyped,
 } from './RepositoryBookmark';
-import type { RepositoryNote } from './RepositoryNote';
-import {
-    RepositoryNoteFromJSON,
-    RepositoryNoteFromJSONTyped,
-    RepositoryNoteToJSON,
-    RepositoryNoteToJSONTyped,
-} from './RepositoryNote';
 
 /**
  * 
@@ -79,12 +72,6 @@ export interface ResponsesFolderData {
     name?: string;
     /**
      * 
-     * @type {Array<RepositoryNote>}
-     * @memberof ResponsesFolderData
-     */
-    notes?: Array<RepositoryNote>;
-    /**
-     * 
      * @type {string}
      * @memberof ResponsesFolderData
      */
@@ -126,7 +113,6 @@ export function ResponsesFolderDataFromJSONTyped(json: any, ignoreDiscriminator:
         'description': json['description'] == null ? undefined : json['description'],
         'id': json['id'] == null ? undefined : json['id'],
         'name': json['name'] == null ? undefined : json['name'],
-        'notes': json['notes'] == null ? undefined : ((json['notes'] as Array<any>).map(RepositoryNoteFromJSON)),
         'parentId': json['parent_id'] == null ? undefined : json['parent_id'],
         'updatedDatetime': json['updated_datetime'] == null ? undefined : json['updated_datetime'],
         'userId': json['user_id'] == null ? undefined : json['user_id'],
@@ -150,7 +136,6 @@ export function ResponsesFolderDataToJSONTyped(value?: ResponsesFolderData | nul
         'description': value['description'],
         'id': value['id'],
         'name': value['name'],
-        'notes': value['notes'] == null ? undefined : ((value['notes'] as Array<any>).map(RepositoryNoteToJSON)),
         'parent_id': value['parentId'],
         'updated_datetime': value['updatedDatetime'],
         'user_id': value['userId'],

@@ -14,7 +14,6 @@ type FolderController struct {
 	UserService      services.IUserService
 	FolderService    services.IFolderService
 	BookmarkService  services.IBookmarkService
-	NoteService      services.INoteService
 	ValidatorService *services.ValidatorService
 }
 
@@ -30,7 +29,6 @@ func BuildFolderController(p *services.Registrar) FolderController {
 		UserService:      p.UserService,
 		FolderService:    p.FolderService,
 		BookmarkService:  p.BookmarkService,
-		NoteService:      p.NoteService,
 		ValidatorService: p.ValidatorService,
 	}
 }
@@ -43,7 +41,7 @@ func BuildFolderController(p *services.Registrar) FolderController {
 // @Tags        Folders
 // @Accept      json
 // @Produce     json
-// @Param       Authorization       header       string                         true "Authorization Header"     default("Bearer token")
+// @Security BearerAuth
 // @Success     200                 {object}     responses.FoldersResponse
 // @Failure     401                 {object}     responses.FoldersResponse
 // @Failure     404                 {object}     responses.FoldersResponse
@@ -54,7 +52,6 @@ func (folderController FolderController) GetRootFolders(e echo.Context) error {
 		e,
 		folderController.FolderService,
 		folderController.BookmarkService,
-		folderController.NoteService,
 		folderController.AuthService,
 	).Handle().JSON()
 }
@@ -68,7 +65,7 @@ func (folderController FolderController) GetRootFolders(e echo.Context) error {
 // @Accept      json
 // @Produce     json
 // @Param       folder_id           path         string                         true "Folder ID"                default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
-// @Param       Authorization       header       string                         true "Authorization Header"     default("Bearer token")
+// @Security BearerAuth
 // @Success     200                 {object}     responses.FolderResponse
 // @Failure     401                 {object}     responses.FolderResponse
 // @Failure     404                 {object}     responses.FolderResponse
@@ -79,7 +76,6 @@ func (folderController FolderController) GetFolderByID(e echo.Context) error {
 		e,
 		folderController.FolderService,
 		folderController.BookmarkService,
-		folderController.NoteService,
 		folderController.AuthService,
 	).Handle().JSON()
 }
@@ -92,7 +88,7 @@ func (folderController FolderController) GetFolderByID(e echo.Context) error {
 // @Accept      json
 // @Produce     json
 // @Param       CreateFolderRequest body         repository.CreateFolderParams  true "Create Folder Request"
-// @Param       Authorization       header       string                         true "Authorization Header"     default("Bearer token")
+// @Security BearerAuth
 // @Success     200                 {object}     responses.FolderResponse
 // @Failure     401                 {object}     responses.FolderResponse
 // @Failure     404                 {object}     responses.FolderResponse
@@ -115,7 +111,7 @@ func (folderController FolderController) CreateFolder(e echo.Context) error {
 // @Accept      json
 // @Produce     json
 // @Param       folder_id           path         string                         true "Folder ID"                default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
-// @Param       Authorization       header       string                         true "Authorization Header"     default("Bearer token")
+// @Security BearerAuth
 // @Success     200                 {object}     responses.FolderResponse
 // @Failure     404                 {object}     responses.FolderResponse
 // @Failure     500                 {object}     responses.FolderResponse
@@ -136,7 +132,7 @@ func (folderController FolderController) DeleteFolder(e echo.Context) error {
 // @Accept      json
 // @Produce     json
 // @Param       MoveFolderRequest body         requests.MoveFolderRequest true "Move Folder Request"
-// @Param       Authorization       header       string                         true "Authorization Header"     default("Bearer token")
+// @Security BearerAuth
 // @Success     200                 {object}     responses.FolderResponse
 // @Failure     401                 {object}     responses.FolderResponse
 // @Failure     403                 {object}     responses.FolderResponse
@@ -161,7 +157,7 @@ func (folderController FolderController) MoveFolder(e echo.Context) error {
 // @Produce     json
 // @Param       folder_id              path         string                              true "Folder ID"                default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
 // @Param       UpdateFolderRequest    body         requests.UpdateFolderRequest        true "Update Folder Request"
-// @Param       Authorization          header       string                              true "Authorization Header"     default("Bearer token")
+// @Security BearerAuth
 // @Success     200                    {object}     responses.FolderResponse
 // @Failure     400                    {object}     responses.FolderResponse
 // @Failure     401                    {object}     responses.FolderResponse

@@ -32,17 +32,11 @@ import {
 } from '../models/index';
 
 export interface CreateApiKeyOperationRequest {
-    authorization: string;
     createApiKeyRequest: CreateApiKeyRequest;
 }
 
 export interface DeleteApiKeyRequest {
-    authorization: string;
     keyId: string;
-}
-
-export interface ListApiKeysRequest {
-    authorization: string;
 }
 
 /**
@@ -55,13 +49,6 @@ export class ApiKeysApi extends runtime.BaseAPI {
      * Create a new API Key
      */
     async createApiKeyRaw(requestParameters: CreateApiKeyOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesApiKeyResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling createApiKey().'
-            );
-        }
-
         if (requestParameters['createApiKeyRequest'] == null) {
             throw new runtime.RequiredError(
                 'createApiKeyRequest',
@@ -75,8 +62,8 @@ export class ApiKeysApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -104,13 +91,6 @@ export class ApiKeysApi extends runtime.BaseAPI {
      * Delete an API Key
      */
     async deleteApiKeyRaw(requestParameters: DeleteApiKeyRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StringResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling deleteApiKey().'
-            );
-        }
-
         if (requestParameters['keyId'] == null) {
             throw new runtime.RequiredError(
                 'keyId',
@@ -122,8 +102,8 @@ export class ApiKeysApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -149,20 +129,13 @@ export class ApiKeysApi extends runtime.BaseAPI {
      * List all API Keys for the current user
      * List API Keys
      */
-    async listApiKeysRaw(requestParameters: ListApiKeysRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesApiKeysResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling listApiKeys().'
-            );
-        }
-
+    async listApiKeysRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesApiKeysResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -179,8 +152,8 @@ export class ApiKeysApi extends runtime.BaseAPI {
      * List all API Keys for the current user
      * List API Keys
      */
-    async listApiKeys(requestParameters: ListApiKeysRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ResponsesApiKeysResponse> {
-        const response = await this.listApiKeysRaw(requestParameters, initOverrides);
+    async listApiKeys(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ResponsesApiKeysResponse> {
+        const response = await this.listApiKeysRaw(initOverrides);
         return await response.value();
     }
 

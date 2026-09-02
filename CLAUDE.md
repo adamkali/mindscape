@@ -10,6 +10,15 @@
 - **Database**: PostgreSQL with SQLC for type-safe queries
 - **Docs**: Swagger/OpenAPI with auto-generated TypeScript client
 
+## Conventions
+
+**Before adding frontend code, read [`web/CONVENTIONS.md`](web/CONVENTIONS.md).** It is
+the source of truth for keeping logic centralized and DRY: shared state and API
+mutations belong in a context (not scattered in components), API calls go through the
+single configured client (no per-call `authorization` arg — auth is injected globally),
+reusable behavior becomes a `hooks/` primitive, and `web/src/api/**` is generated (never
+hand-edited — regenerate with `go-task swag`).
+
 ## Architecture
 
 ```

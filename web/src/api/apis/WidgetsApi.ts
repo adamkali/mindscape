@@ -18,10 +18,14 @@ import type {
   AddUserWidgetRequest,
   CoolifyActionResponse,
   CoolifyWidgetApplicationResponse,
+  CoolifyWidgetMetricsResponse,
+  CoolifyWidgetResponse,
   CoolifyWidgetServiceResponse,
   GithubCommitsResponse,
+  GithubPRsWidgetResponse,
   GithubProfileResponse,
   GithubResponse,
+  PlexRecentlyAddedResponse,
   ResponsesUserWidgetResponse,
   ResponsesUserWidgetsResponse,
   ResponsesWidgetsResponse,
@@ -34,14 +38,22 @@ import {
     CoolifyActionResponseToJSON,
     CoolifyWidgetApplicationResponseFromJSON,
     CoolifyWidgetApplicationResponseToJSON,
+    CoolifyWidgetMetricsResponseFromJSON,
+    CoolifyWidgetMetricsResponseToJSON,
+    CoolifyWidgetResponseFromJSON,
+    CoolifyWidgetResponseToJSON,
     CoolifyWidgetServiceResponseFromJSON,
     CoolifyWidgetServiceResponseToJSON,
     GithubCommitsResponseFromJSON,
     GithubCommitsResponseToJSON,
+    GithubPRsWidgetResponseFromJSON,
+    GithubPRsWidgetResponseToJSON,
     GithubProfileResponseFromJSON,
     GithubProfileResponseToJSON,
     GithubResponseFromJSON,
     GithubResponseToJSON,
+    PlexRecentlyAddedResponseFromJSON,
+    PlexRecentlyAddedResponseToJSON,
     ResponsesUserWidgetResponseFromJSON,
     ResponsesUserWidgetResponseToJSON,
     ResponsesUserWidgetsResponseFromJSON,
@@ -53,42 +65,47 @@ import {
 } from '../models/index';
 
 export interface AddUserWidgetOperationRequest {
-    authorization: string;
     addUserWidgetRequest: AddUserWidgetRequest;
 }
 
 export interface GetGithubCommitsWidgetDataRequest {
-    authorization: string;
+    userWidgetId: string;
+}
+
+export interface GetGithubPRsWidgetDataRequest {
     userWidgetId: string;
 }
 
 export interface GetGithubProfileWidgetDataRequest {
-    authorization: string;
     userWidgetId: string;
 }
 
 export interface GetGithubWidgetDataRequest {
-    authorization: string;
+    userWidgetId: string;
+}
+
+export interface GetPlexRecentlyAddedRequest {
     userWidgetId: string;
 }
 
 export interface GetUserCoolifyApplicationsRequest {
-    authorization: string;
+    userWidgetId: string;
+}
+
+export interface GetUserCoolifyMetricsRequest {
     userWidgetId: string;
 }
 
 export interface GetUserCoolifyServicesRequest {
-    authorization: string;
+    userWidgetId: string;
+}
+
+export interface GetUserCoolifyStatusRequest {
     userWidgetId: string;
 }
 
 export interface GetUserWidgetRequest {
-    authorization: string;
     userWidgetId: string;
-}
-
-export interface GetUserWidgetsRequest {
-    authorization: string;
 }
 
 export interface GetWidgetSchemaByIDRequest {
@@ -96,19 +113,16 @@ export interface GetWidgetSchemaByIDRequest {
 }
 
 export interface RestartCoolifyApplicationRequest {
-    authorization: string;
     userWidgetId: string;
     appUuid: string;
 }
 
 export interface StartCoolifyApplicationRequest {
-    authorization: string;
     userWidgetId: string;
     appUuid: string;
 }
 
 export interface StopCoolifyApplicationRequest {
-    authorization: string;
     userWidgetId: string;
     appUuid: string;
 }
@@ -123,13 +137,6 @@ export class WidgetsApi extends runtime.BaseAPI {
      * Add a Users Widget
      */
     async addUserWidgetRaw(requestParameters: AddUserWidgetOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesUserWidgetResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling addUserWidget().'
-            );
-        }
-
         if (requestParameters['addUserWidgetRequest'] == null) {
             throw new runtime.RequiredError(
                 'addUserWidgetRequest',
@@ -143,8 +150,8 @@ export class WidgetsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -172,13 +179,6 @@ export class WidgetsApi extends runtime.BaseAPI {
      * Get a Users Github Commits Widget Data
      */
     async getGithubCommitsWidgetDataRaw(requestParameters: GetGithubCommitsWidgetDataRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GithubCommitsResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling getGithubCommitsWidgetData().'
-            );
-        }
-
         if (requestParameters['userWidgetId'] == null) {
             throw new runtime.RequiredError(
                 'userWidgetId',
@@ -190,8 +190,8 @@ export class WidgetsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -214,17 +214,49 @@ export class WidgetsApi extends runtime.BaseAPI {
     }
 
     /**
+     * Fetches open pull requests from GitHub (review-requested, authored, mentioned, assigned) using the GitHub Issues Search API with a server-side PAT proxy. The PAT requires \'repo\' read scope for private repositories.
+     * Get GitHub PRs Widget Data
+     */
+    async getGithubPRsWidgetDataRaw(requestParameters: GetGithubPRsWidgetDataRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GithubPRsWidgetResponse>> {
+        if (requestParameters['userWidgetId'] == null) {
+            throw new runtime.RequiredError(
+                'userWidgetId',
+                'Required parameter "userWidgetId" was null or undefined when calling getGithubPRsWidgetData().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
+        }
+
+        const response = await this.request({
+            path: `/widgets/{user_widget_id}/github/prs`.replace(`{${"user_widget_id"}}`, encodeURIComponent(String(requestParameters['userWidgetId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GithubPRsWidgetResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Fetches open pull requests from GitHub (review-requested, authored, mentioned, assigned) using the GitHub Issues Search API with a server-side PAT proxy. The PAT requires \'repo\' read scope for private repositories.
+     * Get GitHub PRs Widget Data
+     */
+    async getGithubPRsWidgetData(requestParameters: GetGithubPRsWidgetDataRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GithubPRsWidgetResponse> {
+        const response = await this.getGithubPRsWidgetDataRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get a Users Github Profile Widget by their auth token and a path parameter to return only the profile data. This is a fast endpoint that returns profile info quickly.
      * Get a Users Github Profile Widget Data
      */
     async getGithubProfileWidgetDataRaw(requestParameters: GetGithubProfileWidgetDataRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GithubProfileResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling getGithubProfileWidgetData().'
-            );
-        }
-
         if (requestParameters['userWidgetId'] == null) {
             throw new runtime.RequiredError(
                 'userWidgetId',
@@ -236,8 +268,8 @@ export class WidgetsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -264,13 +296,6 @@ export class WidgetsApi extends runtime.BaseAPI {
      * Get a Users Github Widget
      */
     async getGithubWidgetDataRaw(requestParameters: GetGithubWidgetDataRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GithubResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling getGithubWidgetData().'
-            );
-        }
-
         if (requestParameters['userWidgetId'] == null) {
             throw new runtime.RequiredError(
                 'userWidgetId',
@@ -282,8 +307,8 @@ export class WidgetsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -306,17 +331,49 @@ export class WidgetsApi extends runtime.BaseAPI {
     }
 
     /**
+     * Fetches recently-added media items from the configured Plex server. The Plex API token is kept server-side; this is a server-side proxy endpoint. Poster art is returned as signed thumb URLs (serverUrl + thumb + X-Plex-Token query param).
+     * Get Plex Recently Added
+     */
+    async getPlexRecentlyAddedRaw(requestParameters: GetPlexRecentlyAddedRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PlexRecentlyAddedResponse>> {
+        if (requestParameters['userWidgetId'] == null) {
+            throw new runtime.RequiredError(
+                'userWidgetId',
+                'Required parameter "userWidgetId" was null or undefined when calling getPlexRecentlyAdded().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
+        }
+
+        const response = await this.request({
+            path: `/widgets/{user_widget_id}/plex/recently-added`.replace(`{${"user_widget_id"}}`, encodeURIComponent(String(requestParameters['userWidgetId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PlexRecentlyAddedResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Fetches recently-added media items from the configured Plex server. The Plex API token is kept server-side; this is a server-side proxy endpoint. Poster art is returned as signed thumb URLs (serverUrl + thumb + X-Plex-Token query param).
+     * Get Plex Recently Added
+     */
+    async getPlexRecentlyAdded(requestParameters: GetPlexRecentlyAddedRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PlexRecentlyAddedResponse> {
+        const response = await this.getPlexRecentlyAddedRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get a Users Coolify Applications by their auth token
      * Get a Users Coolify Applications
      */
     async getUserCoolifyApplicationsRaw(requestParameters: GetUserCoolifyApplicationsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CoolifyWidgetApplicationResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling getUserCoolifyApplications().'
-            );
-        }
-
         if (requestParameters['userWidgetId'] == null) {
             throw new runtime.RequiredError(
                 'userWidgetId',
@@ -328,8 +385,8 @@ export class WidgetsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -352,17 +409,49 @@ export class WidgetsApi extends runtime.BaseAPI {
     }
 
     /**
+     * Get CPU, memory and storage usage for the widget\'s Coolify server. CPU and memory come from the Sentinel agent; storage is read from the Mindscape host filesystem. Sources that fail are reported in data.warnings rather than failing the request.
+     * Get Coolify Server Metrics
+     */
+    async getUserCoolifyMetricsRaw(requestParameters: GetUserCoolifyMetricsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CoolifyWidgetMetricsResponse>> {
+        if (requestParameters['userWidgetId'] == null) {
+            throw new runtime.RequiredError(
+                'userWidgetId',
+                'Required parameter "userWidgetId" was null or undefined when calling getUserCoolifyMetrics().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
+        }
+
+        const response = await this.request({
+            path: `/widgets/{user_widget_id}/coolify/metrics`.replace(`{${"user_widget_id"}}`, encodeURIComponent(String(requestParameters['userWidgetId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CoolifyWidgetMetricsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get CPU, memory and storage usage for the widget\'s Coolify server. CPU and memory come from the Sentinel agent; storage is read from the Mindscape host filesystem. Sources that fail are reported in data.warnings rather than failing the request.
+     * Get Coolify Server Metrics
+     */
+    async getUserCoolifyMetrics(requestParameters: GetUserCoolifyMetricsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CoolifyWidgetMetricsResponse> {
+        const response = await this.getUserCoolifyMetricsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get a Users Coolify Services by their auth token
      * Get a Users Coolify Services
      */
     async getUserCoolifyServicesRaw(requestParameters: GetUserCoolifyServicesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CoolifyWidgetServiceResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling getUserCoolifyServices().'
-            );
-        }
-
         if (requestParameters['userWidgetId'] == null) {
             throw new runtime.RequiredError(
                 'userWidgetId',
@@ -374,8 +463,8 @@ export class WidgetsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -398,17 +487,49 @@ export class WidgetsApi extends runtime.BaseAPI {
     }
 
     /**
+     * Get the combined Coolify application and service status for a widget
+     * Get a Users Coolify Status
+     */
+    async getUserCoolifyStatusRaw(requestParameters: GetUserCoolifyStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CoolifyWidgetResponse>> {
+        if (requestParameters['userWidgetId'] == null) {
+            throw new runtime.RequiredError(
+                'userWidgetId',
+                'Required parameter "userWidgetId" was null or undefined when calling getUserCoolifyStatus().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
+        }
+
+        const response = await this.request({
+            path: `/widgets/{user_widget_id}/coolify`.replace(`{${"user_widget_id"}}`, encodeURIComponent(String(requestParameters['userWidgetId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CoolifyWidgetResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get the combined Coolify application and service status for a widget
+     * Get a Users Coolify Status
+     */
+    async getUserCoolifyStatus(requestParameters: GetUserCoolifyStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CoolifyWidgetResponse> {
+        const response = await this.getUserCoolifyStatusRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Get a Users Widget by their auth token and a path parameter and return the widget from the database.
      * Get a Users Widget
      */
     async getUserWidgetRaw(requestParameters: GetUserWidgetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesUserWidgetResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling getUserWidget().'
-            );
-        }
-
         if (requestParameters['userWidgetId'] == null) {
             throw new runtime.RequiredError(
                 'userWidgetId',
@@ -420,8 +541,8 @@ export class WidgetsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -447,20 +568,13 @@ export class WidgetsApi extends runtime.BaseAPI {
      * Get a Users Widgets by their auth token and return the list of widgets associated with the user account in the request params.
      * Get a Users Widgets
      */
-    async getUserWidgetsRaw(requestParameters: GetUserWidgetsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesUserWidgetsResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling getUserWidgets().'
-            );
-        }
-
+    async getUserWidgetsRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesUserWidgetsResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -477,8 +591,8 @@ export class WidgetsApi extends runtime.BaseAPI {
      * Get a Users Widgets by their auth token and return the list of widgets associated with the user account in the request params.
      * Get a Users Widgets
      */
-    async getUserWidgets(requestParameters: GetUserWidgetsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ResponsesUserWidgetsResponse> {
-        const response = await this.getUserWidgetsRaw(requestParameters, initOverrides);
+    async getUserWidgets(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ResponsesUserWidgetsResponse> {
+        const response = await this.getUserWidgetsRaw(initOverrides);
         return await response.value();
     }
 
@@ -550,13 +664,6 @@ export class WidgetsApi extends runtime.BaseAPI {
      * Restart a Coolify Application
      */
     async restartCoolifyApplicationRaw(requestParameters: RestartCoolifyApplicationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CoolifyActionResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling restartCoolifyApplication().'
-            );
-        }
-
         if (requestParameters['userWidgetId'] == null) {
             throw new runtime.RequiredError(
                 'userWidgetId',
@@ -575,8 +682,8 @@ export class WidgetsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -603,13 +710,6 @@ export class WidgetsApi extends runtime.BaseAPI {
      * Start a Coolify Application
      */
     async startCoolifyApplicationRaw(requestParameters: StartCoolifyApplicationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CoolifyActionResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling startCoolifyApplication().'
-            );
-        }
-
         if (requestParameters['userWidgetId'] == null) {
             throw new runtime.RequiredError(
                 'userWidgetId',
@@ -628,8 +728,8 @@ export class WidgetsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -656,13 +756,6 @@ export class WidgetsApi extends runtime.BaseAPI {
      * Stop a Coolify Application
      */
     async stopCoolifyApplicationRaw(requestParameters: StopCoolifyApplicationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CoolifyActionResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling stopCoolifyApplication().'
-            );
-        }
-
         if (requestParameters['userWidgetId'] == null) {
             throw new runtime.RequiredError(
                 'userWidgetId',
@@ -681,8 +774,8 @@ export class WidgetsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({

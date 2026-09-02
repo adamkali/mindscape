@@ -7,7 +7,7 @@ import {
 } from 'solid-js';
 import type { ResponsesUserData } from '@/api';
 import { UsersApi } from '@/api';
-import { getApiConfig, initializeApiConfig } from '@/utils/apiConfig';
+import { initializeApiConfig } from '@/utils/apiConfig';
 
 export interface AuthContextValue {
 	user: () => ResponsesUserData | null;
@@ -40,7 +40,6 @@ export const AuthProvider: ParentComponent = (props) => {
 
 	// Create logout function that will be used by the auth interceptor
 	const logout = () => {
-		console.log('Logging out user due to authentication failure');
 		setToken(null);
 		setUser(null);
 		setIsInitializing(false);
@@ -64,7 +63,7 @@ export const AuthProvider: ParentComponent = (props) => {
 				setIsInitializing(false);
 			} else {
 				// Only fetch user if we don't have user data
-				fetchCurrentUser(currentToken);
+				fetchCurrentUser();
 			}
 		} else {
 			localStorage.removeItem('jwt');
@@ -74,12 +73,10 @@ export const AuthProvider: ParentComponent = (props) => {
 		}
 	});
 
-	const fetchCurrentUser = async (authToken: string) => {
+	const fetchCurrentUser = async () => {
 		setIsInitializing(true);
 		try {
-			const response = await api.getCurrentLoggedInUser({
-				authorization: `Bearer ${authToken}`,
-			});
+			const response = await api.getCurrentLoggedInUser({});
 			if (response.success && response.data) {
 				setUser(response.data);
 			} else {

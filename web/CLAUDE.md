@@ -57,6 +57,15 @@ src/
 - Import organization enabled
 - CSS modules support configured
 
+### Architecture Conventions (read before adding features)
+**See [CONVENTIONS.md](./CONVENTIONS.md)** — the source of truth for centralizing logic
+and applying DRY. In short: shared state + API mutations live in contexts (not
+components); authenticated API calls use `useAuthenticatedApi()` /
+`getAuthenticatedApiConfig()` and pass **no** `authorization` arg (auth is injected
+globally via `apiKey` in `utils/apiConfig.ts`); reusable element behavior becomes a
+`hooks/` primitive; async fetches use `createResource`; and `src/api/**` is generated —
+never hand-edit it (regenerate with `go-task swag`).
+
 
 # TailwindCSS
 In order to understand the documentation for TailwindCSS please check the [TailwindCSS documentation](https://tailwindcss.com/)

@@ -1,0 +1,51 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build-debug",
+            "type": "shell",
+            "command": "go",
+            "args": [
+                "build",
+                "-gcflags=all=-N -l",
+                "-o",
+                "${workspaceFolder}/tmp/mindscape-debug",
+                "."
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$go"],
+            "detail": "Build Go binary with debug symbols for Delve"
+        },
+        {
+            "label": "dlv-serve",
+            "type": "shell",
+            "command": "dlv",
+            "args": [
+                "exec",
+                "${workspaceFolder}/tmp/mindscape-debug",
+                "--headless",
+                "--listen=:2345",
+                "--api-version=2",
+                "--accept-multiclient",
+                "--",
+                "-e", "development"
+            ],
+            "dependsOn": "build-debug",
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^$"
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^API server listening",
+                    "endsPattern": "^API server listening"
+                }
+            },
+            "detail": "Build then start Delve headless server on port 2345"
+        }
+    ]
+}

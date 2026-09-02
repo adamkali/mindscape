@@ -1,0 +1,58 @@
+{
+  "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+  "type": "searxng",
+  "title": "SearXNG Widget Schema",
+  "description": "Configuration schema for a self-hosted SearXNG instance with inline search results",
+  "layout": {
+    "defaultSize": {
+      "width": 12,
+      "height": 6
+    },
+    "minSize": {
+      "width": 6,
+      "height": 4
+    },
+    "maxSize": {
+      "width": 12,
+      "height": 12
+    },
+    "resizable": true
+  },
+  "properties": {
+    "serverUrl": {
+      "label": "SearXNG Server URL",
+      "value": "",
+      "type": "string",
+      "format": "uri",
+      "description": "Base URL of your SearXNG instance (e.g. https://search.example.com). Instance must have format=json enabled and allow this origin in CORS settings.",
+      "enum": []
+    },
+    "defaultEngines": {
+      "label": "Default Engines (optional)",
+      "value": [],
+      "type": "array",
+      "format": "string",
+      "description": "Comma-separated engine names to use by default (e.g. google, bing). Leave empty to use SearXNG defaults.",
+      "enum": []
+    },
+    "categories": {
+      "label": "Categories (optional)",
+      "value": [],
+      "type": "array",
+      "format": "string",
+      "description": "Search categories to enable (e.g. general, news, images). Leave empty for the default category.",
+      "enum": []
+    },
+    "safeSearch": {
+      "label": "Safe Search",
+      "value": false,
+      "type": "boolean",
+      "format": "boolean",
+      "description": "Enable safe search filtering",
+      "enum": []
+    }
+  },
+  "required": [
+    "serverUrl"
+  ]
+}

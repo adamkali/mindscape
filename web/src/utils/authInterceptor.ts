@@ -30,7 +30,7 @@ export function createAuthInterceptor(onLogout: () => void): Middleware {
 		},
 
 		async onError(context) {
-			const { error, response } = context;
+			const { response } = context;
 
 			// Handle network errors that might indicate auth issues
 			if (response && (response.status === 401 || response.status === 403)) {

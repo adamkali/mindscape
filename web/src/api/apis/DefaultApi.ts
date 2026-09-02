@@ -35,41 +35,30 @@ import {
 } from '../models/index';
 
 export interface CreateTaskRequest {
-    authorization: string;
     createTaskRequest: RepositoryInsertNewTaskParams;
 }
 
 export interface DeleteTaskRequest {
-    authorization: string;
     taskId: string;
 }
 
 export interface GetTasksByQueueTypeRequest {
-    authorization: string;
     queueType: string;
 }
 
 export interface GetTasksByTaskTypeRequest {
-    authorization: string;
     taskType: string;
 }
 
 export interface ReadTaskRequest {
-    authorization: string;
     taskId: string;
 }
 
-export interface ReadTasksRequest {
-    authorization: string;
-}
-
 export interface UpdateTaskRequest {
-    authorization: string;
     updateTaskRequest: RepositoryUpdateTaskContentParams;
 }
 
 export interface UpdateTaskStatusRequest {
-    authorization: string;
     taskId: string;
     status: string;
     dueDate?: string;
@@ -85,13 +74,6 @@ export class DefaultApi extends runtime.BaseAPI {
      * Create a new Task
      */
     async createTaskRaw(requestParameters: CreateTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesTaskResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling createTask().'
-            );
-        }
-
         if (requestParameters['createTaskRequest'] == null) {
             throw new runtime.RequiredError(
                 'createTaskRequest',
@@ -105,8 +87,8 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -134,13 +116,6 @@ export class DefaultApi extends runtime.BaseAPI {
      * Delete a Task
      */
     async deleteTaskRaw(requestParameters: DeleteTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StringResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling deleteTask().'
-            );
-        }
-
         if (requestParameters['taskId'] == null) {
             throw new runtime.RequiredError(
                 'taskId',
@@ -152,8 +127,8 @@ export class DefaultApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -180,13 +155,6 @@ export class DefaultApi extends runtime.BaseAPI {
      * Get Tasks By Queue Type
      */
     async getTasksByQueueTypeRaw(requestParameters: GetTasksByQueueTypeRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesTasksResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling getTasksByQueueType().'
-            );
-        }
-
         if (requestParameters['queueType'] == null) {
             throw new runtime.RequiredError(
                 'queueType',
@@ -202,8 +170,8 @@ export class DefaultApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -230,13 +198,6 @@ export class DefaultApi extends runtime.BaseAPI {
      * Get Tasks By Task Type
      */
     async getTasksByTaskTypeRaw(requestParameters: GetTasksByTaskTypeRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesTasksResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling getTasksByTaskType().'
-            );
-        }
-
         if (requestParameters['taskType'] == null) {
             throw new runtime.RequiredError(
                 'taskType',
@@ -252,8 +213,8 @@ export class DefaultApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -280,13 +241,6 @@ export class DefaultApi extends runtime.BaseAPI {
      * Read by a TaskID
      */
     async readTaskRaw(requestParameters: ReadTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesTaskResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling readTask().'
-            );
-        }
-
         if (requestParameters['taskId'] == null) {
             throw new runtime.RequiredError(
                 'taskId',
@@ -298,8 +252,8 @@ export class DefaultApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -325,20 +279,13 @@ export class DefaultApi extends runtime.BaseAPI {
      * Read all tasks that are available to the user
      * Read all tasks
      */
-    async readTasksRaw(requestParameters: ReadTasksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesTasksResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling readTasks().'
-            );
-        }
-
+    async readTasksRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesTasksResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -355,8 +302,8 @@ export class DefaultApi extends runtime.BaseAPI {
      * Read all tasks that are available to the user
      * Read all tasks
      */
-    async readTasks(requestParameters: ReadTasksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ResponsesTasksResponse> {
-        const response = await this.readTasksRaw(requestParameters, initOverrides);
+    async readTasks(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ResponsesTasksResponse> {
+        const response = await this.readTasksRaw(initOverrides);
         return await response.value();
     }
 
@@ -365,13 +312,6 @@ export class DefaultApi extends runtime.BaseAPI {
      * Update a Task
      */
     async updateTaskRaw(requestParameters: UpdateTaskRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesTaskResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling updateTask().'
-            );
-        }
-
         if (requestParameters['updateTaskRequest'] == null) {
             throw new runtime.RequiredError(
                 'updateTaskRequest',
@@ -385,8 +325,8 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -414,13 +354,6 @@ export class DefaultApi extends runtime.BaseAPI {
      * Update Task Status
      */
     async updateTaskStatusRaw(requestParameters: UpdateTaskStatusRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesTaskResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling updateTaskStatus().'
-            );
-        }
-
         if (requestParameters['taskId'] == null) {
             throw new runtime.RequiredError(
                 'taskId',
@@ -447,8 +380,8 @@ export class DefaultApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({

@@ -1,74 +1,33 @@
-import { type ComponentProps, createSignal } from 'solid-js';
+import type { ComponentProps } from 'solid-js';
 import type { ResponsesFolderData } from '@/api';
+import { useDraggableNode, useDropTarget } from '@/hooks/useDragNode';
+import type { DragNodePayload } from '@/utils/dragNode';
 import { Button, Card } from './atoms';
 import { AddBookmarkIcon, DeleteIcon } from './icons';
 
-interface FolderCardProps extends ComponentProps<'div'> {
+interface FolderCardProps
+	extends Omit<ComponentProps<'div'>, 'onDrop' | 'onSelect'> {
 	folder: ResponsesFolderData;
 	isSelected?: boolean;
 	onSelect?: (folderId: string) => void;
 	onDelete?: (folderId: string) => void;
 	onCreateBookmark?: (folderId: string) => void;
-	draggable?: boolean;
-	onDrop?: (dragData: any) => void;
+	onDrop?: (payload: DragNodePayload) => void;
 }
 
 export default function FolderCard(props: FolderCardProps) {
-	const [isDragging, setIsDragging] = createSignal(false);
-	const [isDragOver, setIsDragOver] = createSignal(false);
-
-	const handleDragStart = (e: DragEvent) => {
-		if (!props.draggable) return;
-
-		setIsDragging(true);
-		e.dataTransfer!.setData(
-			'text/plain',
-			JSON.stringify({
-				type: 'folder',
-				id: props.folder.id,
-				name: props.folder.name,
-			}),
-		);
-		e.dataTransfer!.effectAllowed = 'move';
-	};
-
-	const handleDragEnd = () => {
-		setIsDragging(false);
-	};
-
-	const handleDragOver = (e: DragEvent) => {
-		e.preventDefault();
-		e.stopPropagation(); // Prevent root container from handling this event
-		e.dataTransfer!.dropEffect = 'move';
-		setIsDragOver(true);
-	};
-
-	const handleDragLeave = () => {
-		setIsDragOver(false);
-	};
-
-	const handleDrop = (e: DragEvent) => {
-		e.preventDefault();
-		e.stopPropagation(); // Prevent event from bubbling up to root container
-		setIsDragOver(false);
-
-		try {
-			const data = JSON.parse(e.dataTransfer!.getData('text/plain'));
-			if (props.onDrop) {
-				props.onDrop(data);
-			}
-		} catch (error) {
-			console.error('Error parsing drop data:', error);
-		}
-	};
+	const { isDragging, draggableProps } = useDraggableNode(() => ({
+		type: 'folder',
+		id: props.folder.id ?? '',
+		name: props.folder.name ?? undefined,
+	}));
+	const { isDragOver, dropProps } = useDropTarget((payload) =>
+		props.onDrop?.(payload),
+	);
 
 	const cardClasses = () => {
 		let classes =
 			'w-64 hover:scale-105 active:scale-95 cursor-pointer transition-all duration-300';
-
-		if (props.isSelected) {
-			classes += ' ring-2 ring-white/50 dark:bg-white/20 bg-black/10';
-		}
 
 		if (isDragOver()) {
 			classes += ' ring-2 ring-blue-400 bg-blue-100/20';
@@ -85,12 +44,8 @@ export default function FolderCard(props: FolderCardProps) {
 		<Card
 			variant="glass"
 			class={cardClasses()}
-			draggable={props.draggable}
-			onDragStart={handleDragStart}
-			onDragEnd={handleDragEnd}
-			onDragOver={handleDragOver}
-			onDragLeave={handleDragLeave}
-			onDrop={handleDrop}
+			{...draggableProps}
+			{...dropProps}
 			onClick={(e) => {
 				e.stopPropagation();
 				if (props.onSelect && props.folder.id) {

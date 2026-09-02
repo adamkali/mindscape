@@ -1,16 +1,19 @@
 import { Configuration } from '@/api/runtime';
 import { createAuthInterceptor } from './authInterceptor';
 
-let globalLogoutHandler: (() => void) | null = null;
 let globalApiConfig: Configuration | null = null;
 
 /**
  * Initialize the global API configuration with authentication interceptor
  */
 export function initializeApiConfig(logoutHandler: () => void): Configuration {
-	globalLogoutHandler = logoutHandler;
-
 	globalApiConfig = new Configuration({
+		// Inject the bearer token (BearerAuth security scheme) on every request,
+		// read at request time so it always reflects the current session.
+		apiKey: () => {
+			const token = localStorage.getItem('jwt');
+			return token ? `Bearer ${token}` : '';
+		},
 		middleware: [createAuthInterceptor(logoutHandler)],
 	});
 
@@ -22,7 +25,7 @@ export function initializeApiConfig(logoutHandler: () => void): Configuration {
  * Returns undefined if not initialized (for use in login/signup)
  */
 export function getApiConfig(): Configuration | undefined {
-	return globalApiConfig;
+	return globalApiConfig ?? undefined;
 }
 
 /**

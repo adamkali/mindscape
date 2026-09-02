@@ -5,6 +5,7 @@ import {
 	type UpdateCredentialsRequest,
 	UsersApi,
 } from '@/api';
+import { getAuthenticatedApiConfig } from '@/utils/apiConfig';
 import {
 	Button,
 	Card,
@@ -22,7 +23,7 @@ import { EmptyGuid } from '@/utils';
 const EditProfile = () => {
 	const auth = useAuth();
 	const navigate = useNavigate();
-	const api = new UsersApi();
+	const api = new UsersApi(getAuthenticatedApiConfig());
 	const { setUserBackground, isLoadingChoices } = useBackground();
 	const backgroundStyle = useBackgroundStyle();
 
@@ -67,9 +68,7 @@ const EditProfile = () => {
 
 		setIsLoadingPicture(true);
 		try {
-			const response = await api.getProfilePicture({
-				authorization: `Bearer ${auth.token()}`,
-			});
+			const response = await api.getProfilePicture({});
 
 			if (response.data) {
 				setProfilePicture(response.data);
@@ -100,7 +99,6 @@ const EditProfile = () => {
 		if (passwordMatch()) {
 			try {
 				const response = await api.updateUser({
-					authorization: `Bearer ${auth.token()}`,
 					updateCredentialsRequest: updateCredentialsRequest(),
 				});
 				if (!response.success) {
@@ -173,7 +171,6 @@ const EditProfile = () => {
 		try {
 			if (selectedFile()) {
 				await api.uploadProfilePicture({
-					authorization: `Bearer ${auth.token()}`,
 					file: selectedFile()!,
 				});
 				setSuccess('Profile updated successfully!');
@@ -220,14 +217,10 @@ const EditProfile = () => {
 		setIsLoading(true);
 		setError('');
 		setSuccess('');
-		console.log({
-			'Uploading custom background...': customBackgroundFile()?.name,
-		});
 
 		try {
-			const userApi = new UsersApi();
+			const userApi = new UsersApi(getAuthenticatedApiConfig());
 			await userApi.uploadBackground({
-				authorization: `Bearer ${auth.token()}`,
 				file: customBackgroundFile()!,
 			});
 			setSuccess('Custom background uploaded successfully!');

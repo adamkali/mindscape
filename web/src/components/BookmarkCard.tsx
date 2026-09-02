@@ -1,6 +1,7 @@
 import { A } from '@solidjs/router';
-import { type ComponentProps, createMemo, createSignal } from 'solid-js';
+import { type ComponentProps, createMemo } from 'solid-js';
 import type { RepositoryBookmark } from '@/api';
+import { useDraggableNode } from '@/hooks/useDragNode';
 import { Button, Card } from './atoms';
 import { DeleteIcon, EditIcon } from './icons';
 
@@ -8,7 +9,6 @@ interface BookmarkCardProps extends ComponentProps<'div'> {
 	bookmark: RepositoryBookmark;
 	onDelete?: (bookmarkId: string, parentFolderId: string) => void;
 	onEdit?: (bookmark: RepositoryBookmark) => void;
-	draggable?: boolean;
 }
 
 const faviconeUrl = 'https://favicone.com/';
@@ -23,35 +23,18 @@ const getFaviconUrl = (url: string): string => {
 
 export default function BookmarkCard(props: BookmarkCardProps) {
 	const faviconUrl = createMemo(() => getFaviconUrl(props.bookmark.link || ''));
-	const [isDragging, setIsDragging] = createSignal(false);
-
-	const handleDragStart = (e: DragEvent) => {
-		if (!props.draggable) return;
-
-		setIsDragging(true);
-		e.dataTransfer!.setData(
-			'text/plain',
-			JSON.stringify({
-				type: 'bookmark',
-				id: props.bookmark.id,
-				name: props.bookmark.name,
-				link: props.bookmark.link,
-			}),
-		);
-		e.dataTransfer!.effectAllowed = 'move';
-	};
-
-	const handleDragEnd = () => {
-		setIsDragging(false);
-	};
+	const { isDragging, draggableProps } = useDraggableNode(() => ({
+		type: 'bookmark',
+		id: props.bookmark.id ?? '',
+		name: props.bookmark.name ?? undefined,
+		link: props.bookmark.link ?? undefined,
+	}));
 
 	return (
 		<Card
 			variant="glass"
 			class={`w-64 hover:scale-105 active:scale-95 cursor-pointer ${isDragging() ? 'opacity-50' : ''}`}
-			draggable={props.draggable}
-			onDragStart={handleDragStart}
-			onDragEnd={handleDragEnd}
+			{...draggableProps}
 			onClick={(e) => e.stopPropagation()}
 		>
 			<div class="flex items-center justify-between px-4">

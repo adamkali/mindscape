@@ -26,6 +26,13 @@ SELECT b_crypt_hash
 -- name: FindUsers :many
 SELECT * FROM users;
 
+-- name: SearchUsersByUsername :many
+SELECT id, username
+    FROM users
+    WHERE username ILIKE $1 AND id != $2
+    ORDER BY username ASC
+    LIMIT 10;
+
 -- name: CreateUser :one
 INSERT INTO users (
   email, username, created_datetime, updated_datetime, profile_pic_url, admin, b_crypt_hash 

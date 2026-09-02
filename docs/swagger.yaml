@@ -70,6 +70,46 @@ definitions:
       success:
         type: boolean
     type: object
+  CoolifyCPUMetric:
+    properties:
+      percent:
+        type: number
+      time:
+        type: string
+    type: object
+  CoolifyMemoryMetric:
+    properties:
+      available:
+        type: integer
+      free:
+        type: integer
+      time:
+        type: string
+      total:
+        type: integer
+      used:
+        type: integer
+      used_percent:
+        type: number
+    type: object
+  CoolifyStorageMetric:
+    properties:
+      available:
+        type: integer
+      path:
+        type: string
+      source:
+        description: |-
+          Source names the machine the reading came from. Neither Coolify's API nor
+          Sentinel reports disk, so this is always the host running Mindscape.
+        type: string
+      total:
+        type: integer
+      used:
+        type: integer
+      used_percent:
+        type: number
+    type: object
   CoolifyWidgetApplication:
     properties:
       created_at:
@@ -99,6 +139,54 @@ definitions:
         items:
           $ref: '#/definitions/CoolifyWidgetApplication'
         type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  CoolifyWidgetData:
+    properties:
+      applications:
+        items:
+          $ref: '#/definitions/CoolifyWidgetApplication'
+        type: array
+      services:
+        items:
+          $ref: '#/definitions/CoolifyWidgetService'
+        type: array
+    type: object
+  CoolifyWidgetMetricsData:
+    properties:
+      cpu:
+        $ref: '#/definitions/CoolifyCPUMetric'
+      memory:
+        $ref: '#/definitions/CoolifyMemoryMetric'
+      sentinel_url:
+        type: string
+      server_name:
+        type: string
+      server_uuid:
+        type: string
+      storage:
+        $ref: '#/definitions/CoolifyStorageMetric'
+      warnings:
+        items:
+          type: string
+        type: array
+    type: object
+  CoolifyWidgetMetricsResponse:
+    properties:
+      data:
+        $ref: '#/definitions/CoolifyWidgetMetricsData'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  CoolifyWidgetResponse:
+    properties:
+      data:
+        $ref: '#/definitions/CoolifyWidgetData'
       message:
         type: string
       success:
@@ -147,6 +235,16 @@ definitions:
       write_access:
         type: boolean
     type: object
+  CreateHouseholdRequest:
+    properties:
+      name:
+        type: string
+    type: object
+  CreateInviteRequest:
+    properties:
+      invited_user_id:
+        type: string
+    type: object
   DeleteUserResponse:
     properties:
       data:
@@ -160,6 +258,49 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/responses.GithubWidgetCommitsData'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  GithubPRData:
+    properties:
+      author:
+        type: string
+      created_at:
+        type: string
+      html_url:
+        type: string
+      number:
+        type: integer
+      repo:
+        type: string
+      title:
+        type: string
+    type: object
+  GithubPRsWidgetData:
+    properties:
+      assigned:
+        items:
+          $ref: '#/definitions/GithubPRData'
+        type: array
+      authored:
+        items:
+          $ref: '#/definitions/GithubPRData'
+        type: array
+      mentioned:
+        items:
+          $ref: '#/definitions/GithubPRData'
+        type: array
+      review_requested:
+        items:
+          $ref: '#/definitions/GithubPRData'
+        type: array
+    type: object
+  GithubPRsWidgetResponse:
+    properties:
+      data:
+        $ref: '#/definitions/GithubPRsWidgetData'
       message:
         type: string
       success:
@@ -183,6 +324,37 @@ definitions:
       success:
         type: boolean
     type: object
+  HouseholdResponse:
+    properties:
+      data:
+        $ref: '#/definitions/repository.Household'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  HouseholdsResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/repository.Household'
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  InvitesResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/repository.GetInvitesByUserIDRow'
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   LoginRequest:
     properties:
       email:
@@ -198,6 +370,17 @@ definitions:
         $ref: '#/definitions/responses.UserData'
       jwt:
         type: string
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  MembersResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/repository.GetMembersByHouseholdIDRow'
+        type: array
       message:
         type: string
       success:
@@ -224,6 +407,32 @@ definitions:
       username:
         type: string
     type: object
+  PlexMediaItemData:
+    properties:
+      added_at:
+        type: integer
+      parent_title:
+        type: string
+      thumb:
+        type: string
+      title:
+        type: string
+      type:
+        type: string
+      year:
+        type: integer
+    type: object
+  PlexRecentlyAddedResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/PlexMediaItemData'
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   StringResponse:
     properties:
       data:
@@ -232,6 +441,17 @@ definitions:
         type: string
       success:
         type: boolean
+    type: object
+  UpdateBookmarkRequest:
+    properties:
+      bookmarkId:
+        type: string
+      link:
+        type: string
+      name:
+        type: string
+      userId:
+        type: string
     type: object
   UpdateCredentialsRequest:
     properties:
@@ -271,6 +491,17 @@ definitions:
       data:
         items:
           $ref: '#/definitions/responses.UserData'
+        type: array
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  UsersSearchResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/repository.SearchUsersByUsernameRow'
         type: array
       message:
         type: string
@@ -346,6 +577,51 @@ definitions:
       user_id:
         type: string
     type: object
+  repository.GetInvitesByUserIDRow:
+    properties:
+      code:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: string
+      expires_at:
+        type: string
+      household_id:
+        type: string
+      household_name:
+        type: string
+      id:
+        type: string
+      invited_user_id:
+        type: string
+    type: object
+  repository.GetMembersByHouseholdIDRow:
+    properties:
+      household_id:
+        type: string
+      id:
+        type: string
+      joined_at:
+        type: string
+      role:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  repository.Household:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      owner_id:
+        type: string
+    type: object
   repository.InsertNewTaskParams:
     properties:
       description:
@@ -357,23 +633,11 @@ definitions:
       user_id:
         type: string
     type: object
-  repository.Note:
+  repository.SearchUsersByUsernameRow:
     properties:
-      content:
-        type: string
-      created_datetime:
-        type: string
-      description:
-        type: string
-      folder_id:
-        type: string
       id:
         type: string
-      name:
-        type: string
-      updated_datetime:
-        type: string
-      user_id:
+      username:
         type: string
     type: object
   repository.TaskType:
@@ -407,6 +671,17 @@ definitions:
       folderId:
         type: string
       newParentId:
+        type: string
+      userId:
+        type: string
+    type: object
+  requests.UpdateFolderRequest:
+    properties:
+      description:
+        type: string
+      folderId:
+        type: string
+      name:
         type: string
       userId:
         type: string
@@ -458,10 +733,6 @@ definitions:
         type: string
       name:
         type: string
-      notes:
-        items:
-          $ref: '#/definitions/repository.Note'
-        type: array
       parent_id:
         type: string
       updated_datetime:
@@ -765,13 +1036,6 @@ paths:
     get:
       description: List all API Keys for the current user
       operationId: ListApiKeys
-      parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -787,6 +1051,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ApiKeysResponse'
+      security:
+      - BearerAuth: []
       summary: List API Keys
       tags:
       - ApiKeys
@@ -796,12 +1062,6 @@ paths:
       description: Create a new API Key for programmatic access
       operationId: CreateApiKey
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: CreateApiKeyRequest
         in: body
         name: CreateApiKeyRequest
@@ -827,6 +1087,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.ApiKeyResponse'
+      security:
+      - BearerAuth: []
       summary: Create a new API Key
       tags:
       - ApiKeys
@@ -835,12 +1097,6 @@ paths:
       description: Delete an API Key by its ID
       operationId: DeleteApiKey
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: API Key ID
         in: path
         name: keyId
@@ -865,6 +1121,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/StringResponse'
+      security:
+      - BearerAuth: []
       summary: Delete an API Key
       tags:
       - ApiKeys
@@ -927,12 +1185,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/MoveBookmarkRequest'
-      - default: '"Bearer token"'
-        description: Authorization Header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -952,6 +1204,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/BookmarksResponse'
+      security:
+      - BearerAuth: []
       summary: Move a Bookmark
       tags:
       - Bookmarks
@@ -967,12 +1221,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/repository.CreateBookmarkParams'
-      - default: '"Bearer token"'
-        description: Authorization Header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -992,7 +1240,60 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/BookmarkResponse'
+      security:
+      - BearerAuth: []
       summary: Create a new Bookmark
+      tags:
+      - Bookmarks
+  /bookmarks/{bookmark_id}:
+    put:
+      consumes:
+      - application/json
+      description: Update a Bookmark's name and link by Authorization Header
+      operationId: UpdateBookmark
+      parameters:
+      - description: Update Bookmark Request
+        in: body
+        name: UpdateBookmarkRequest
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateBookmarkRequest'
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Bookmark ID
+        in: path
+        name: bookmark_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/BookmarkResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BookmarkResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/BookmarkResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/BookmarkResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/BookmarkResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/BookmarkResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a Bookmark
       tags:
       - Bookmarks
   /bookmarks/folder/{bookmark_id}:
@@ -1004,12 +1305,6 @@ paths:
         ParentFolderId [parent_id].
       operationId: DeleteBookmark
       parameters:
-      - default: '"Bearer token"'
-        description: Authorization Header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
         description: Parent Folder ID
         in: path
@@ -1035,6 +1330,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/BookmarksResponse'
+      security:
+      - BearerAuth: []
       summary: Delete a Bookmark
       tags:
       - Bookmarks
@@ -1047,12 +1344,6 @@ paths:
         ParentFolderId [parent_id]
       operationId: GetBookmarks
       parameters:
-      - default: '"Bearer token"'
-        description: Authorization Header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
         description: Parent Folder ID
         in: path
@@ -1078,6 +1369,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/BookmarksResponse'
+      security:
+      - BearerAuth: []
       summary: Get Bookmarks By Folder ID
       tags:
       - Bookmarks
@@ -1089,13 +1382,6 @@ paths:
         Get the Root Folders associated with the user by Authorization Header
         and will also try to get the children of the folder as well
       operationId: GetRootFolders
-      parameters:
-      - default: '"Bearer token"'
-        description: Authorization Header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1115,6 +1401,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.FoldersResponse'
+      security:
+      - BearerAuth: []
       summary: Get the Root Folders associated with the user
       tags:
       - Folders
@@ -1130,12 +1418,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/requests.MoveFolderRequest'
-      - default: '"Bearer token"'
-        description: Authorization Header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1159,6 +1441,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.FolderResponse'
+      security:
+      - BearerAuth: []
       summary: Move a Folder
       tags:
       - Folders
@@ -1174,12 +1458,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/repository.CreateFolderParams'
-      - default: '"Bearer token"'
-        description: Authorization Header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1199,6 +1477,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.FolderResponse'
+      security:
+      - BearerAuth: []
       summary: Create a new Folder
       tags:
       - Folders
@@ -1213,12 +1493,6 @@ paths:
         description: Folder ID
         in: path
         name: folder_id
-        required: true
-        type: string
-      - default: '"Bearer token"'
-        description: Authorization Header
-        in: header
-        name: Authorization
         required: true
         type: string
       produces:
@@ -1236,6 +1510,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.FolderResponse'
+      security:
+      - BearerAuth: []
       summary: Delete a Folder
       tags:
       - Folders
@@ -1253,12 +1529,6 @@ paths:
         name: folder_id
         required: true
         type: string
-      - default: '"Bearer token"'
-        description: Authorization Header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1278,20 +1548,392 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.FolderResponse'
+      security:
+      - BearerAuth: []
       summary: Get the Folders associated with the user under A Parent Folder
       tags:
       - Folders
+    put:
+      consumes:
+      - application/json
+      description: Update a Folder's name and description by Authorization Header
+      operationId: UpdateFolder
+      parameters:
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Folder ID
+        in: path
+        name: folder_id
+        required: true
+        type: string
+      - description: Update Folder Request
+        in: body
+        name: UpdateFolderRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateFolderRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.FolderResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a Folder
+      tags:
+      - Folders
+  /households:
+    get:
+      description: Get all households the caller is a member of.
+      operationId: GetMyHouseholds
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/HouseholdsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/HouseholdsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/HouseholdsResponse'
+      security:
+      - BearerAuth: []
+      summary: Get My Households
+      tags:
+      - Households
+    post:
+      consumes:
+      - application/json
+      description: Create a Household; the caller becomes its owner and admin.
+      operationId: CreateHousehold
+      parameters:
+      - description: Create Household Request
+        in: body
+        name: CreateHouseholdRequest
+        required: true
+        schema:
+          $ref: '#/definitions/CreateHouseholdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/HouseholdResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/HouseholdResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/HouseholdResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/HouseholdResponse'
+      security:
+      - BearerAuth: []
+      summary: Create a new Household
+      tags:
+      - Households
+  /households/{household_id}:
+    delete:
+      description: Delete a household (owner only). Cascades members and invites.
+      operationId: DeleteHousehold
+      parameters:
+      - description: Household ID
+        in: path
+        name: household_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/StringResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a Household
+      tags:
+      - Households
+  /households/{household_id}/invites:
+    post:
+      consumes:
+      - application/json
+      description: Invite a user to a household (admin only).
+      operationId: CreateInvite
+      parameters:
+      - description: Household ID
+        in: path
+        name: household_id
+        required: true
+        type: string
+      - description: Create Invite Request
+        in: body
+        name: CreateInviteRequest
+        required: true
+        schema:
+          $ref: '#/definitions/CreateInviteRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/StringResponse'
+      security:
+      - BearerAuth: []
+      summary: Create an Invite
+      tags:
+      - Households
+  /households/{household_id}/leave:
+    post:
+      description: Leave a household. The owner cannot leave — they must delete it.
+      operationId: LeaveHousehold
+      parameters:
+      - description: Household ID
+        in: path
+        name: household_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/StringResponse'
+      security:
+      - BearerAuth: []
+      summary: Leave a Household
+      tags:
+      - Households
+  /households/{household_id}/members:
+    get:
+      description: Get a household's members. Returns 404 to non-members.
+      operationId: GetHouseholdMembers
+      parameters:
+      - description: Household ID
+        in: path
+        name: household_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/MembersResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/MembersResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/MembersResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Household Members
+      tags:
+      - Households
+  /households/{household_id}/members/{user_id}:
+    delete:
+      description: Remove a member from a household (admin only; not the owner).
+      operationId: RemoveMember
+      parameters:
+      - description: Household ID
+        in: path
+        name: household_id
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/StringResponse'
+      security:
+      - BearerAuth: []
+      summary: Remove a Member
+      tags:
+      - Households
+  /households/invites:
+    get:
+      description: Get the caller's pending, unexpired household invites.
+      operationId: GetMyInvites
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/InvitesResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/InvitesResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/InvitesResponse'
+      security:
+      - BearerAuth: []
+      summary: Get My Pending Invites
+      tags:
+      - Households
+  /households/invites/{code}/accept:
+    post:
+      description: Accept a pending invite by its code.
+      operationId: AcceptInvite
+      parameters:
+      - description: Invite Code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/HouseholdResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/HouseholdResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/HouseholdResponse'
+      security:
+      - BearerAuth: []
+      summary: Accept an Invite
+      tags:
+      - Households
+  /households/invites/{code}/reject:
+    post:
+      description: Reject (and delete) a pending invite by its code.
+      operationId: RejectInvite
+      parameters:
+      - description: Invite Code
+        in: path
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/StringResponse'
+      security:
+      - BearerAuth: []
+      summary: Reject an Invite
+      tags:
+      - Households
   /tasks:
     get:
       description: Read all tasks that are available to the user
       operationId: ReadTasks
-      parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1307,17 +1949,13 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.TasksResponse'
+      security:
+      - BearerAuth: []
       summary: Read all tasks
     post:
       description: Create a new Task by Authorization Header
       operationId: CreateTask
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: CreateTaskRequest
         in: body
         name: CreateTaskRequest
@@ -1347,17 +1985,13 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.TaskResponse'
+      security:
+      - BearerAuth: []
       summary: Create a new Task
     put:
       description: Update a Task by Authorization Header
       operationId: UpdateTask
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: UpdateTaskRequest
         in: body
         name: UpdateTaskRequest
@@ -1387,18 +2021,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.TaskResponse'
+      security:
+      - BearerAuth: []
       summary: Update a Task
   /tasks/{taskId}:
     delete:
       description: Delete a Task by Authorization Header
       operationId: DeleteTask
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: TaskID
         in: path
         name: taskId
@@ -1427,17 +2057,13 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/StringResponse'
+      security:
+      - BearerAuth: []
       summary: Delete a Task
     get:
       description: Read by a TaskID
       operationId: ReadTask
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: TaskID
         in: path
         name: taskId
@@ -1466,17 +2092,13 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.TaskResponse'
+      security:
+      - BearerAuth: []
       summary: Read by a TaskID
     put:
       description: Update Task Status with a Status Char and optional Due Date
       operationId: UpdateTaskStatus
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: TaskID
         in: path
         name: taskId
@@ -1515,18 +2137,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.TaskResponse'
+      security:
+      - BearerAuth: []
       summary: Update Task Status
   /tasks/queue:
     get:
       description: Get Tasks By Queue Type with a Queue Type Char
       operationId: GetTasksByQueueType
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - default: a
         description: Queue Type Char
         in: query
@@ -1556,18 +2174,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.TasksResponse'
+      security:
+      - BearerAuth: []
       summary: Get Tasks By Queue Type
   /tasks/status:
     get:
       description: Get Tasks By Task Type with a Task Type Char
       operationId: GetTasksByTaskType
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - default: a
         description: Task Type Char
         in: query
@@ -1597,18 +2211,13 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.TasksResponse'
+      security:
+      - BearerAuth: []
       summary: Get Tasks By Task Type
   /users/:
     get:
       description: Get All Users. Must be Admin using the new mediator pattern
       operationId: GetUsers
-      parameters:
-      - default: Bearer token
-        description: admin header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1628,6 +2237,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/UsersResponse'
+      security:
+      - BearerAuth: []
       summary: Get All Users
       tags:
       - Users
@@ -1642,12 +2253,6 @@ paths:
         name: user_id
         required: true
         type: string
-      - default: '"Bearer token"'
-        description: admin header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1655,6 +2260,8 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/DeleteUserResponse'
+      security:
+      - BearerAuth: []
       summary: Delete User by their UUID
       tags:
       - Users
@@ -1663,12 +2270,6 @@ paths:
       description: Get User Background Choice
       operationId: GetUserBackground
       parameters:
-      - default: Bearer token
-        description: admin header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: background
         in: query
         name: background
@@ -1689,6 +2290,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/StringResponse'
+      security:
+      - BearerAuth: []
       summary: Get User Background Choice
       tags:
       - Users
@@ -1698,12 +2301,6 @@ paths:
         by query param.
       operationId: SetUserBackground
       parameters:
-      - default: Bearer token
-        description: admin header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: background
         in: query
         name: background
@@ -1724,6 +2321,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/StringResponse'
+      security:
+      - BearerAuth: []
       summary: Set User Background
       tags:
       - Users
@@ -1739,12 +2338,6 @@ paths:
         name: file
         required: true
         type: file
-      - default: Bearer token
-        description: admin header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1760,6 +2353,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/StringResponse'
+      security:
+      - BearerAuth: []
       summary: Upload Background
       tags:
       - Users
@@ -1767,13 +2362,6 @@ paths:
     get:
       description: Get User Backgrounds Uploaded to the server
       operationId: GetUserBackgroundChoices
-      parameters:
-      - default: Bearer token
-        description: admin header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1789,6 +2377,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/BackgroundResponse'
+      security:
+      - BearerAuth: []
       summary: Get User Background Choices
       tags:
       - Users
@@ -1807,12 +2397,6 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/UpdateCredentialsRequest'
-      - default: Bearer token
-        description: admin header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1832,6 +2416,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/UpdateUserResponse'
+      security:
+      - BearerAuth: []
       summary: Update User Credentials
       tags:
       - Users
@@ -1839,13 +2425,6 @@ paths:
     get:
       description: Get the Current User by the uuid storred in the Claims header
       operationId: GetCurrentLoggedInUser
-      parameters:
-      - default: Bearer token
-        description: admin header
-        in: header
-        name: authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1861,6 +2440,8 @@ paths:
           description: Unauthorized
           schema:
             $ref: '#/definitions/UserResponse'
+      security:
+      - BearerAuth: []
       summary: Get Current User
       tags:
       - Users
@@ -1903,13 +2484,6 @@ paths:
     get:
       description: Get User Profile by Authorization Header
       operationId: GetProfilePicture
-      parameters:
-      - default: Bearer token
-        description: admin header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1929,6 +2503,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/StringResponse'
+      security:
+      - BearerAuth: []
       summary: Get User Profile by Authorization Header
       tags:
       - Users
@@ -1943,12 +2519,6 @@ paths:
         name: file
         required: true
         type: file
-      - default: Bearer token
-        description: admin header
-        in: header
-        name: authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -1964,7 +2534,39 @@ paths:
           description: Not Found
           schema:
             $ref: '#/definitions/UserResponse'
+      security:
+      - BearerAuth: []
       summary: Upload file
+      tags:
+      - Users
+  /users/search:
+    get:
+      description: Autocomplete usernames (max 10, excludes caller, no PII).
+      operationId: SearchUsers
+      parameters:
+      - description: Username query
+        in: query
+        name: q
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/UsersSearchResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/UsersSearchResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/UsersSearchResponse'
+      security:
+      - BearerAuth: []
+      summary: Search Users by username
       tags:
       - Users
   /users/signup:
@@ -2005,13 +2607,6 @@ paths:
         and return the list of widgets associated
         with the user account in the request params.
       operationId: GetUserWidgets
-      parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -2031,6 +2626,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.UserWidgetsResponse'
+      security:
+      - BearerAuth: []
       summary: Get a Users Widgets
       tags:
       - Widgets
@@ -2042,12 +2639,6 @@ paths:
         The config is defined by the configuration parameters as defined by the user and the schema.
       operationId: AddUserWidget
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - description: Add Widget Request
         in: body
         name: AddUserWidgetRequest
@@ -2077,6 +2668,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.UserWidgetResponse'
+      security:
+      - BearerAuth: []
       summary: Add a Users Widget
       tags:
       - Widgets
@@ -2088,12 +2681,6 @@ paths:
         widget from the database.
       operationId: GetUserWidget
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
         description: Widget Id
         in: path
@@ -2119,7 +2706,48 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/responses.UserWidgetResponse'
+      security:
+      - BearerAuth: []
       summary: Get a Users Widget
+      tags:
+      - Widgets
+  /widgets/{user_widget_id}/coolify:
+    get:
+      description: Get the combined Coolify application and service status for a widget
+      operationId: GetUserCoolifyStatus
+      parameters:
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Widget Id
+        in: path
+        name: user_widget_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/CoolifyWidgetResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/CoolifyWidgetResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/CoolifyWidgetResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/CoolifyWidgetResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/CoolifyWidgetResponse'
+      security:
+      - BearerAuth: []
+      summary: Get a Users Coolify Status
       tags:
       - Widgets
   /widgets/{user_widget_id}/coolify/applications:
@@ -2127,12 +2755,6 @@ paths:
       description: Get a Users Coolify Applications by their auth token
       operationId: GetUserCoolifyApplications
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
         description: Widget Id
         in: path
@@ -2158,6 +2780,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/CoolifyWidgetApplicationResponse'
+      security:
+      - BearerAuth: []
       summary: Get a Users Coolify Applications
       tags:
       - Widgets
@@ -2166,12 +2790,6 @@ paths:
       description: Restart a Coolify Application by app UUID
       operationId: RestartCoolifyApplication
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
         description: Widget Id
         in: path
@@ -2206,6 +2824,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/CoolifyActionResponse'
+      security:
+      - BearerAuth: []
       summary: Restart a Coolify Application
       tags:
       - Widgets
@@ -2214,12 +2834,6 @@ paths:
       description: Start a Coolify Application by app UUID
       operationId: StartCoolifyApplication
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
         description: Widget Id
         in: path
@@ -2254,6 +2868,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/CoolifyActionResponse'
+      security:
+      - BearerAuth: []
       summary: Start a Coolify Application
       tags:
       - Widgets
@@ -2262,12 +2878,6 @@ paths:
       description: Stop a Coolify Application by app UUID
       operationId: StopCoolifyApplication
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
         description: Widget Id
         in: path
@@ -2302,7 +2912,51 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/CoolifyActionResponse'
+      security:
+      - BearerAuth: []
       summary: Stop a Coolify Application
+      tags:
+      - Widgets
+  /widgets/{user_widget_id}/coolify/metrics:
+    get:
+      description: Get CPU, memory and storage usage for the widget's Coolify server.
+        CPU and memory come from the Sentinel agent; storage is read from the Mindscape
+        host filesystem. Sources that fail are reported in data.warnings rather than
+        failing the request.
+      operationId: GetUserCoolifyMetrics
+      parameters:
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Widget Id
+        in: path
+        name: user_widget_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/CoolifyWidgetMetricsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/CoolifyWidgetMetricsResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/CoolifyWidgetMetricsResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/CoolifyWidgetMetricsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/CoolifyWidgetMetricsResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Coolify Server Metrics
       tags:
       - Widgets
   /widgets/{user_widget_id}/coolify/services:
@@ -2310,12 +2964,6 @@ paths:
       description: Get a Users Coolify Services by their auth token
       operationId: GetUserCoolifyServices
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
         description: Widget Id
         in: path
@@ -2341,6 +2989,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/CoolifyWidgetServiceResponse'
+      security:
+      - BearerAuth: []
       summary: Get a Users Coolify Services
       tags:
       - Widgets
@@ -2352,12 +3002,6 @@ paths:
         This endpoint fetches commit history and may take longer.
       operationId: GetGithubCommitsWidgetData
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
         description: Widget Id
         in: path
@@ -2383,6 +3027,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/GithubCommitsResponse'
+      security:
+      - BearerAuth: []
       summary: Get a Users Github Commits Widget Data
       tags:
       - Widgets
@@ -2394,12 +3040,6 @@ paths:
         This is a fast endpoint that returns profile info quickly.
       operationId: GetGithubProfileWidgetData
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
         description: Widget Id
         in: path
@@ -2425,7 +3065,85 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/GithubProfileResponse'
+      security:
+      - BearerAuth: []
       summary: Get a Users Github Profile Widget Data
+      tags:
+      - Widgets
+  /widgets/{user_widget_id}/github/prs:
+    get:
+      description: |-
+        Fetches open pull requests from GitHub (review-requested, authored, mentioned, assigned)
+        using the GitHub Issues Search API with a server-side PAT proxy.
+        The PAT requires 'repo' read scope for private repositories.
+      operationId: GetGithubPRsWidgetData
+      parameters:
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Widget Id
+        in: path
+        name: user_widget_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/GithubPRsWidgetResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/GithubPRsWidgetResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/GithubPRsWidgetResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/GithubPRsWidgetResponse'
+      security:
+      - BearerAuth: []
+      summary: Get GitHub PRs Widget Data
+      tags:
+      - Widgets
+  /widgets/{user_widget_id}/plex/recently-added:
+    get:
+      description: |-
+        Fetches recently-added media items from the configured Plex server.
+        The Plex API token is kept server-side; this is a server-side proxy endpoint.
+        Poster art is returned as signed thumb URLs (serverUrl + thumb + X-Plex-Token query param).
+      operationId: GetPlexRecentlyAdded
+      parameters:
+      - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
+        description: Widget Id
+        in: path
+        name: user_widget_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/PlexRecentlyAddedResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/PlexRecentlyAddedResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/PlexRecentlyAddedResponse'
+        "502":
+          description: Bad Gateway
+          schema:
+            $ref: '#/definitions/PlexRecentlyAddedResponse'
+      security:
+      - BearerAuth: []
+      summary: Get Plex Recently Added
       tags:
       - Widgets
   /widgets/github/{user_widget_id}:
@@ -2437,12 +3155,6 @@ paths:
         the mindscape so we use the github api to get the data.
       operationId: GetGithubWidgetData
       parameters:
-      - default: Bearer token
-        description: auth header
-        in: header
-        name: Authorization
-        required: true
-        type: string
       - default: '"e38e78a4-2ca3-4c59-a3ea-a2019866e593"'
         description: Widget Id
         in: path
@@ -2468,6 +3180,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/GithubResponse'
+      security:
+      - BearerAuth: []
       summary: Get a Users Github Widget
       tags:
       - Widgets
@@ -2523,4 +3237,9 @@ paths:
       - Widgets
 schemes:
 - http
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

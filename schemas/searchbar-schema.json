@@ -1,9 +1,8 @@
-
 {
   "id": "0d55e5c6-daa0-4050-a382-4f6285c6a42f",
   "type": "searchbar",
-  "title": "SearXNG Widget Schema",
-  "description": "Configuration schema for SearXNG search integration",
+  "title": "Web Search Widget Schema",
+  "description": "Configuration schema for a generic web-search redirect widget (opens results in a new tab)",
   "layout": {
     "defaultSize": {
       "width": 12,
@@ -15,35 +14,35 @@
     },
     "maxSize": {
       "width": 12,
-      "height": 4 
+      "height": 4
     },
     "resizable": true
   },
   "properties": {
-	  "engine": {
-	  "label": "Engine",
-	  "value": "google",
+    "engine": {
+      "label": "Engine",
+      "value": "brave",
       "type": "string",
       "format": "string",
-      "description": "Built-in engien available to use",
-	  "enum": [
-		  "google",
-		  "bing",
-		  "duckduckgo",
-		  "searxng"
-		]
-	  },
+      "description": "Search engine to redirect queries to",
+      "enum": [
+        "brave",
+        "google",
+        "bing",
+        "duckduckgo"
+      ]
+    },
     "serverUrl": {
-	  "label": "Server URL",
-	  "value": "https://google.com/search&q=%s",
+      "label": "Search URL Template",
+      "value": "https://search.brave.com/search?q=%s",
       "type": "string",
       "format": "uri",
-      "description": "The URL of the Search Provider server. By default thisis the Google search engine",
-	  "enum": []
+      "description": "URL template for the search engine; use %s as the query placeholder",
+      "enum": []
     }
   },
   "required": [
-	  "engine",
-	  "serverUrl"
+    "engine",
+    "serverUrl"
   ]
 }

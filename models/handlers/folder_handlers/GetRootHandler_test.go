@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/adamkali/mindscape/models/responses"
 	i "github.com/adamkali/mindscape/models/handlers"
 	h "github.com/adamkali/mindscape/models/handlers/folder_handlers"
+	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -41,7 +41,6 @@ var getRootTestUser = struct {
 type GetRootTestServices struct {
 	FolderService   services.IFolderService
 	BookmarkService services.IBookmarkService
-	NoteService     services.INoteService
 	AuthService     services.IAuthService
 }
 
@@ -49,14 +48,13 @@ type GetRootTestServices struct {
 func CreateGetRootTestServices() GetRootTestServices {
 	folderService := services.CreateMockFolderService(nil, nil)
 	folderService.Reset()
-	
+
 	bookmarkService := services.CreateMockBookmarkService(nil, nil)
 	bookmarkService.Reset()
-	
+
 	return GetRootTestServices{
 		FolderService:   folderService,
 		BookmarkService: bookmarkService,
-		NoteService:     services.NewMockNoteService(),
 		AuthService:     &services.MockAuthService{},
 	}
 }
@@ -72,7 +70,7 @@ func CreateGetRootHTTPRequest(method, path string) *http.Request {
 func CreateGetRootAuthenticatedContext(r *http.Request) echo.Context {
 	e := echo.New()
 	ctx := e.NewContext(r, httptest.NewRecorder())
-	
+
 	// Create JWT token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &services.CustomJwt{
 		UserId:     getRootTestUser.ID,
@@ -83,7 +81,7 @@ func CreateGetRootAuthenticatedContext(r *http.Request) echo.Context {
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
 		},
 	})
-	
+
 	// Set token in context
 	ctx.Set("user", token)
 	return ctx
@@ -91,7 +89,7 @@ func CreateGetRootAuthenticatedContext(r *http.Request) echo.Context {
 
 // NewGetRootHandler creates GetRootFolderHandler with services and context
 func NewGetRootHandler(services GetRootTestServices, ctx echo.Context) *h.GetRootFolderHandler {
-	return h.NewGetRootHandler(ctx, services.FolderService, services.BookmarkService, services.NoteService, services.AuthService)
+	return h.NewGetRootHandler(ctx, services.FolderService, services.BookmarkService, services.AuthService)
 }
 
 // MockGetRootAuthServiceWithFailure extends MockAuthService for failure testing
@@ -112,14 +110,14 @@ func Run_GetRootHandler_ValidRequest(t *testing.T) {
 	testServices := CreateGetRootTestServices()
 	req := CreateGetRootHTTPRequest(http.MethodGet, "/api/folders/root")
 	ctx := CreateGetRootAuthenticatedContext(req)
-	
+
 	handler := NewGetRootHandler(testServices, ctx)
 	result := handler.Handle()
-	
+
 	assert.NoError(t, result.Error())
 	assert.Equal(t, http.StatusOK, result.Code())
 	assert.NotNil(t, result.Data())
-	
+
 	folderData := result.Data().([]responses.FolderData)
 	assert.GreaterOrEqual(t, len(folderData), 0) // Should have 0 or more root folders
 }
@@ -128,13 +126,13 @@ func Run_GetRootHandler_ValidRequest(t *testing.T) {
 func Run_GetRootHandler_AuthenticationFailure(t *testing.T) {
 	testServices := CreateGetRootTestServices()
 	testServices.AuthService = &MockGetRootAuthServiceWithFailure{ShouldFailCheckToken: true}
-	
+
 	req := CreateGetRootHTTPRequest(http.MethodGet, "/api/folders/root")
 	ctx := CreateGetRootAuthenticatedContext(req)
-	
+
 	handler := NewGetRootHandler(testServices, ctx)
 	result := handler.Handle()
-	
+
 	assert.Error(t, result.Error())
 	assert.Equal(t, http.StatusUnauthorized, result.Code())
 }
@@ -142,12 +140,12 @@ func Run_GetRootHandler_AuthenticationFailure(t *testing.T) {
 // Run_GetRootHandler_NoRootFolders executes GetRootHandler when user has no root folders
 func Run_GetRootHandler_NoRootFolders(t *testing.T) {
 	testServices := CreateGetRootTestServices()
-	
+
 	// Create context with non-existent user ID to test no folders scenario
 	e := echo.New()
 	req := CreateGetRootHTTPRequest(http.MethodGet, "/api/folders/root")
 	ctx := e.NewContext(req, httptest.NewRecorder())
-	
+
 	// Create JWT token for user without folders
 	nonExistentUserID := uuid.MustParse("99999999-9999-9999-9999-999999999999")
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &services.CustomJwt{
@@ -160,14 +158,14 @@ func Run_GetRootHandler_NoRootFolders(t *testing.T) {
 		},
 	})
 	ctx.Set("user", token)
-	
+
 	handler := NewGetRootHandler(testServices, ctx)
 	result := handler.Handle()
-	
+
 	assert.NoError(t, result.Error())
 	assert.Equal(t, http.StatusOK, result.Code())
 	assert.NotNil(t, result.Data())
-	
+
 	folderData := result.Data().([]responses.FolderData)
 	assert.Equal(t, 0, len(folderData)) // Should have no folders
 }
@@ -176,13 +174,13 @@ func Run_GetRootHandler_NoRootFolders(t *testing.T) {
 func Run_GetRootHandler_FolderServiceFailure(t *testing.T) {
 	testServices := CreateGetRootTestServices()
 	// TODO: Add service failure testing once type access is resolved
-	
+
 	req := CreateGetRootHTTPRequest(http.MethodGet, "/api/folders/root")
 	ctx := CreateGetRootAuthenticatedContext(req)
-	
+
 	handler := NewGetRootHandler(testServices, ctx)
 	result := handler.Handle()
-	
+
 	// For now, expect success since we can't force failure
 	assert.NoError(t, result.Error())
 	assert.Equal(t, http.StatusOK, result.Code())
@@ -192,47 +190,23 @@ func Run_GetRootHandler_FolderServiceFailure(t *testing.T) {
 func Run_GetRootHandler_BookmarkServiceFailure(t *testing.T) {
 	testServices := CreateGetRootTestServices()
 	// TODO: Add bookmark service failure testing once type access is resolved
-	
+
 	req := CreateGetRootHTTPRequest(http.MethodGet, "/api/folders/root")
 	ctx := CreateGetRootAuthenticatedContext(req)
-	
+
 	handler := NewGetRootHandler(testServices, ctx)
 	result := handler.Handle()
-	
+
 	// For now, expect success since we can't force failure
 	assert.NoError(t, result.Error())
 	assert.Equal(t, http.StatusOK, result.Code())
 }
 
-// Run_GetRootHandler_NoteServiceFailure executes GetRootHandler with NoteService failure
-func Run_GetRootHandler_NoteServiceFailure(t *testing.T) {
-	testServices := CreateGetRootTestServices()
-	noteService := &services.MockNoteService{
-		ShouldFailGetByFolder:   true,
-		GetByFolderErrorMessage: "Note service failure",
-	}
-	testServices.NoteService = noteService
-	
-	req := CreateGetRootHTTPRequest(http.MethodGet, "/api/folders/root")
-	ctx := CreateGetRootAuthenticatedContext(req)
-	
-	handler := NewGetRootHandler(testServices, ctx)
-	result := handler.Handle()
-	
-	// Should fail when note service fails and there are folders to process
-	assert.Error(t, result.Error())
-	assert.Equal(t, http.StatusInternalServerError, result.Code())
-}
-
-// <tests>
-// <evaluators>
-
-// EvaluateGetRootSuccess validates successful get root handler execution
 func EvaluateGetRootSuccess(t *testing.T, result i.IHandler) {
 	assert.NoError(t, result.Error())
 	assert.Equal(t, http.StatusOK, result.Code())
 	assert.NotNil(t, result.Data())
-	
+
 	folderData := result.Data().([]responses.FolderData)
 	assert.GreaterOrEqual(t, len(folderData), 0)
 }
@@ -247,12 +221,11 @@ func EvaluateGetRootFailure(t *testing.T, result i.IHandler, expectedCode int) {
 
 // GetRootHandlerTestMap defines all GetRootHandler test cases
 var GetRootHandlerTestMap = map[string]func(*testing.T){
-	"ValidRequest":             Run_GetRootHandler_ValidRequest,
-	"AuthenticationFailure":    Run_GetRootHandler_AuthenticationFailure,
-	"NoRootFolders":            Run_GetRootHandler_NoRootFolders,
-	"FolderServiceFailure":     Run_GetRootHandler_FolderServiceFailure,
-	"BookmarkServiceFailure":   Run_GetRootHandler_BookmarkServiceFailure,
-	"NoteServiceFailure":       Run_GetRootHandler_NoteServiceFailure,
+	"ValidRequest":           Run_GetRootHandler_ValidRequest,
+	"AuthenticationFailure":  Run_GetRootHandler_AuthenticationFailure,
+	"NoRootFolders":          Run_GetRootHandler_NoRootFolders,
+	"FolderServiceFailure":   Run_GetRootHandler_FolderServiceFailure,
+	"BookmarkServiceFailure": Run_GetRootHandler_BookmarkServiceFailure,
 }
 
 // <hook/>

@@ -19,14 +19,12 @@ type GetRootFolderHandler struct {
 	AuthService     services.IAuthService
 	FolderService   services.IFolderService
 	BookmarkService services.IBookmarkService
-	NoteService     services.INoteService
 }
 
 func NewGetRootHandler(
 	ctx echo.Context,
 	FolderService services.IFolderService,
 	BookmarkService services.IBookmarkService,
-	NoteService services.INoteService,
 	AuthService services.IAuthService,
 ) *GetRootFolderHandler {
 	return &GetRootFolderHandler{
@@ -34,7 +32,6 @@ func NewGetRootHandler(
 		code:            200,
 		FolderService:   FolderService,
 		BookmarkService: BookmarkService,
-		NoteService:     NoteService,
 		AuthService:     AuthService,
 	}
 }
@@ -55,9 +52,6 @@ func (h *GetRootFolderHandler) Handle() handlers.IHandler {
 	for _, folder := range folders {
 		folderData := responses.NewFolderData(folder)
 		if folderData.Bookmarks, err = h.BookmarkService.GetByFolder(*folderData.ID); err != nil {
-			return handlers.Lock(h, 500, err)
-		}
-		if folderData.Notes, err = h.NoteService.GetByFolder(*folderData.ID); err != nil {
 			return handlers.Lock(h, 500, err)
 		}
 		if folderData.Children, err = h.FolderService.GetByParent(*folderData.ID); err != nil {
@@ -91,7 +85,6 @@ func (h *GetRootFolderHandler) Data() any {
 func (h *GetRootFolderHandler) Error() error {
 	return h.err
 }
-
 
 func (h *GetRootFolderHandler) SetError(err error) handlers.IHandler {
 	h.err = fmt.Errorf("%d Error: %s", h.code, err.Error())

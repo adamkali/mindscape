@@ -1,13 +1,12 @@
 import { createEffect, createSignal, Show } from 'solid-js';
-import { BookmarksApi, type RepositoryBookmark } from '@/api';
-import { useAuth } from '@/contexts/AuthContext';
+import type { RepositoryBookmark } from '@/api';
+import { useTree } from '@/contexts/TreeContext';
 import { Button, Input } from './atoms';
 
 interface EditBookmarkModalProps {
 	isOpen: boolean;
 	onClose: () => void;
 	bookmark: RepositoryBookmark | null;
-	onSaved: () => void;
 }
 
 export default function EditBookmarkModal(props: EditBookmarkModalProps) {
@@ -15,7 +14,7 @@ export default function EditBookmarkModal(props: EditBookmarkModalProps) {
 	const [link, setLink] = createSignal('');
 	const [saving, setSaving] = createSignal(false);
 	const [error, setError] = createSignal('');
-	const auth = useAuth();
+	const tree = useTree();
 
 	createEffect(() => {
 		if (props.bookmark) {
@@ -27,34 +26,19 @@ export default function EditBookmarkModal(props: EditBookmarkModalProps) {
 
 	const handleSave = async (e: Event) => {
 		e.preventDefault();
-		if (!props.bookmark?.id || !auth.token()) return;
+		if (!props.bookmark?.id) return;
 
 		setError('');
 		setSaving(true);
-		try {
-			const bookmarksApi = new BookmarksApi();
-			const response = await bookmarksApi.updateBookmark({
-				bookmarkId: props.bookmark.id,
-				updateBookmarkRequest: {
-					userId: auth.user()?.id,
-					bookmarkId: props.bookmark.id,
-					name: name(),
-					link: link(),
-				},
-				authorization: `Bearer ${auth.token()}`,
-			});
-
-			if (response.success) {
-				props.onSaved();
-				props.onClose();
-			} else {
-				setError(response.message || 'Failed to update bookmark');
-			}
-		} catch (err) {
-			console.error('Error updating bookmark:', err);
+		const ok = await tree.updateBookmark(props.bookmark.id, {
+			name: name(),
+			link: link(),
+		});
+		setSaving(false);
+		if (ok) {
+			props.onClose();
+		} else {
 			setError('Failed to update bookmark');
-		} finally {
-			setSaving(false);
 		}
 	};
 

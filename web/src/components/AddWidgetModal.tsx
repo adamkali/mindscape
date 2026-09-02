@@ -1,45 +1,18 @@
-import { createSignal, For, onMount, Show } from 'solid-js';
-import {
-	type ResponsesWidgetData,
-	type SchemasWidgetProperty,
-	WidgetsApi,
-} from '@/api';
-import { useAuth } from '@/contexts/AuthContext';
+import { createSignal, For, Show } from 'solid-js';
+import { useWidgets } from '@/contexts/WidgetContext';
 import { Button } from './atoms';
 
 interface AddWidgetModalProps {
 	isOpen: boolean;
 	onClose: () => void;
-	onWidgetAdded?: () => void;
+	widgetLength: number;
 }
 
 export default function AddWidgetModal(props: AddWidgetModalProps) {
-	const [widgetSchemas, setWidgetSchemas] = createSignal<ResponsesWidgetData[]>(
-		[],
-	);
+	const { schemas, schemasLoading, addWidget } = useWidgets();
 	const [selectedSchemaId, setSelectedSchemaId] = createSignal<string>('');
 	const [widgetConfig, setWidgetConfig] = createSignal<Record<string, any>>({});
-	const [loading, setLoading] = createSignal(true);
-	const auth = useAuth();
-
-	onMount(async () => {
-		await fetchWidgetSchemas();
-	});
-
-	const fetchWidgetSchemas = async () => {
-		try {
-			const api = new WidgetsApi();
-			const response = await api.getWidgetSchemas();
-
-			if (response.success && response.data) {
-				setWidgetSchemas(response.data);
-			}
-		} catch (error) {
-			console.error('Failed to fetch widget schemas:', error);
-		} finally {
-			setLoading(false);
-		}
-	};
+	const [submitting, setSubmitting] = createSignal(false);
 
 	const handleConfigChange = (key: string, value: any) => {
 		setWidgetConfig({ ...widgetConfig(), [key]: value });
@@ -54,9 +27,7 @@ export default function AddWidgetModal(props: AddWidgetModalProps) {
 		}
 
 		// Get the selected schema to use its default layout
-		const selectedSchema = widgetSchemas().find(
-			(s) => s.id === selectedSchemaId(),
-		);
+		const selectedSchema = schemas().find((s) => s.id === selectedSchemaId());
 		if (!selectedSchema) {
 			alert('Invalid widget schema');
 			return;
@@ -71,41 +42,28 @@ export default function AddWidgetModal(props: AddWidgetModalProps) {
 			}
 		}
 
-		try {
-			setLoading(true);
-			const api = new WidgetsApi();
+		setSubmitting(true);
+		const ok = await addWidget({
+			schemaId: selectedSchemaId(),
+			schemaTitle: selectedSchema.title,
+			config: Array.from(
+				new TextEncoder().encode(JSON.stringify(widgetConfig())),
+			),
+			positionX: 0, // TODO: Calculate next available position
+			positionY: props.widgetLength,
+			width: selectedSchema.layout?.defaultSize?.width ?? 1,
+			height: selectedSchema.layout?.defaultSize?.height ?? 1,
+			zIndex: 1,
+			isVisible: true,
+		});
+		setSubmitting(false);
 
-			// Create widget with user-provided config
-			const response = await api.addUserWidget({
-				authorization: `Bearer ${auth.token()}`,
-				addUserWidgetRequest: {
-					schemaId: selectedSchemaId(),
-					schemaTitle: selectedSchema.title,
-					config: Array.from(
-						new TextEncoder().encode(JSON.stringify(widgetConfig())),
-					),
-					positionX: 0, // TODO: Calculate next available position
-					positionY: 3,
-					width: selectedSchema.layout?.defaultSize?.width ?? 1,
-					height: selectedSchema.layout?.defaultSize?.height ?? 1,
-					zIndex: 1,
-					isVisible: true,
-				},
-			});
-
-			if (response.success) {
-				props.onWidgetAdded?.();
-				props.onClose();
-				setWidgetConfig({});
-				setSelectedSchemaId('');
-			} else {
-				alert(`Failed to create widget: ${response.message}`);
-			}
-		} catch (error) {
-			console.error('Error creating widget:', error);
-			alert(`Error creating widget: ${error}`);
-		} finally {
-			setLoading(false);
+		if (ok) {
+			props.onClose();
+			setWidgetConfig({});
+			setSelectedSchemaId('');
+		} else {
+			alert('Failed to create widget');
 		}
 	};
 
@@ -148,7 +106,7 @@ export default function AddWidgetModal(props: AddWidgetModalProps) {
 					</div>
 
 					<Show
-						when={!loading()}
+						when={!schemasLoading()}
 						fallback={
 							<div class="text-center py-8 text-card-foreground/60">
 								Loading widget types...
@@ -170,7 +128,7 @@ export default function AddWidgetModal(props: AddWidgetModalProps) {
 									onChange={(e) => setSelectedSchemaId(e.currentTarget.value)}
 								>
 									<option value="">Select a widget type...</option>
-									<For each={widgetSchemas()}>
+									<For each={schemas()}>
 										{(schema) => (
 											<option
 												value={schema.id}
@@ -189,7 +147,7 @@ export default function AddWidgetModal(props: AddWidgetModalProps) {
 										<h3 class="text-sm font-semibold text-card-foreground mb-2">
 											Widget Configuration
 										</h3>
-										<For each={widgetSchemas()}>
+										<For each={schemas()}>
 											{(schema) => (
 												<Show when={schema.id === selectedSchemaId()}>
 													<div class="space-y-3">
@@ -349,9 +307,9 @@ export default function AddWidgetModal(props: AddWidgetModalProps) {
 									type="submit"
 									variant="primary"
 									class="flex-1"
-									disabled={!selectedSchemaId()}
+									disabled={!selectedSchemaId() || submitting()}
 								>
-									Add Widget
+									{submitting() ? 'Adding...' : 'Add Widget'}
 								</Button>
 							</div>
 						</form>

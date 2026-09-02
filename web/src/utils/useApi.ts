@@ -1,4 +1,10 @@
-import { BackgroundApi, BookmarksApi, FoldersApi, UsersApi } from '@/api';
+import {
+	BackgroundApi,
+	BookmarksApi,
+	FoldersApi,
+	UsersApi,
+	WidgetsApi,
+} from '@/api';
 import { getApiConfig, getAuthenticatedApiConfig } from './apiConfig';
 
 /**
@@ -13,6 +19,7 @@ export function useAuthenticatedApi() {
 		bookmarks: new BookmarksApi(config),
 		folders: new FoldersApi(config),
 		background: new BackgroundApi(config),
+		widgets: new WidgetsApi(config),
 	};
 }
 

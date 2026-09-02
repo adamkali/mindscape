@@ -1,56 +1,21 @@
-import { createSignal, For, type JSX, onMount, Suspense } from 'solid-js';
-import { type ResponsesUserWidgetData, WidgetsApi } from '@/api';
-import { useAuth } from '@/contexts/AuthContext';
+import { createSignal, For, type JSX, Suspense } from 'solid-js';
+import { useWidgets } from '@/contexts/WidgetContext';
 import AddWidgetModal from './AddWidgetModal';
 import { Button, Input } from './atoms';
 import RenderWidget from './RenderWidget';
 
 interface WidgetContainerProps extends JSX.HTMLAttributes<HTMLDivElement> {}
 
-export default function WidgetContainer(props: WidgetContainerProps) {
-	const [widgets, setWidgets] = createSignal<ResponsesUserWidgetData[]>([]);
+export default function WidgetContainer(_props: WidgetContainerProps) {
+	const { widgets } = useWidgets();
 	const [isAddWidgetModalOpen, setIsAddWidgetModalOpen] = createSignal(false);
 	const [search, setSearch] = createSignal('');
-	const auth = useAuth();
-	const token = auth.token();
-
-	onMount(() => {
-		getWidget().then((widgets) => {
-			setWidgets(widgets);
-		});
-	});
-
-	const getWidget = async () => {
-		const api = new WidgetsApi();
-		const widgets = await api.getUserWidgets({
-			authorization: 'Bearer ' + token,
-		});
-		if (widgets.data && widgets.success) {
-			return widgets.data;
-		} else {
-			console.error({ error: widgets.message });
-		}
-		return [];
-	};
-
-	const handleWidgetAdded = async () => {
-		// Refresh widgets list after adding a new widget
-		const updatedWidgets = await getWidget();
-		setWidgets(updatedWidgets);
-	};
-
-	const filterWidgets = (
-		widgets: ResponsesUserWidgetData[],
-	): ResponsesUserWidgetData[] => {
-		const searchInput = search();
-		console.log(searchInput);
-		return widgets.filter((widget) =>
-			widget.schemaTitle?.toLowerCase().includes(searchInput.toLowerCase()),
-		);
-	};
 
 	const widgetsFiltered = () => {
-		return filterWidgets(widgets());
+		const searchInput = search().toLowerCase();
+		return widgets().filter((widget) =>
+			widget.schemaTitle?.toLowerCase().includes(searchInput),
+		);
 	};
 
 	return (
@@ -125,7 +90,7 @@ export default function WidgetContainer(props: WidgetContainerProps) {
 			<AddWidgetModal
 				isOpen={isAddWidgetModalOpen()}
 				onClose={() => setIsAddWidgetModalOpen(false)}
-				onWidgetAdded={handleWidgetAdded}
+				widgetLength={widgets().length}
 			/>
 		</div>
 	);

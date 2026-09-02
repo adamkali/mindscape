@@ -1,12 +1,12 @@
 import { createSignal, For, onMount, Show } from 'solid-js';
-import { Configuration, WidgetsApi } from '@/api';
+import { WidgetsApi } from '@/api';
 import type {
 	ResponsesGithubWidgetCommitsData,
 	ResponsesGithubWidgetCommitsDayData,
 	ResponsesGithubWidgetCommitsWeekData,
 	ResponsesGithubWidgetProfileData,
 } from '@/api/models';
-import { useAuth } from '@/contexts/AuthContext';
+import { getAuthenticatedApiConfig } from '@/utils/apiConfig';
 
 interface GitHubProfileWidgetProps {
 	widgetId: string;
@@ -22,18 +22,13 @@ export default function GitHubProfileWidget(props: GitHubProfileWidgetProps) {
 	const [commitsLoading, setCommitsLoading] = createSignal(true);
 	const [profileError, setProfileError] = createSignal<string | null>(null);
 	const [commitsError, setCommitsError] = createSignal<string | null>(null);
-	const auth = useAuth();
 
 	onMount(async () => {
-		const config = new Configuration({
-			basePath: '/api',
-		});
-		const api = new WidgetsApi(config);
+		const api = new WidgetsApi(getAuthenticatedApiConfig());
 
 		// Fetch profile (fast)
 		api
 			.getGithubProfileWidgetData({
-				authorization: `Bearer ${auth.token()}`,
 				userWidgetId: props.widgetId,
 			})
 			.then((response) => {
@@ -49,7 +44,6 @@ export default function GitHubProfileWidget(props: GitHubProfileWidgetProps) {
 		// Fetch commits (slow, loads in background)
 		api
 			.getGithubCommitsWidgetData({
-				authorization: `Bearer ${auth.token()}`,
 				userWidgetId: props.widgetId,
 			})
 			.then((response) => {

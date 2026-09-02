@@ -12,9 +12,26 @@ import {
 	type ResponsesTasksResponse,
 	type ServicesTaskDTO,
 } from '@/api';
+import { FEATURES } from '@/config/features';
+import { getAuthenticatedApiConfig } from '@/utils/apiConfig';
 import { useAuth } from './AuthContext';
 
 export type ActiveView = 'widgets' | 'agenda';
+
+/**
+ * Outer page layout, orthogonal to `activeView`:
+ *  - 'normal' — tree in a fixed-width left rail, widgets/agenda fill the rest
+ *  - 'tree'   — tree takes the full width, right pane hidden
+ *
+ * `activeView` only matters inside 'normal'; in 'tree' the right pane is hidden
+ * but never unmounted, so widget state survives a round trip.
+ */
+export type HomepageMode = 'tree' | 'normal';
+
+const HOMEPAGE_MODE_KEY = 'homepageMode';
+
+const isHomepageMode = (v: string | null): v is HomepageMode =>
+	v === 'tree' || v === 'normal';
 
 export type FilterType =
 	| { kind: 'all' }
@@ -24,6 +41,8 @@ export type FilterType =
 export interface ViewContextValue {
 	activeView: () => ActiveView;
 	setActiveView: (view: ActiveView) => void;
+	homepageMode: () => HomepageMode;
+	setHomepageMode: (mode: HomepageMode) => void;
 	tasks: () => ServicesTaskDTO[];
 	tasksLoading: () => boolean;
 	activeFilter: () => FilterType;
@@ -45,9 +64,38 @@ const ViewContext = createContext<ViewContextValue>();
 
 export const ViewProvider: ParentComponent = (props) => {
 	const auth = useAuth();
-	const tasksApi = new DefaultApi();
+	const tasksApi = new DefaultApi(getAuthenticatedApiConfig());
 
-	const [activeView, setActiveView] = createSignal<ActiveView>('widgets');
+	const [activeView, setActiveViewSignal] = createSignal<ActiveView>('widgets');
+
+	// Guard the setter rather than the callers: with tasks off, 'agenda' is not
+	// a reachable state no matter who asks for it.
+	const setActiveView = (view: ActiveView) => {
+		if (view === 'agenda' && !FEATURES.tasks) return;
+		setActiveViewSignal(view);
+	};
+
+	// Restored from localStorage so a reload keeps the last layout; 'normal'
+	// is the default for a first visit or an unreadable/legacy value.
+	const [homepageMode, setHomepageModeSignal] = createSignal<HomepageMode>(
+		(() => {
+			try {
+				const stored = localStorage.getItem(HOMEPAGE_MODE_KEY);
+				return isHomepageMode(stored) ? stored : 'normal';
+			} catch {
+				return 'normal';
+			}
+		})(),
+	);
+
+	const setHomepageMode = (mode: HomepageMode) => {
+		setHomepageModeSignal(mode);
+		try {
+			localStorage.setItem(HOMEPAGE_MODE_KEY, mode);
+		} catch {
+			// A blocked/full storage must not break layout switching.
+		}
+	};
 	const [tasks, setTasks] = createSignal<ServicesTaskDTO[]>([]);
 	const [tasksLoading, setTasksLoading] = createSignal(false);
 	const [tasksLoaded, setTasksLoaded] = createSignal(false);
@@ -56,6 +104,9 @@ export const ViewProvider: ParentComponent = (props) => {
 	});
 
 	createEffect(() => {
+		// With tasks flagged off the agenda pane is never rendered, so the fetch
+		// must not fire either — its endpoints aren't mounted.
+		if (!FEATURES.tasks) return;
 		if (activeView() === 'agenda' && !tasksLoaded()) {
 			fetchTasks();
 		}
@@ -69,18 +120,14 @@ export const ViewProvider: ParentComponent = (props) => {
 			let response: ResponsesTasksResponse;
 			if (filter.kind === 'queue') {
 				response = await tasksApi.getTasksByQueueType({
-					authorization: `Bearer ${auth.token()}`,
 					queueType: filter.char,
 				});
 			} else if (filter.kind === 'status') {
 				response = await tasksApi.getTasksByTaskType({
-					authorization: `Bearer ${auth.token()}`,
 					taskType: filter.char,
 				});
 			} else {
-				response = await tasksApi.readTasks({
-					authorization: `Bearer ${auth.token()}`,
-				});
+				response = await tasksApi.readTasks({});
 			}
 			if (response.success && response.data) {
 				setTasks(response.data);
@@ -108,7 +155,6 @@ export const ViewProvider: ParentComponent = (props) => {
 		if (!auth.token()) return;
 		try {
 			const response = await tasksApi.createTask({
-				authorization: `Bearer ${auth.token()}`,
 				createTaskRequest: params,
 			});
 			if (response.success && response.data) {
@@ -126,7 +172,6 @@ export const ViewProvider: ParentComponent = (props) => {
 		if (!auth.token()) return;
 		try {
 			const response = await tasksApi.updateTask({
-				authorization: `Bearer ${auth.token()}`,
 				updateTaskRequest: params,
 			});
 			if (response.success && response.data) {
@@ -148,7 +193,6 @@ export const ViewProvider: ParentComponent = (props) => {
 		if (!auth.token()) return;
 		try {
 			const response = await tasksApi.updateTaskStatus({
-				authorization: `Bearer ${auth.token()}`,
 				taskId,
 				status,
 				dueDate,
@@ -168,7 +212,6 @@ export const ViewProvider: ParentComponent = (props) => {
 		if (!auth.token()) return;
 		try {
 			const response = await tasksApi.deleteTask({
-				authorization: `Bearer ${auth.token()}`,
 				taskId,
 			});
 			if (response.success) {
@@ -182,6 +225,8 @@ export const ViewProvider: ParentComponent = (props) => {
 	const value: ViewContextValue = {
 		activeView,
 		setActiveView,
+		homepageMode,
+		setHomepageMode,
 		tasks,
 		tasksLoading,
 		activeFilter,

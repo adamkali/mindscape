@@ -7,6 +7,7 @@ import (
 
 	"github.com/adamkali/mindscape/cmd/configuration"
 	"github.com/adamkali/mindscape/middlewares/configs"
+	"github.com/adamkali/mindscape/schemas"
 	"github.com/adamkali/mindscape/services"
 	"github.com/jackc/pgx/v5/pgxpool"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -21,6 +22,11 @@ type IController interface {
 
 func createControllerParams(config *configuration.Configuration) (*services.Registrar, error) {
 	ctx := context.Background()
+
+	// Optional widget schemas are opted in from config before any service
+	// loads the embedded set.
+	schemas.SetCoolifyEnabled(config.Features.Coolify)
+
 	db, err := pgxpool.New(ctx, config.Database.URL)
 	if err != nil {
 		return nil, err
@@ -34,8 +40,8 @@ func createControllerParams(config *configuration.Configuration) (*services.Regi
 		AuthService:      services.CreateAuthService(ctx, db, config),
 		BookmarkService:  services.CreateBookmarkService(ctx, db),
 		FolderService:    services.CreateFolderService(ctx, db),
+		HouseholdService: services.CreateHouseholdService(ctx, db),
 		MinioService:     services.CreateMinioService(ctx, config),
-		NoteService:      services.CreateNoteService(ctx, db),
 		RedisService:     redisService,
 		TaskService:      services.CreateTaskService(ctx, db),
 		UserService:      services.CreateUserService(ctx, db),

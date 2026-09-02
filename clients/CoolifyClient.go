@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -290,9 +291,48 @@ func (c *CoolifyClient) doRequest(ctx context.Context, url string, acceptHeader 
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Coolify API error: %d", resp.StatusCode)
+		detail, _ := io.ReadAll(io.LimitReader(resp.Body, 2048))
+		return nil, coolifyAPIError(resp.StatusCode, detail)
 	}
 	return io.ReadAll(resp.Body)
+}
+
+// coolifyAPIError explains a non-200 the way githubAPIError does: the status
+// code alone cannot tell you whether the token, the base URL, or the scope is
+// at fault, and Coolify puts that in the body.
+func coolifyAPIError(status int, body []byte) error {
+	var payload struct {
+		Message string `json:"message"`
+	}
+	_ = json.Unmarshal(body, &payload)
+
+	detail := payload.Message
+	if detail == "" {
+		detail = strings.TrimSpace(string(body))
+	}
+
+	switch status {
+	case http.StatusUnauthorized:
+		return fmt.Errorf(
+			"Coolify rejected the personal access token (401: %s): it is expired, revoked, or belongs to another instance",
+			detail,
+		)
+	case http.StatusForbidden:
+		return fmt.Errorf(
+			"Coolify refused the request (403: %s): the token is missing an ability such as read or read:sensitive",
+			detail,
+		)
+	case http.StatusNotFound:
+		return fmt.Errorf(
+			"Coolify returned 404 (%s): check the base URL ends in /api/v1 and the resource exists",
+			detail,
+		)
+	}
+
+	if detail != "" {
+		return fmt.Errorf("Coolify API error: %d (%s)", status, detail)
+	}
+	return fmt.Errorf("Coolify API error: %d", status)
 }
 
 func (c *CoolifyClient) CoolifyHealthCheck(ctx echo.Context) error {

@@ -27,7 +27,7 @@ func BuildTaskController(registrar *services.Registrar) TaskController {
 //
 // @ID          ReadTasks
 // @Produce     json
-// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Success     200                 {object}     responses.TasksResponse
 // @Failure     401                 {object}     responses.TasksResponse
 // @Failure     500                 {object}     responses.TasksResponse
@@ -41,7 +41,7 @@ func (c TaskController) Read(e echo.Context) error {
 //
 // @ID          ReadTask
 // @Produce     json
-// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       taskId       		path       string                         true "TaskID"
 // @Success     200                 {object}     responses.TaskResponse
 // @Failure     400                 {object}     responses.TaskResponse
@@ -58,7 +58,7 @@ func (c TaskController) ReadByID(e echo.Context) error {
 //
 // @ID          CreateTask
 // @Produce     json
-// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       CreateTaskRequest   body         repository.InsertNewTaskParams    true "CreateTaskRequest"
 // @Success     200                 {object}     responses.TaskResponse
 // @Failure     400                 {object}     responses.TaskResponse
@@ -75,7 +75,7 @@ func (c TaskController) Create(e echo.Context) error {
 //
 // @ID          UpdateTask
 // @Produce     json
-// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       UpdateTaskRequest   body         repository.UpdateTaskContentParams    true "UpdateTaskRequest"
 // @Success     200                 {object}     responses.TaskResponse
 // @Failure     400                 {object}     responses.TaskResponse
@@ -92,7 +92,7 @@ func (c TaskController) Update(e echo.Context) error {
 //
 // @ID          DeleteTask
 // @Produce     json
-// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       taskId              path         string                         true "TaskID"
 // @Success     200                 {object}     responses.StringResponse
 // @Failure     400                 {object}     responses.StringResponse
@@ -109,7 +109,7 @@ func (c TaskController) Delete(e echo.Context) error {
 //
 // @ID          UpdateTaskStatus 
 // @Produce     json
-// @Param       Authorization       header       string                 true  "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       taskId              path         string                 true  "TaskID"
 // @Param       status              query        string                 true  "Status char"     default(a)
 // @Param       dueDate             query        string                 false "Due Date"
@@ -128,7 +128,7 @@ func (c TaskController) UpdateTaskStatus(e echo.Context) error {
 // 
 // @ID          GetTasksByQueueType
 // @Produce     json 
-// @Param       Authorization       header       string                 true  "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       queueType           query        string                 true  "Queue Type Char"     default(a)
 // @Success     200                 {object}     responses.TasksResponse
 // @Failure     400                 {object}     responses.TasksResponse
@@ -146,7 +146,7 @@ func (c TaskController) GetTasksByQueueType(e echo.Context) error {
 // 
 // @ID          GetTasksByTaskType
 // @Produce     json
-// @Param       Authorization       header       string                 true  "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       taskType            query        string                 true  "Task Type Char"     default(a)
 // @Success     200                 {object}     responses.TasksResponse
 // @Failure     400                 {object}     responses.TasksResponse

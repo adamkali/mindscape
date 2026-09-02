@@ -29,7 +29,7 @@ func BuildApiKeyController(registrar *services.Registrar) ApiKeyController {
 // @Tags        ApiKeys
 // @Accept      json
 // @Produce     json
-// @Param       Authorization         header       string                          true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       CreateApiKeyRequest   body         CreateApiKeyRequest             true "CreateApiKeyRequest"
 // @Success     200                   {object}     responses.ApiKeyResponse
 // @Failure     400                   {object}     responses.ApiKeyResponse
@@ -46,7 +46,7 @@ func (c ApiKeyController) Create(e echo.Context) error {
 // @ID          ListApiKeys
 // @Tags        ApiKeys
 // @Produce     json
-// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Success     200                 {object}     responses.ApiKeysResponse
 // @Failure     401                 {object}     responses.ApiKeysResponse
 // @Failure     500                 {object}     responses.ApiKeysResponse
@@ -61,7 +61,7 @@ func (c ApiKeyController) List(e echo.Context) error {
 // @ID          DeleteApiKey
 // @Tags        ApiKeys
 // @Produce     json
-// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       keyId               path         string                         true "API Key ID"
 // @Success     200                 {object}     responses.StringResponse
 // @Failure     400                 {object}     responses.StringResponse

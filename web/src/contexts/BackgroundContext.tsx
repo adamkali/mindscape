@@ -7,6 +7,7 @@ import {
 	useContext,
 } from 'solid-js';
 import { BackgroundApi, type ResponseError, UsersApi } from '@/api';
+import { getAuthenticatedApiConfig } from '@/utils/apiConfig';
 import type * as Models from '@/api/models';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -34,7 +35,7 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 	// Load default background once
 	const [defaultBackground] = createResource(async () => {
 		try {
-			const api = new BackgroundApi();
+			const api = new BackgroundApi(getAuthenticatedApiConfig());
 			const response = await api.getDefaultBackground();
 			if (response.success && response.data) {
 				return response.data;
@@ -51,8 +52,8 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 	// Load background choices once
 	const [backgroundChoices] = createResource(async () => {
 		try {
-			const backgroundApi = new BackgroundApi();
-			const userApi = new UsersApi();
+			const backgroundApi = new BackgroundApi(getAuthenticatedApiConfig());
+			const userApi = new UsersApi(getAuthenticatedApiConfig());
 
 			// Fetch global background choices
 			const globalResponse = await backgroundApi.getBackgroundChoices();
@@ -79,9 +80,7 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 			let userChoices: Models.BackgroundData[] = [];
 			if (auth.token()) {
 				try {
-					const userResponse = await userApi.getUserBackgroundChoices({
-						authorization: `Bearer ${auth.token()}`,
-					});
+					const userResponse = await userApi.getUserBackgroundChoices({});
 					if (userResponse.success && userResponse.data) {
 						userChoices = userResponse.data;
 					} else {
@@ -126,9 +125,8 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 		}
 
 		try {
-			const userApi = new UsersApi();
+			const userApi = new UsersApi(getAuthenticatedApiConfig());
 			const response = await userApi.getUserBackground({
-				authorization: `Bearer ${auth.token()}`,
 				background: auth.user()?.background ?? '',
 			});
 			if (response.success && response.data) {
@@ -154,9 +152,8 @@ export const BackgroundProvider = (props: BackgroundProviderProps) => {
 		}
 
 		try {
-			const userApi = new UsersApi();
+			const userApi = new UsersApi(getAuthenticatedApiConfig());
 			const result = await userApi.setUserBackground({
-				authorization: `Bearer ${auth.token()}`,
 				background: backgroundUrl,
 			});
 

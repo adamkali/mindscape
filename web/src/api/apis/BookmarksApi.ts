@@ -35,27 +35,22 @@ import {
 } from '../models/index';
 
 export interface CreateBookmarkRequest {
-    authorization: string;
     createBookmarkRequest: RepositoryCreateBookmarkParams;
 }
 
 export interface DeleteBookmarkRequest {
-    authorization: string;
     bookmarkId: string;
 }
 
 export interface GetBookmarksRequest {
-    authorization: string;
     parentId: string;
 }
 
 export interface MoveBookmarkOperationRequest {
-    authorization: string;
     moveBookmarkRequest: MoveBookmarkRequest;
 }
 
 export interface UpdateBookmarkOperationRequest {
-    authorization: string;
     bookmarkId: string;
     updateBookmarkRequest: UpdateBookmarkRequest;
 }
@@ -70,13 +65,6 @@ export class BookmarksApi extends runtime.BaseAPI {
      * Create a new Bookmark
      */
     async createBookmarkRaw(requestParameters: CreateBookmarkRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BookmarkResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling createBookmark().'
-            );
-        }
-
         if (requestParameters['createBookmarkRequest'] == null) {
             throw new runtime.RequiredError(
                 'createBookmarkRequest',
@@ -90,8 +78,8 @@ export class BookmarksApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -119,13 +107,6 @@ export class BookmarksApi extends runtime.BaseAPI {
      * Delete a Bookmark
      */
     async deleteBookmarkRaw(requestParameters: DeleteBookmarkRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BookmarksResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling deleteBookmark().'
-            );
-        }
-
         if (requestParameters['bookmarkId'] == null) {
             throw new runtime.RequiredError(
                 'bookmarkId',
@@ -137,8 +118,8 @@ export class BookmarksApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -165,13 +146,6 @@ export class BookmarksApi extends runtime.BaseAPI {
      * Get Bookmarks By Folder ID
      */
     async getBookmarksRaw(requestParameters: GetBookmarksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BookmarksResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling getBookmarks().'
-            );
-        }
-
         if (requestParameters['parentId'] == null) {
             throw new runtime.RequiredError(
                 'parentId',
@@ -183,8 +157,8 @@ export class BookmarksApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -211,13 +185,6 @@ export class BookmarksApi extends runtime.BaseAPI {
      * Move a Bookmark
      */
     async moveBookmarkRaw(requestParameters: MoveBookmarkOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BookmarksResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling moveBookmark().'
-            );
-        }
-
         if (requestParameters['moveBookmarkRequest'] == null) {
             throw new runtime.RequiredError(
                 'moveBookmarkRequest',
@@ -231,8 +198,8 @@ export class BookmarksApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -260,13 +227,6 @@ export class BookmarksApi extends runtime.BaseAPI {
      * Update a Bookmark
      */
     async updateBookmarkRaw(requestParameters: UpdateBookmarkOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BookmarkResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling updateBookmark().'
-            );
-        }
-
         if (requestParameters['bookmarkId'] == null) {
             throw new runtime.RequiredError(
                 'bookmarkId',
@@ -287,8 +247,8 @@ export class BookmarksApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
