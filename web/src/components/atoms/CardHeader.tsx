@@ -1,4 +1,4 @@
-import { type ComponentProps, type JSX, splitProps } from 'solid-js';
+import type { ComponentProps, JSX } from 'solid-js';
 import { cn } from '@/utils/cn';
 
 /**

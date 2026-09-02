@@ -23,6 +23,11 @@ const docTemplate = `{
     "paths": {
         "/apikeys": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "List all API Keys for the current user",
                 "produces": [
                     "application/json"
@@ -32,16 +37,6 @@ const docTemplate = `{
                 ],
                 "summary": "List API Keys",
                 "operationId": "ListApiKeys",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -64,6 +59,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Create a new API Key for programmatic access",
                 "consumes": [
                     "application/json"
@@ -77,14 +77,6 @@ const docTemplate = `{
                 "summary": "Create a new API Key",
                 "operationId": "CreateApiKey",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "description": "CreateApiKeyRequest",
                         "name": "CreateApiKeyRequest",
@@ -125,6 +117,11 @@ const docTemplate = `{
         },
         "/apikeys/{keyId}": {
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Delete an API Key by its ID",
                 "produces": [
                     "application/json"
@@ -135,14 +132,6 @@ const docTemplate = `{
                 "summary": "Delete an API Key",
                 "operationId": "DeleteApiKey",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "API Key ID",
@@ -247,6 +236,11 @@ const docTemplate = `{
         },
         "/bookmarks": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Create a new Bookmark by Authorization Header",
                 "consumes": [
                     "application/json"
@@ -268,14 +262,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/repository.CreateBookmarkParams"
                         }
-                    },
-                    {
-                        "type": "string",
-                        "default": "\"Bearer token\"",
-                        "description": "Authorization Header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -306,6 +292,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Move a Bookmark by Authorization Header, and my a\nParentFolderId [parent_id].",
                 "consumes": [
                     "application/json"
@@ -327,14 +318,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/MoveBookmarkRequest"
                         }
-                    },
-                    {
-                        "type": "string",
-                        "default": "\"Bearer token\"",
-                        "description": "Authorization Header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -367,6 +350,11 @@ const docTemplate = `{
         },
         "/bookmarks/folder/{bookmark_id}": {
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Delete a Bookmark by Authorization Header, and my a\nParentFolderId [parent_id].",
                 "consumes": [
                     "application/json"
@@ -380,14 +368,6 @@ const docTemplate = `{
                 "summary": "Delete a Bookmark",
                 "operationId": "DeleteBookmark",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "\"Bearer token\"",
-                        "description": "Authorization Header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
@@ -427,6 +407,11 @@ const docTemplate = `{
         },
         "/bookmarks/folder/{parent_id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get all Bookmarks by Authorization Header and by the\nParentFolderId [parent_id]",
                 "consumes": [
                     "application/json"
@@ -440,14 +425,6 @@ const docTemplate = `{
                 "summary": "Get Bookmarks By Folder ID",
                 "operationId": "GetBookmarks",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "\"Bearer token\"",
-                        "description": "Authorization Header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
@@ -487,6 +464,11 @@ const docTemplate = `{
         },
         "/bookmarks/{bookmark_id}": {
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Update a Bookmark's name and link by Authorization Header",
                 "consumes": [
                     "application/json"
@@ -508,14 +490,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/UpdateBookmarkRequest"
                         }
-                    },
-                    {
-                        "type": "string",
-                        "default": "\"Bearer token\"",
-                        "description": "Authorization Header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
                     },
                     {
                         "type": "string",
@@ -568,6 +542,11 @@ const docTemplate = `{
         },
         "/folders": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get the Root Folders associated with the user by Authorization Header\nand will also try to get the children of the folder as well",
                 "consumes": [
                     "application/json"
@@ -580,16 +559,6 @@ const docTemplate = `{
                 ],
                 "summary": "Get the Root Folders associated with the user",
                 "operationId": "GetRootFolders",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "\"Bearer token\"",
-                        "description": "Authorization Header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -618,6 +587,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Create a new Folder by Authorization Header",
                 "consumes": [
                     "application/json"
@@ -639,14 +613,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/repository.CreateFolderParams"
                         }
-                    },
-                    {
-                        "type": "string",
-                        "default": "\"Bearer token\"",
-                        "description": "Authorization Header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -677,6 +643,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Move a Folder by Authorization Header",
                 "consumes": [
                     "application/json"
@@ -698,14 +669,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/requests.MoveFolderRequest"
                         }
-                    },
-                    {
-                        "type": "string",
-                        "default": "\"Bearer token\"",
-                        "description": "Authorization Header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -744,6 +707,11 @@ const docTemplate = `{
         },
         "/folders/{folder_id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get the Folders associated with the user under A Parent Folder by Authorization Header\nand will also try to get the children of the folder as well",
                 "consumes": [
                     "application/json"
@@ -764,14 +732,6 @@ const docTemplate = `{
                         "name": "folder_id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "default": "\"Bearer token\"",
-                        "description": "Authorization Header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -783,6 +743,82 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update a Folder's name and description by Authorization Header",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Folders"
+                ],
+                "summary": "Update a Folder",
+                "operationId": "UpdateFolder",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Folder ID",
+                        "name": "folder_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update Folder Request",
+                        "name": "UpdateFolderRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateFolderRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/responses.FolderResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
                         "schema": {
                             "$ref": "#/definitions/responses.FolderResponse"
                         }
@@ -881,6 +917,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Delete a Folder by Authorization Header and tries to cascade delete",
                 "consumes": [
                     "application/json"
@@ -900,14 +941,6 @@ const docTemplate = `{
                         "description": "Folder ID",
                         "name": "folder_id",
                         "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "default": "\"Bearer token\"",
-                        "description": "Authorization Header",
-                        "name": "Authorization",
-                        "in": "header",
                         "required": true
                     }
                 ],
@@ -933,24 +966,529 @@ const docTemplate = `{
                 }
             }
         },
+        "/households": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all households the caller is a member of.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Households"
+                ],
+                "summary": "Get My Households",
+                "operationId": "GetMyHouseholds",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/HouseholdsResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/HouseholdsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/HouseholdsResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Create a Household; the caller becomes its owner and admin.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Households"
+                ],
+                "summary": "Create a new Household",
+                "operationId": "CreateHousehold",
+                "parameters": [
+                    {
+                        "description": "Create Household Request",
+                        "name": "CreateHouseholdRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/CreateHouseholdRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/HouseholdResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/HouseholdResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/HouseholdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/HouseholdResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/households/invites": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get the caller's pending, unexpired household invites.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Households"
+                ],
+                "summary": "Get My Pending Invites",
+                "operationId": "GetMyInvites",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/InvitesResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/InvitesResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/InvitesResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/households/invites/{code}/accept": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Accept a pending invite by its code.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Households"
+                ],
+                "summary": "Accept an Invite",
+                "operationId": "AcceptInvite",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Invite Code",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/HouseholdResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/HouseholdResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/HouseholdResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/households/invites/{code}/reject": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Reject (and delete) a pending invite by its code.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Households"
+                ],
+                "summary": "Reject an Invite",
+                "operationId": "RejectInvite",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Invite Code",
+                        "name": "code",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/households/{household_id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a household (owner only). Cascades members and invites.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Households"
+                ],
+                "summary": "Delete a Household",
+                "operationId": "DeleteHousehold",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Household ID",
+                        "name": "household_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/households/{household_id}/invites": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Invite a user to a household (admin only).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Households"
+                ],
+                "summary": "Create an Invite",
+                "operationId": "CreateInvite",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Household ID",
+                        "name": "household_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create Invite Request",
+                        "name": "CreateInviteRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/CreateInviteRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/households/{household_id}/leave": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Leave a household. The owner cannot leave — they must delete it.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Households"
+                ],
+                "summary": "Leave a Household",
+                "operationId": "LeaveHousehold",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Household ID",
+                        "name": "household_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/households/{household_id}/members": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a household's members. Returns 404 to non-members.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Households"
+                ],
+                "summary": "Get Household Members",
+                "operationId": "GetHouseholdMembers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Household ID",
+                        "name": "household_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/MembersResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/MembersResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/MembersResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/households/{household_id}/members/{user_id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Remove a member from a household (admin only; not the owner).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Households"
+                ],
+                "summary": "Remove a Member",
+                "operationId": "RemoveMember",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Household ID",
+                        "name": "household_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/StringResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/tasks": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Read all tasks that are available to the user",
                 "produces": [
                     "application/json"
                 ],
                 "summary": "Read all tasks",
                 "operationId": "ReadTasks",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -973,6 +1511,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Update a Task by Authorization Header",
                 "produces": [
                     "application/json"
@@ -980,14 +1523,6 @@ const docTemplate = `{
                 "summary": "Update a Task",
                 "operationId": "UpdateTask",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "description": "UpdateTaskRequest",
                         "name": "UpdateTaskRequest",
@@ -1032,6 +1567,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Create a new Task by Authorization Header",
                 "produces": [
                     "application/json"
@@ -1039,14 +1579,6 @@ const docTemplate = `{
                 "summary": "Create a new Task",
                 "operationId": "CreateTask",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "description": "CreateTaskRequest",
                         "name": "CreateTaskRequest",
@@ -1093,6 +1625,11 @@ const docTemplate = `{
         },
         "/tasks/queue": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get Tasks By Queue Type with a Queue Type Char",
                 "produces": [
                     "application/json"
@@ -1100,14 +1637,6 @@ const docTemplate = `{
                 "summary": "Get Tasks By Queue Type",
                 "operationId": "GetTasksByQueueType",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "default": "a",
@@ -1153,6 +1682,11 @@ const docTemplate = `{
         },
         "/tasks/status": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get Tasks By Task Type with a Task Type Char",
                 "produces": [
                     "application/json"
@@ -1160,14 +1694,6 @@ const docTemplate = `{
                 "summary": "Get Tasks By Task Type",
                 "operationId": "GetTasksByTaskType",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "default": "a",
@@ -1213,6 +1739,11 @@ const docTemplate = `{
         },
         "/tasks/{taskId}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Read by a TaskID",
                 "produces": [
                     "application/json"
@@ -1220,14 +1751,6 @@ const docTemplate = `{
                 "summary": "Read by a TaskID",
                 "operationId": "ReadTask",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "TaskID",
@@ -1270,6 +1793,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Update Task Status with a Status Char and optional Due Date",
                 "produces": [
                     "application/json"
@@ -1277,14 +1805,6 @@ const docTemplate = `{
                 "summary": "Update Task Status",
                 "operationId": "UpdateTaskStatus",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "TaskID",
@@ -1341,6 +1861,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Delete a Task by Authorization Header",
                 "produces": [
                     "application/json"
@@ -1348,14 +1873,6 @@ const docTemplate = `{
                 "summary": "Delete a Task",
                 "operationId": "DeleteTask",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "TaskID",
@@ -1400,6 +1917,11 @@ const docTemplate = `{
         },
         "/users/": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get All Users. Must be Admin using the new mediator pattern",
                 "produces": [
                     "application/json"
@@ -1409,16 +1931,6 @@ const docTemplate = `{
                 ],
                 "summary": "Get All Users",
                 "operationId": "GetUsers",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "admin header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1449,6 +1961,11 @@ const docTemplate = `{
         },
         "/users/background": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get User Background Choice",
                 "produces": [
                     "application/json"
@@ -1459,14 +1976,6 @@ const docTemplate = `{
                 "summary": "Get User Background Choice",
                 "operationId": "GetUserBackground",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "admin header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "background",
@@ -1497,6 +2006,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Upload a Background and set the User.Background  to be the uploaded background",
                 "consumes": [
                     "multipart/form-data"
@@ -1515,14 +2029,6 @@ const docTemplate = `{
                         "description": "this is a test file",
                         "name": "file",
                         "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "admin header",
-                        "name": "Authorization",
-                        "in": "header",
                         "required": true
                     }
                 ],
@@ -1548,6 +2054,11 @@ const docTemplate = `{
                 }
             },
             "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Set User Background Choice by background name\nby query param.",
                 "produces": [
                     "application/json"
@@ -1558,14 +2069,6 @@ const docTemplate = `{
                 "summary": "Set User Background",
                 "operationId": "SetUserBackground",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "admin header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "description": "background",
@@ -1598,6 +2101,11 @@ const docTemplate = `{
         },
         "/users/background/choices": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get User Backgrounds Uploaded to the server",
                 "produces": [
                     "application/json"
@@ -1607,16 +2115,6 @@ const docTemplate = `{
                 ],
                 "summary": "Get User Background Choices",
                 "operationId": "GetUserBackgroundChoices",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "admin header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1641,6 +2139,11 @@ const docTemplate = `{
         },
         "/users/creds": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Update User Credentials by id, Must be the same user in the jwt\nthat is being updated",
                 "consumes": [
                     "application/json"
@@ -1662,14 +2165,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/UpdateCredentialsRequest"
                         }
-                    },
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "admin header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -1702,6 +2197,11 @@ const docTemplate = `{
         },
         "/users/current": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get the Current User by the uuid storred in the Claims header",
                 "produces": [
                     "application/json"
@@ -1711,16 +2211,6 @@ const docTemplate = `{
                 ],
                 "summary": "Get Current User",
                 "operationId": "GetCurrentLoggedInUser",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "admin header",
-                        "name": "authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1798,6 +2288,11 @@ const docTemplate = `{
         },
         "/users/profile": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get User Profile by Authorization Header",
                 "produces": [
                     "application/json"
@@ -1807,16 +2302,6 @@ const docTemplate = `{
                 ],
                 "summary": "Get User Profile by Authorization Header",
                 "operationId": "GetProfilePicture",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "admin header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1845,6 +2330,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Upload file",
                 "consumes": [
                     "multipart/form-data"
@@ -1863,14 +2353,6 @@ const docTemplate = `{
                         "description": "this is a test file",
                         "name": "file",
                         "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "admin header",
-                        "name": "authorization",
-                        "in": "header",
                         "required": true
                     }
                 ],
@@ -1896,53 +2378,48 @@ const docTemplate = `{
                 }
             }
         },
-        "/users/refresh": {
-            "post": {
-                "description": "Exchange the httpOnly refresh-token cookie for a new access\nJWT and a rotated refresh cookie. Unauthenticated by design:\nthe refresh cookie is the credential.",
+        "/users/search": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Autocomplete usernames (max 10, excludes caller, no PII).",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Users"
                 ],
-                "summary": "Refresh the access token",
-                "operationId": "Refresh",
+                "summary": "Search Users by username",
+                "operationId": "SearchUsers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username query",
+                        "name": "q",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/LoginResponse"
+                            "$ref": "#/definitions/UsersSearchResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/LoginResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Revoke the session belonging to the refresh-token cookie and\nclear it. Other browsers/devices stay logged in.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Logout this device",
-                "operationId": "Logout",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/StringResponse"
+                            "$ref": "#/definitions/UsersSearchResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/StringResponse"
+                            "$ref": "#/definitions/UsersSearchResponse"
                         }
                     }
                 }
@@ -1997,6 +2474,11 @@ const docTemplate = `{
         },
         "/users/{user_id}": {
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "get string by ID",
                 "produces": [
                     "application/json"
@@ -2014,14 +2496,6 @@ const docTemplate = `{
                         "name": "user_id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "default": "\"Bearer token\"",
-                        "description": "admin header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
                     }
                 ],
                 "responses": {
@@ -2036,6 +2510,11 @@ const docTemplate = `{
         },
         "/widgets": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get a Users Widgets by their auth token\nand return the list of widgets associated\nwith the user account in the request params.",
                 "produces": [
                     "application/json"
@@ -2045,16 +2524,6 @@ const docTemplate = `{
                 ],
                 "summary": "Get a Users Widgets",
                 "operationId": "GetUserWidgets",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2083,6 +2552,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Add a Users Widget by their auth token.\nThe config is defined by the configuration parameters as defined by the user and the schema.",
                 "consumes": [
                     "application/json"
@@ -2096,14 +2570,6 @@ const docTemplate = `{
                 "summary": "Add a Users Widget",
                 "operationId": "AddUserWidget",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "description": "Add Widget Request",
                         "name": "AddUserWidgetRequest",
@@ -2150,6 +2616,11 @@ const docTemplate = `{
         },
         "/widgets/github/{user_widget_id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get a Users Github Widget by their auth token\nand a path parameter to return the GithubWidgetData\nThis is a special widget that needs authorization outside of\nthe mindscape so we use the github api to get the data.",
                 "produces": [
                     "application/json"
@@ -2160,14 +2631,6 @@ const docTemplate = `{
                 "summary": "Get a Users Github Widget",
                 "operationId": "GetGithubWidgetData",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
@@ -2276,6 +2739,11 @@ const docTemplate = `{
         },
         "/widgets/{user_widget_id}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get a Users Widget by their auth token\nand a path parameter and return the\nwidget from the database.",
                 "produces": [
                     "application/json"
@@ -2286,14 +2754,6 @@ const docTemplate = `{
                 "summary": "Get a Users Widget",
                 "operationId": "GetUserWidget",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
@@ -2331,8 +2791,73 @@ const docTemplate = `{
                 }
             }
         },
+        "/widgets/{user_widget_id}/coolify": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get the combined Coolify application and service status for a widget",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Get a Users Coolify Status",
+                "operationId": "GetUserCoolifyStatus",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Widget Id",
+                        "name": "user_widget_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyWidgetResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyWidgetResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyWidgetResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyWidgetResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyWidgetResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/widgets/{user_widget_id}/coolify/applications": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get a Users Coolify Applications by their auth token",
                 "produces": [
                     "application/json"
@@ -2343,14 +2868,6 @@ const docTemplate = `{
                 "summary": "Get a Users Coolify Applications",
                 "operationId": "GetUserCoolifyApplications",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
@@ -2390,6 +2907,11 @@ const docTemplate = `{
         },
         "/widgets/{user_widget_id}/coolify/applications/{app_uuid}/restart": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Restart a Coolify Application by app UUID",
                 "produces": [
                     "application/json"
@@ -2400,14 +2922,6 @@ const docTemplate = `{
                 "summary": "Restart a Coolify Application",
                 "operationId": "RestartCoolifyApplication",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
@@ -2460,6 +2974,11 @@ const docTemplate = `{
         },
         "/widgets/{user_widget_id}/coolify/applications/{app_uuid}/start": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Start a Coolify Application by app UUID",
                 "produces": [
                     "application/json"
@@ -2470,14 +2989,6 @@ const docTemplate = `{
                 "summary": "Start a Coolify Application",
                 "operationId": "StartCoolifyApplication",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
@@ -2530,6 +3041,11 @@ const docTemplate = `{
         },
         "/widgets/{user_widget_id}/coolify/applications/{app_uuid}/stop": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Stop a Coolify Application by app UUID",
                 "produces": [
                     "application/json"
@@ -2540,14 +3056,6 @@ const docTemplate = `{
                 "summary": "Stop a Coolify Application",
                 "operationId": "StopCoolifyApplication",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
@@ -2598,8 +3106,73 @@ const docTemplate = `{
                 }
             }
         },
+        "/widgets/{user_widget_id}/coolify/metrics": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get CPU, memory and storage usage for the widget's Coolify server. CPU and memory come from the Sentinel agent; storage is read from the Mindscape host filesystem. Sources that fail are reported in data.warnings rather than failing the request.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Get Coolify Server Metrics",
+                "operationId": "GetUserCoolifyMetrics",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Widget Id",
+                        "name": "user_widget_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyWidgetMetricsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyWidgetMetricsResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyWidgetMetricsResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyWidgetMetricsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/CoolifyWidgetMetricsResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/widgets/{user_widget_id}/coolify/services": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get a Users Coolify Services by their auth token",
                 "produces": [
                     "application/json"
@@ -2610,14 +3183,6 @@ const docTemplate = `{
                 "summary": "Get a Users Coolify Services",
                 "operationId": "GetUserCoolifyServices",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
@@ -2657,6 +3222,11 @@ const docTemplate = `{
         },
         "/widgets/{user_widget_id}/github/commits": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get a Users Github Commits Widget by their auth token\nand a path parameter to return only the commits data.\nThis endpoint fetches commit history and may take longer.",
                 "produces": [
                     "application/json"
@@ -2667,14 +3237,6 @@ const docTemplate = `{
                 "summary": "Get a Users Github Commits Widget Data",
                 "operationId": "GetGithubCommitsWidgetData",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
@@ -2714,6 +3276,11 @@ const docTemplate = `{
         },
         "/widgets/{user_widget_id}/github/profile": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Get a Users Github Profile Widget by their auth token\nand a path parameter to return only the profile data.\nThis is a fast endpoint that returns profile info quickly.",
                 "produces": [
                     "application/json"
@@ -2724,14 +3291,6 @@ const docTemplate = `{
                 "summary": "Get a Users Github Profile Widget Data",
                 "operationId": "GetGithubProfileWidgetData",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "default": "Bearer token",
-                        "description": "auth header",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
                     {
                         "type": "string",
                         "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
@@ -2764,6 +3323,114 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/GithubProfileResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/widgets/{user_widget_id}/github/prs": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetches open pull requests from GitHub (review-requested, authored, mentioned, assigned)\nusing the GitHub Issues Search API with a server-side PAT proxy.\nThe PAT requires 'repo' read scope for private repositories.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Get GitHub PRs Widget Data",
+                "operationId": "GetGithubPRsWidgetData",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Widget Id",
+                        "name": "user_widget_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/GithubPRsWidgetResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/GithubPRsWidgetResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/GithubPRsWidgetResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/GithubPRsWidgetResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/widgets/{user_widget_id}/plex/recently-added": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Fetches recently-added media items from the configured Plex server.\nThe Plex API token is kept server-side; this is a server-side proxy endpoint.\nPoster art is returned as signed thumb URLs (serverUrl + thumb + X-Plex-Token query param).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Widgets"
+                ],
+                "summary": "Get Plex Recently Added",
+                "operationId": "GetPlexRecentlyAdded",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "default": "\"e38e78a4-2ca3-4c59-a3ea-a2019866e593\"",
+                        "description": "Widget Id",
+                        "name": "user_widget_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/PlexRecentlyAddedResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/PlexRecentlyAddedResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/PlexRecentlyAddedResponse"
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "$ref": "#/definitions/PlexRecentlyAddedResponse"
                         }
                     }
                 }
@@ -2879,6 +3546,64 @@ const docTemplate = `{
                 }
             }
         },
+        "CoolifyCPUMetric": {
+            "type": "object",
+            "properties": {
+                "percent": {
+                    "type": "number"
+                },
+                "time": {
+                    "type": "string"
+                }
+            }
+        },
+        "CoolifyMemoryMetric": {
+            "type": "object",
+            "properties": {
+                "available": {
+                    "type": "integer"
+                },
+                "free": {
+                    "type": "integer"
+                },
+                "time": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "used": {
+                    "type": "integer"
+                },
+                "used_percent": {
+                    "type": "number"
+                }
+            }
+        },
+        "CoolifyStorageMetric": {
+            "type": "object",
+            "properties": {
+                "available": {
+                    "type": "integer"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "source": {
+                    "description": "Source names the machine the reading came from. Neither Coolify's API nor\nSentinel reports disk, so this is always the host running Mindscape.",
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "used": {
+                    "type": "integer"
+                },
+                "used_percent": {
+                    "type": "number"
+                }
+            }
+        },
         "CoolifyWidgetApplication": {
             "type": "object",
             "properties": {
@@ -2922,6 +3647,80 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/CoolifyWidgetApplication"
                     }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "CoolifyWidgetData": {
+            "type": "object",
+            "properties": {
+                "applications": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/CoolifyWidgetApplication"
+                    }
+                },
+                "services": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/CoolifyWidgetService"
+                    }
+                }
+            }
+        },
+        "CoolifyWidgetMetricsData": {
+            "type": "object",
+            "properties": {
+                "cpu": {
+                    "$ref": "#/definitions/CoolifyCPUMetric"
+                },
+                "memory": {
+                    "$ref": "#/definitions/CoolifyMemoryMetric"
+                },
+                "sentinel_url": {
+                    "type": "string"
+                },
+                "server_name": {
+                    "type": "string"
+                },
+                "server_uuid": {
+                    "type": "string"
+                },
+                "storage": {
+                    "$ref": "#/definitions/CoolifyStorageMetric"
+                },
+                "warnings": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "CoolifyWidgetMetricsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/CoolifyWidgetMetricsData"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "CoolifyWidgetResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/CoolifyWidgetData"
                 },
                 "message": {
                     "type": "string"
@@ -2997,6 +3796,22 @@ const docTemplate = `{
                 }
             }
         },
+        "CreateHouseholdRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "CreateInviteRequest": {
+            "type": "object",
+            "properties": {
+                "invited_user_id": {
+                    "type": "string"
+                }
+            }
+        },
         "DeleteUserResponse": {
             "type": "object",
             "properties": {
@@ -3025,6 +3840,72 @@ const docTemplate = `{
                 }
             }
         },
+        "GithubPRData": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "html_url": {
+                    "type": "string"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "repo": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "GithubPRsWidgetData": {
+            "type": "object",
+            "properties": {
+                "assigned": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/GithubPRData"
+                    }
+                },
+                "authored": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/GithubPRData"
+                    }
+                },
+                "mentioned": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/GithubPRData"
+                    }
+                },
+                "review_requested": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/GithubPRData"
+                    }
+                }
+            }
+        },
+        "GithubPRsWidgetResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/GithubPRsWidgetData"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "GithubProfileResponse": {
             "type": "object",
             "properties": {
@@ -3044,6 +3925,54 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/responses.GithubWidgetData"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "HouseholdResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/repository.Household"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "HouseholdsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.Household"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "InvitesResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.GetInvitesByUserIDRow"
+                    }
                 },
                 "message": {
                     "type": "string"
@@ -3084,6 +4013,23 @@ const docTemplate = `{
                 }
             }
         },
+        "MembersResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.GetMembersByHouseholdIDRow"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "MoveBookmarkRequest": {
             "type": "object",
             "properties": {
@@ -3113,6 +4059,46 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "PlexMediaItemData": {
+            "type": "object",
+            "properties": {
+                "added_at": {
+                    "type": "integer"
+                },
+                "parent_title": {
+                    "type": "string"
+                },
+                "thumb": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
+        "PlexRecentlyAddedResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PlexMediaItemData"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
                 }
             }
         },
@@ -3205,6 +4191,23 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/responses.UserData"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "UsersSearchResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repository.SearchUsersByUsernameRow"
                     }
                 },
                 "message": {
@@ -3321,22 +4324,62 @@ const docTemplate = `{
                 }
             }
         },
-        "repository.InsertNewTaskParams": {
-            "type": "object"
-        },
-        "repository.Note": {
+        "repository.GetInvitesByUserIDRow": {
             "type": "object",
             "properties": {
-                "content": {
+                "code": {
                     "type": "string"
                 },
-                "created_datetime": {
+                "created_at": {
                     "type": "string"
                 },
-                "description": {
+                "created_by": {
                     "type": "string"
                 },
-                "folder_id": {
+                "expires_at": {
+                    "type": "string"
+                },
+                "household_id": {
+                    "type": "string"
+                },
+                "household_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "invited_user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "repository.GetMembersByHouseholdIDRow": {
+            "type": "object",
+            "properties": {
+                "household_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "joined_at": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "repository.Household": {
+            "type": "object",
+            "properties": {
+                "created_at": {
                     "type": "string"
                 },
                 "id": {
@@ -3345,10 +4388,35 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "updated_datetime": {
+                "owner_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "repository.InsertNewTaskParams": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "task_type_id": {
                     "type": "string"
                 },
                 "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "repository.SearchUsersByUsernameRow": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -3389,6 +4457,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "newParentId": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.UpdateFolderRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "folderId": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "userId": {
@@ -3484,12 +4569,6 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
-                },
-                "notes": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/repository.Note"
-                    }
                 },
                 "parent_id": {
                     "type": "string"
@@ -3930,6 +5009,13 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

@@ -32,13 +32,13 @@ type WidgetProperty struct {
 }
 
 type WidgetSchema struct {
-	Description string                       `json:"description"`
-	ID          uuid.UUID                    `json:"id"`
-	Type        string                       `json:"type"`
-	Title       string                       `json:"title"`
-	Layout      WidgetLayout                 `json:"layout"`
-	Properties  map[string]WidgetProperty    `json:"properties"`
-	Required    []string                     `json:"required"`
+	Description string                    `json:"description"`
+	ID          uuid.UUID                 `json:"id"`
+	Type        string                    `json:"type"`
+	Title       string                    `json:"title"`
+	Layout      WidgetLayout              `json:"layout"`
+	Properties  map[string]WidgetProperty `json:"properties"`
+	Required    []string                  `json:"required"`
 }
 
 type WidgetSchemaStorage struct {
@@ -89,22 +89,40 @@ func (wss *WidgetSchemaStorage) GetAll() []WidgetSchema {
 	return storage
 }
 
-//go:embed searchbar-schema.json githubprofile-wide.json githubprofile-lg.json githubprofile-sm.json coolify-schema.json
+//go:embed searchbar-schema.json githubprofile-wide.json githubprofile-lg.json githubprofile-sm.json coolify-schema.json plex-schema.json searxng-schema.json githubprs-schema.json
 var fs embed.FS
 
+// githubprofile-{lg,sm,wide}.json are intentionally excluded from the default
+// install list; existing installed profile widgets still render via RenderWidget.tsx.
+// Add them back here to make them available in AddWidgetModal.
 const mapping = `[
 	"searchbar-schema.json",
-	"githubprofile-wide.json",
-	"githubprofile-lg.json",
-	"githubprofile-sm.json",
-	"coolify-schema.json"
+	"plex-schema.json",
+	"searxng-schema.json",
+	"githubprs-schema.json"
 ]`
 
+// coolifySchema stays embedded — //go:embed is compile-time, so it cannot be
+// added back at runtime if it were dropped from the directive. Instead it is
+// held out of the default install list and opted back in via SetCoolifyEnabled.
+const coolifySchema = "coolify-schema.json"
+
+var coolifyEnabled = false
+
+// SetCoolifyEnabled opts the Coolify widget schema into the default list. Call
+// once at startup from config `features.coolify`, before anything loads schemas.
+func SetCoolifyEnabled(enabled bool) {
+	coolifyEnabled = enabled
+}
+
 func EmbeddedScemas() (*WidgetSchemaStorage, error) {
-	embeddedScemaFilenames := new ([]string)
-	err := json.Unmarshal([]byte(mapping), &embeddedScemaFilenames) 
+	embeddedScemaFilenames := new([]string)
+	err := json.Unmarshal([]byte(mapping), &embeddedScemaFilenames)
 	if err != nil {
 		return nil, err
+	}
+	if coolifyEnabled {
+		*embeddedScemaFilenames = append(*embeddedScemaFilenames, coolifySchema)
 	}
 	schemas := WidgetSchemaStorage{
 		Storage: make(
@@ -112,7 +130,7 @@ func EmbeddedScemas() (*WidgetSchemaStorage, error) {
 			len(*embeddedScemaFilenames),
 		),
 	}
-	for _, filename:= range *embeddedScemaFilenames {
+	for _, filename := range *embeddedScemaFilenames {
 		data, err := fs.ReadFile(filename)
 		if err != nil {
 			return nil, err

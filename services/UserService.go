@@ -222,6 +222,26 @@ func (UserService *UserService) Get(user_id uuid.UUID) (*repository.User, error)
 	return &user, nil
 }
 
+// SearchByUsername returns up to 10 users whose username matches the query
+// (prefix match), excluding the requester. Only id + username are returned.
+func (UserService *UserService) SearchByUsername(query string, requesterID uuid.UUID) ([]repository.SearchUsersByUsernameRow, error) {
+	tx, err := UserService.pool.Begin(UserService.ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(UserService.ctx)
+	repo := repository.New(tx)
+	results, err := repo.SearchUsersByUsername(UserService.ctx, repository.SearchUsersByUsernameParams{
+		Username: query + "%",
+		ID:       requesterID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	tx.Commit(UserService.ctx)
+	return results, nil
+}
+
 // Get all users
 //
 // returns: ([]repository.User, error)

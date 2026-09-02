@@ -35,32 +35,23 @@ import {
 } from '../models/index';
 
 export interface CreateFolderRequest {
-    authorization: string;
     createFolderRequest: RepositoryCreateFolderParams;
 }
 
 export interface DeleteFolderRequest {
     folderId: string;
-    authorization: string;
 }
 
 export interface GetFoldersRequest {
     folderId: string;
-    authorization: string;
-}
-
-export interface GetRootFoldersRequest {
-    authorization: string;
 }
 
 export interface MoveFolderRequest {
-    authorization: string;
     moveFolderRequest: RequestsMoveFolderRequest;
 }
 
 export interface UpdateFolderRequest {
     folderId: string;
-    authorization: string;
     updateFolderRequest: RequestsUpdateFolderRequest;
 }
 
@@ -74,13 +65,6 @@ export class FoldersApi extends runtime.BaseAPI {
      * Create a new Folder
      */
     async createFolderRaw(requestParameters: CreateFolderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesFolderResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling createFolder().'
-            );
-        }
-
         if (requestParameters['createFolderRequest'] == null) {
             throw new runtime.RequiredError(
                 'createFolderRequest',
@@ -94,8 +78,8 @@ export class FoldersApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -130,19 +114,12 @@ export class FoldersApi extends runtime.BaseAPI {
             );
         }
 
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling deleteFolder().'
-            );
-        }
-
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -176,19 +153,12 @@ export class FoldersApi extends runtime.BaseAPI {
             );
         }
 
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling getFolders().'
-            );
-        }
-
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -214,20 +184,13 @@ export class FoldersApi extends runtime.BaseAPI {
      * Get the Root Folders associated with the user by Authorization Header and will also try to get the children of the folder as well
      * Get the Root Folders associated with the user
      */
-    async getRootFoldersRaw(requestParameters: GetRootFoldersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesFoldersResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling getRootFolders().'
-            );
-        }
-
+    async getRootFoldersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesFoldersResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -244,8 +207,8 @@ export class FoldersApi extends runtime.BaseAPI {
      * Get the Root Folders associated with the user by Authorization Header and will also try to get the children of the folder as well
      * Get the Root Folders associated with the user
      */
-    async getRootFolders(requestParameters: GetRootFoldersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ResponsesFoldersResponse> {
-        const response = await this.getRootFoldersRaw(requestParameters, initOverrides);
+    async getRootFolders(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ResponsesFoldersResponse> {
+        const response = await this.getRootFoldersRaw(initOverrides);
         return await response.value();
     }
 
@@ -254,13 +217,6 @@ export class FoldersApi extends runtime.BaseAPI {
      * Move a Folder
      */
     async moveFolderRaw(requestParameters: MoveFolderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ResponsesFolderResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling moveFolder().'
-            );
-        }
-
         if (requestParameters['moveFolderRequest'] == null) {
             throw new runtime.RequiredError(
                 'moveFolderRequest',
@@ -274,8 +230,8 @@ export class FoldersApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -310,13 +266,6 @@ export class FoldersApi extends runtime.BaseAPI {
             );
         }
 
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling updateFolder().'
-            );
-        }
-
         if (requestParameters['updateFolderRequest'] == null) {
             throw new runtime.RequiredError(
                 'updateFolderRequest',
@@ -330,8 +279,8 @@ export class FoldersApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({

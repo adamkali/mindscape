@@ -20,14 +20,12 @@ type GetFolderByIDHandler struct {
 	AuthService     services.IAuthService
 	FolderService   services.IFolderService
 	BookmarkService services.IBookmarkService
-	NoteService     services.INoteService
 }
 
 func NewGetById(
 	ctx echo.Context,
 	FolderService services.IFolderService,
 	BookmarkService services.IBookmarkService,
-	NoteService services.INoteService,
 	AuthService services.IAuthService,
 ) *GetFolderByIDHandler {
 	return &GetFolderByIDHandler{
@@ -35,7 +33,6 @@ func NewGetById(
 		code:            200,
 		FolderService:   FolderService,
 		BookmarkService: BookmarkService,
-		NoteService:     NoteService,
 		AuthService:     AuthService,
 	}
 }
@@ -61,9 +58,6 @@ func (h *GetFolderByIDHandler) Handle() handlers.IHandler {
 	}
 	folderData := responses.NewFolderData(*folder)
 	if folderData.Bookmarks, err = h.BookmarkService.GetByFolder(folderID); err != nil {
-		return handlers.Lock(h, 500, err)
-	}
-	if folderData.Notes, err = h.NoteService.GetByFolder(folderID); err != nil {
 		return handlers.Lock(h, 500, err)
 	}
 	if folderData.Children, err = h.FolderService.GetByParent(folderID); err != nil {

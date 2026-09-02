@@ -1,46 +1,34 @@
 import { type ComponentProps, createSignal } from 'solid-js';
-import {
-	BookmarksApi,
-	type CreateBookmarkRequest,
-	type RepositoryCreateBookmarkParams,
-} from '@/api';
-import type { AuthContextValue } from '@/contexts/AuthContext';
+import { useTree } from '@/contexts/TreeContext';
 
 interface CreateBookmarkComponentProps extends ComponentProps<'div'> {
-	userId: string;
-	parentId: string | undefined;
-	auth: AuthContextValue | undefined;
 	close: () => void;
-	refreshBookmarks?: () => void;
 }
 
 export default function CreateBookmarkComponent(
 	props: CreateBookmarkComponentProps,
 ) {
-	const { userId, parentId, auth, close, refreshBookmarks } = props;
+	const tree = useTree();
 	const [linkName, setLinkName] = createSignal('');
 	const [linkUrl, setLinkUrl] = createSignal('');
-	const api = new BookmarksApi();
+
+	const reset = () => {
+		setLinkUrl('');
+		setLinkName('');
+	};
 
 	const create = async (event: Event) => {
 		event.preventDefault();
-		const response = await api.createBookmark({
-			authorization: `Bearer ${auth?.token()}`,
-			createBookmarkRequest: {
-				userId,
-				folderId: parentId,
-				link: linkUrl(),
-				name: linkName(),
-			} as RepositoryCreateBookmarkParams,
-		} as CreateBookmarkRequest);
-
-		if (response.success && response.data) {
-			close();
-			refreshBookmarks?.();
-		} else {
-			console.error('Failed to create bookmark:', response.message);
+		const ok = await tree.createBookmark({ name: linkName(), link: linkUrl() });
+		if (ok) {
+			reset();
+			props.close();
 		}
-		return;
+	};
+
+	const cancel = () => {
+		reset();
+		props.close();
 	};
 
 	return (
@@ -64,9 +52,7 @@ export default function CreateBookmarkComponent(
 					if (e.key === 'Enter' && linkUrl() && linkName()) {
 						create(e);
 					} else if (e.key === 'Escape') {
-						close();
-						setLinkUrl('');
-						setLinkName('');
+						cancel();
 					}
 				}}
 			/>
@@ -82,15 +68,14 @@ export default function CreateBookmarkComponent(
 					if (e.key === 'Enter' && linkUrl() && linkName()) {
 						create(e);
 					} else if (e.key === 'Escape') {
-						close();
-						setLinkUrl('');
-						setLinkName('');
+						cancel();
 					}
 				}}
 			/>
 
 			<div class="flex space-x-2">
 				<button
+					type="button"
 					onClick={create}
 					disabled={!linkUrl() || !linkName()}
 					class="text-xs px-3 py-1.5 bg-glass-bg backdrop-blur-md border border-glass-border text-foreground rounded-lg hover:bg-glass-bg-hover transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-glass-bg"
@@ -98,11 +83,8 @@ export default function CreateBookmarkComponent(
 					Create
 				</button>
 				<button
-					onClick={() => {
-						close();
-						setLinkUrl('');
-						setLinkName('');
-					}}
+					type="button"
+					onClick={cancel}
 					class="text-xs px-3 py-1.5 bg-glass-bg/75 backdrop-blur-md border border-glass-border/85 text-foreground rounded-lg hover:bg-glass-bg-hover transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
 				>
 					Cancel

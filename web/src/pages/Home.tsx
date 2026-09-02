@@ -1,12 +1,13 @@
 import { A } from '@solidjs/router';
-import { createEffect, createSignal, Show } from 'solid-js';
 import {
-	BookmarksApi,
-	FoldersApi,
-	type RepositoryBookmark,
-	type ResponseError,
-	type ResponsesFolderData,
-} from '@/api';
+	createEffect,
+	createSignal,
+	For,
+	onCleanup,
+	onMount,
+	Show,
+} from 'solid-js';
+import type { RepositoryBookmark } from '@/api';
 import Components from '@/components';
 import AgendaContainer from '@/components/AgendaContainer';
 import { Button, Input } from '@/components/atoms';
@@ -16,25 +17,39 @@ import EditBookmarkModal from '@/components/EditBookmarkModal';
 import FolderComponent from '@/components/FolderComponent';
 import { Header } from '@/components/Header';
 import { AddFolder, EditIcon, SaveIcon } from '@/components/icons';
+import ModePill from '@/components/ModePill';
+import SearchOverlay from '@/components/SearchOverlay';
+import { FEATURES } from '@/config/features';
 import { useAuth } from '@/contexts/AuthContext';
+import {
+	KeyboardNavProvider,
+	useKeyboardNav,
+} from '@/contexts/KeyboardNavContext';
+import { TreeProvider, useTree } from '@/contexts/TreeContext';
 import { useView, ViewProvider } from '@/contexts/ViewContext';
+import { WidgetProvider } from '@/contexts/WidgetContext';
 import { useBackgroundStyle } from '@/hooks/useBackground';
 import { EmptyGuid } from '@/utils';
+import { parseNode } from '@/utils/dragNode';
 
 const Home = () => {
 	return (
-		<ViewProvider>
-			<HomeInner />
-		</ViewProvider>
+		<KeyboardNavProvider>
+			<TreeProvider>
+				<ViewProvider>
+					<HomeInner />
+				</ViewProvider>
+			</TreeProvider>
+		</KeyboardNavProvider>
 	);
 };
 
 const HomeInner = () => {
 	const auth = useAuth();
-	const { activeView } = useView();
+	const { activeView, homepageMode, setHomepageMode } = useView();
+	const nav = useKeyboardNav();
+	const tree = useTree();
 	const backgroundStyle = useBackgroundStyle();
-	const [folders, setFolders] = createSignal<ResponsesFolderData[]>([]);
-	const [focusedNodeId, setFocusedNodeId] = createSignal<string>('');
 	const [isLoadingFolders, setIsLoadingFolders] = createSignal(false);
 	const [showCreateFolder, setShowCreateFolder] = createSignal(false);
 	const [showCreateBookmark, setShowCreateBookmark] = createSignal(false);
@@ -45,16 +60,117 @@ const HomeInner = () => {
 	const [editingBookmark, setEditingBookmark] =
 		createSignal<RepositoryBookmark | null>(null);
 	const [showEditBookmark, setShowEditBookmark] = createSignal(false);
-	const foldersApi = new FoldersApi();
 	const user = auth.user();
 
-	createEffect(() => {
-		fetchRootFolders();
+	// Movement key handler — registered into the keyboard nav context.
+	// Runs only when mode === 'nav'; delegates to sub-mode handlers in TASK-011.
+	onMount(() => {
+		const unregister = nav.register((e: KeyboardEvent) => {
+			if (nav.mode() !== 'nav' && nav.mode() !== 'move') return false;
+
+			const nodes = nav.getNodes();
+			const currentId = tree.focusedId();
+			const currentIdx = currentId
+				? nodes.findIndex((n) => n.id === currentId)
+				: -1;
+			const current = currentIdx >= 0 ? nodes[currentIdx] : undefined;
+
+			if (e.key === 'j' || e.key === 'ArrowDown') {
+				e.preventDefault();
+				if (nodes.length === 0) return true;
+				if (currentIdx < 0) {
+					tree.setFocus(nodes[0].id);
+					nodes[0].ref.scrollIntoView({ block: 'nearest' });
+				} else {
+					const next = nodes[Math.min(currentIdx + 1, nodes.length - 1)];
+					tree.setFocus(next.id);
+					next.ref.scrollIntoView({ block: 'nearest' });
+				}
+				return true;
+			}
+
+			if (e.key === 'k' || e.key === 'ArrowUp') {
+				e.preventDefault();
+				if (nodes.length === 0) return true;
+				if (currentIdx <= 0) {
+					tree.setFocus(nodes[0].id);
+					nodes[0].ref.scrollIntoView({ block: 'nearest' });
+				} else {
+					const prev = nodes[currentIdx - 1];
+					tree.setFocus(prev.id);
+					prev.ref.scrollIntoView({ block: 'nearest' });
+				}
+				return true;
+			}
+
+			if (e.key === 'l' || e.key === 'ArrowRight') {
+				e.preventDefault();
+				if (!current) return true;
+				if (current.type === 'folder') {
+					if (current.isOpen?.()) {
+						// Folder already open — move focus into first visible child.
+						const firstChild = nodes.find((n) => n.parentId === current.id);
+						if (firstChild) {
+							tree.setFocus(firstChild.id);
+							firstChild.ref.scrollIntoView({ block: 'nearest' });
+						}
+					} else {
+						current.expand?.();
+					}
+				} else if (current.type === 'bookmark' && current.link) {
+					window.open(current.link, '_blank');
+				}
+				return true;
+			}
+
+			if (e.key === 'h' || e.key === 'ArrowLeft') {
+				e.preventDefault();
+				if (!current) return true;
+				if (current.type === 'folder' && current.isOpen?.()) {
+					current.collapse?.();
+				} else if (current.parentId) {
+					const parent = nodes.find((n) => n.id === current.parentId);
+					if (parent) {
+						tree.setFocus(parent.id);
+						parent.ref.scrollIntoView({ block: 'nearest' });
+					}
+				}
+				return true;
+			}
+
+			if (e.key === 'g') {
+				e.preventDefault();
+				if (nodes.length > 0) {
+					tree.setFocus(nodes[0].id);
+					nodes[0].ref.scrollIntoView({ block: 'nearest' });
+				}
+				return true;
+			}
+
+			if (e.key === 'G') {
+				e.preventDefault();
+				if (nodes.length > 0) {
+					const last = nodes[nodes.length - 1];
+					tree.setFocus(last.id);
+					last.ref.scrollIntoView({ block: 'nearest' });
+				}
+				return true;
+			}
+
+			return false;
+		});
+		onCleanup(unregister);
 	});
 
 	createEffect(() => {
-		if (focusedNodeId() === EmptyGuid) {
-			setFocusedNodeId('');
+		if (!auth.token()) return;
+		setIsLoadingFolders(true);
+		tree.refreshRoot().finally(() => setIsLoadingFolders(false));
+	});
+
+	createEffect(() => {
+		if (tree.focusedId() === EmptyGuid) {
+			tree.setFocus('');
 		}
 		if (showCreateFolder()) {
 			setShowCreateBookmark(false);
@@ -64,81 +180,19 @@ const HomeInner = () => {
 		}
 	});
 
-	// Debug effect to track selected node ID changes
+	// Keep focusedFolderName in sync when keyboard nav moves focus to a folder.
 	createEffect(() => {
-		const currentId = focusedNodeId();
-		console.log(`id_change::selected_node: ${currentId || 'none'}`);
+		const id = tree.focusedId();
+		if (!id) return;
+		const node = nav.getNodes().find((n) => n.id === id);
+		if (node?.type === 'folder' && node.name) {
+			setFocusedFolderName(node.name);
+		}
 	});
-
-	const fetchRootFolders = async () => {
-		if (!auth.token()) return;
-		setIsLoadingFolders(true);
-		try {
-			const response = await foldersApi.getRootFolders({
-				authorization: `Bearer ${auth.token()}`,
-			});
-			if (response.success && response.data) {
-				const folders = response.data;
-				folders.sort((a, b) => a.name!.localeCompare(b.name!));
-
-				// Removed auto-selection to ensure no node is selected on page load
-				setFolders(folders);
-			}
-		} catch (error) {
-			console.error('Failed to fetch folders:', error);
-			(error as ResponseError).response.status === 401 && auth.logout();
-		} finally {
-			setIsLoadingFolders(false);
-		}
-	};
-
-	const deleteFolder = async (folderId: string) => {
-		if (!auth.token() || !folderId) return;
-
-		try {
-			const response = await foldersApi.deleteFolder({
-				folderId,
-				authorization: `Bearer ${auth.token()}`,
-			});
-			if (response.success) {
-				await fetchRootFolders();
-				if (focusedNodeId() === folderId) {
-					setFocusedNodeId('');
-				}
-			}
-		} catch (error) {
-			console.error('Failed to delete folder:', error);
-		}
-	};
-
-	const deleteBookmark = async (bookmarkId: string) => {
-		if (!auth.token() || !bookmarkId) return;
-
-		try {
-			const bookmarksApi = new BookmarksApi();
-			const response = await bookmarksApi.deleteBookmark({
-				bookmarkId: bookmarkId,
-				authorization: `Bearer ${auth.token()}`,
-			});
-
-			if (response.success) {
-				await fetchRootFolders(); // Refresh the data
-			} else {
-				console.error('Failed to delete bookmark:', response.message);
-			}
-		} catch (error) {
-			console.error('Failed to delete bookmark:', error);
-		}
-	};
 
 	const handleEditBookmark = (bookmark: RepositoryBookmark) => {
 		setEditingBookmark(bookmark);
 		setShowEditBookmark(true);
-	};
-
-	const handleEditBookmarkSaved = async () => {
-		await fetchRootFolders();
-		folderRefresh();
 	};
 
 	if (!auth.isAuthenticated() || !user) {
@@ -156,61 +210,30 @@ const HomeInner = () => {
 		);
 	}
 
-	// set overwritable callback for create bookmark component
-	let bookmarkRefresh: () => void = () => {};
-	const openCreateBookmarkComponent = (folderBookmarkRefresh?: () => void) => {
+	const openCreateBookmark = () => {
 		setShowCreateBookmark(true);
 		setShowCreateFolder(false);
-		if (folderBookmarkRefresh) {
-			bookmarkRefresh = folderBookmarkRefresh;
-		}
 	};
 
-	const closeCreateBookmarkComponent = () => {
-		setShowCreateBookmark(false);
-		bookmarkRefresh();
-		bookmarkRefresh = () => {};
-	};
-
-	// set overwritable callback for create folder component (parent folder refresh)
-	let folderRefresh: () => void = () => {};
-	const openCreateFolderComponent = () => {
+	const openCreateFolder = () => {
 		setShowCreateFolder(true);
 		setShowCreateBookmark(false);
 	};
 
-	const handleFolderSelected = (
-		refreshFn: () => Promise<void>,
-		folderName: string,
-	) => {
-		folderRefresh = refreshFn;
+	const handleFolderSelected = (folderName: string) => {
 		setFocusedFolderName(folderName);
 		setIsEditingFolderName(false);
 	};
 
 	const handleSaveFolderName = async () => {
-		const folderId = focusedNodeId();
+		const folderId = tree.focusedId();
 		const newName = editFolderName().trim();
-		if (!folderId || !newName || !auth.token()) return;
+		if (!folderId || !newName) return;
 
-		try {
-			const response = await foldersApi.updateFolder({
-				folderId,
-				updateFolderRequest: {
-					userId: user?.id,
-					folderId,
-					name: newName,
-				},
-				authorization: `Bearer ${auth.token()}`,
-			});
-			if (response.success) {
-				setFocusedFolderName(newName);
-				setIsEditingFolderName(false);
-				await fetchRootFolders();
-				folderRefresh();
-			}
-		} catch (error) {
-			console.error('Failed to rename folder:', error);
+		const ok = await tree.updateFolder(folderId, { name: newName });
+		if (ok) {
+			setFocusedFolderName(newName);
+			setIsEditingFolderName(false);
 		}
 	};
 
@@ -221,7 +244,7 @@ const HomeInner = () => {
 
 		if (!isOverFolderCard) {
 			e.preventDefault();
-			e.dataTransfer!.dropEffect = 'move';
+			if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
 			setIsDragOverRoot(true);
 		}
 	};
@@ -239,7 +262,7 @@ const HomeInner = () => {
 		setIsDragOverRoot(false);
 	};
 
-	const handleRootDrop = async (e: DragEvent) => {
+	const handleRootDrop = (e: DragEvent) => {
 		// Only handle if the target is actually the root container or empty space
 		const target = e.target as HTMLElement;
 		const isOverFolderCard = target.closest('[draggable="true"]') !== null;
@@ -251,44 +274,127 @@ const HomeInner = () => {
 
 		e.preventDefault();
 		setIsDragOverRoot(false);
-		try {
-			const data = JSON.parse(e.dataTransfer!.getData('text/plain'));
-			console.log('Drop data to root:', data);
-			console.log(
-				`id_change::dragged_in_node: ${data.id} (${data.type}) -> root`,
-			);
-
-			if (data.type === 'folder' && data.id) {
-				try {
-					const response = await foldersApi.moveFolder({
-						moveFolderRequest: {
-							userId: user?.id,
-							folderId: data.id,
-							newParentId: undefined, // Moving to root
-						},
-						authorization: `Bearer ${auth.token()}`,
-					});
-
-					if (response.success) {
-						console.log('Folder moved to root successfully:', response.data);
-						// Refresh root folders to show the moved item
-						await fetchRootFolders();
-					} else {
-						console.error('Failed to move folder to root:', response.message);
-						alert(`Failed to move folder to root: ${response.message}`);
-					}
-				} catch (error) {
-					console.error('Error moving folder to root:', error);
-					alert(`Error moving folder to root: ${error}`);
-				}
-			}
-		} catch (error) {
-			console.error('Error parsing drop data:', error);
-		}
+		const payload = parseNode(e);
+		if (payload) tree.move(payload.id, null);
 	};
 
+	// Action key handler — i/d/c/s and their sub-modes (delete/create/move).
+	// Registered here so openCreateBookmarkComponent / openCreateFolderComponent are in scope.
+	onMount(() => {
+		const unregister = nav.register((e: KeyboardEvent) => {
+			const currentMode = nav.mode();
+
+			// ── delete sub-mode ──────────────────────────────────────────────
+			if (currentMode === 'delete') {
+				if (e.key === 'd') {
+					e.preventDefault();
+					const id = tree.focusedId();
+					if (id) {
+						const node = nav.getNodes().find((n) => n.id === id);
+						if (node?.type === 'folder') {
+							tree.deleteFolder(id);
+						} else if (node?.type === 'bookmark') {
+							tree.deleteBookmark(id);
+						}
+					}
+					nav.setMode('nav');
+					return true;
+				}
+				if (e.key === 'c') {
+					e.preventDefault();
+					nav.setMode('nav');
+					return true;
+				}
+				// Swallow all other keys so stray presses don't leak out.
+				e.preventDefault();
+				return true;
+			}
+
+			// ── create sub-mode ──────────────────────────────────────────────
+			if (currentMode === 'create') {
+				if (e.key === 'b') {
+					e.preventDefault();
+					openCreateBookmark();
+					nav.setMode('nav');
+					return true;
+				}
+				if (e.key === 'f') {
+					e.preventDefault();
+					openCreateFolder();
+					nav.setMode('nav');
+					return true;
+				}
+				// Swallow every other key so a stray press can't leak into nav mode.
+				e.preventDefault();
+				return true;
+			}
+
+			// ── move sub-mode ('p' to place; movement keys handled by TASK-010) ──
+			if (currentMode === 'move') {
+				if (e.key === 'p') {
+					e.preventDefault();
+					const sourceId = nav.moveSourceId();
+					if (sourceId) tree.move(sourceId, tree.focusedId() || null);
+					nav.cancelMove();
+					return true;
+				}
+				// Let movement keys fall through to the TASK-010 handler.
+				return false;
+			}
+
+			// ── nav mode actions ─────────────────────────────────────────────
+			if (currentMode === 'nav') {
+				if (e.key === 'i') {
+					e.preventDefault();
+					const id = tree.focusedId();
+					if (id) {
+						const node = nav.getNodes().find((n) => n.id === id);
+						if (node?.type === 'folder') {
+							setEditFolderName(focusedFolderName());
+							setIsEditingFolderName(true);
+						} else if (node?.type === 'bookmark') {
+							node.onEdit?.();
+						}
+					}
+					return true;
+				}
+				if (e.key === 'd') {
+					e.preventDefault();
+					if (tree.focusedId()) nav.setMode('delete');
+					return true;
+				}
+				if (e.key === 'c') {
+					e.preventDefault();
+					nav.setMode('create');
+					return true;
+				}
+				if (e.key === 's') {
+					e.preventDefault();
+					const id = tree.focusedId();
+					if (id) nav.startMove(id);
+					return true;
+				}
+				// Layout switching. 'n' is deliberately unbound — it was Notes mode,
+				// which shipped cut; 'c n' (create note) is gone with it.
+				if (e.key === 't') {
+					e.preventDefault();
+					setHomepageMode('tree');
+					return true;
+				}
+				if (e.key === 'r') {
+					e.preventDefault();
+					setHomepageMode('normal');
+					return true;
+				}
+			}
+
+			return false;
+		});
+		onCleanup(unregister);
+	});
+
 	return (
-		<div
+		<main
 			class="h-screen overflow-hidden bg-background flex flex-col"
 			style={backgroundStyle()}
 			onClick={(e) => {
@@ -298,17 +404,21 @@ const HomeInner = () => {
 					target.classList.contains('bg-background') ||
 					target.closest('.treeview-container') === null
 				) {
-					setFocusedNodeId('');
+					tree.setFocus('');
 				}
+			}}
+			onKeyDown={(e) => {
+				if (e.key === 'Escape') tree.setFocus('');
 			}}
 		>
 			<Header />
 
 			<div class="flex flex-1 min-h-0 flex-row">
-				<div
-					class={`treeview-container m-2 p-4 rounded-lg flex flex-col overflow-hidden bg-background backdrop-blur-lg border border-white/20 max-h-[calc(100vh-2rem)] min-w-80 max-w-80 shadow-2xl shadow-slate-900/30 dark:border-slate-700/50 dark:shadow-black/30 ${
-						isDragOverRoot() ? 'ring-2 ring-blue-400 bg-blue-100/20' : ''
-					}`}
+				<section
+					aria-label="Folder tree"
+					class={`treeview-container m-2 p-4 rounded-lg flex flex-col overflow-hidden bg-background backdrop-blur-lg border border-white/20 max-h-[calc(100vh-2rem)] shadow-2xl shadow-slate-900/30 dark:border-slate-700/50 dark:shadow-black/30 ${
+						homepageMode() === 'tree' ? 'flex-1' : 'min-w-80 max-w-80'
+					} ${isDragOverRoot() ? 'ring-2 ring-blue-400 bg-blue-100/20' : ''}`}
 					onDragOver={handleRootDragOver}
 					onDragLeave={handleRootDragLeave}
 					onDrop={handleRootDrop}
@@ -319,13 +429,13 @@ const HomeInner = () => {
 								class="p-1 text-xs flex-shrink-0"
 								variant="secondary"
 								onClick={() => {
-									openCreateFolderComponent();
+									openCreateFolder();
 								}}
 							>
 								<AddFolder />
 							</Button>
 
-							<Show when={focusedNodeId()}>
+							<Show when={tree.focusedId()}>
 								<Show
 									when={isEditingFolderName()}
 									fallback={
@@ -367,27 +477,12 @@ const HomeInner = () => {
 						</div>
 
 						<Show when={showCreateFolder()}>
-							<CreateFolderComponent
-								userId={user.id || EmptyGuid}
-								parentId={focusedNodeId()}
-								auth={auth}
-								setShowCreateFolder={setShowCreateFolder}
-								folderAPIRef={foldersApi}
-								refresh={async () => {
-									await fetchRootFolders();
-									folderRefresh();
-									folderRefresh = () => {};
-								}}
-							/>
+							<CreateFolderComponent close={() => setShowCreateFolder(false)} />
 						</Show>
 
 						<Show when={showCreateBookmark()}>
 							<CreateBookmarkComponent
-								userId={user.id || EmptyGuid}
-								parentId={focusedNodeId()}
-								auth={auth}
-								close={closeCreateBookmarkComponent}
-								refreshBookmarks={bookmarkRefresh}
+								close={() => setShowCreateBookmark(false)}
 							/>
 						</Show>
 					</div>
@@ -403,7 +498,7 @@ const HomeInner = () => {
 								}
 							>
 								<Show
-									when={folders().length > 0}
+									when={tree.rootFolders().length > 0}
 									fallback={
 										<div class="text-center py-4 text-foreground/60">
 											No folders yet. Create your first folder!
@@ -411,41 +506,57 @@ const HomeInner = () => {
 									}
 								>
 									<div class="space-y-4">
-										{folders().map((folder) => (
-											<FolderComponent
-												folder={folder}
-												selectedFolder={focusedNodeId}
-												setSelectedFolder={setFocusedNodeId}
-												deleteFolder={deleteFolder}
-												deleteBookmark={deleteBookmark}
-												editBookmark={handleEditBookmark}
-												showCreateFolder={openCreateBookmarkComponent}
-												onFolderSelected={handleFolderSelected}
-												indent={0}
-											/>
-										))}
+										<For each={tree.rootFolders()}>
+											{(folder) => (
+												<FolderComponent
+													folder={folder}
+													editBookmark={handleEditBookmark}
+													openCreateBookmark={openCreateBookmark}
+													onFolderSelected={handleFolderSelected}
+													indent={0}
+												/>
+											)}
+										</For>
 									</div>
 								</Show>
 							</Show>
 						</div>
 					</div>
-				</div>
+				</section>
 
-				<div class={activeView() === 'widgets' ? 'w-full flex' : 'hidden'}>
-					<Components.WidgetContainer />
+				<div
+					class={
+						homepageMode() === 'normal' && activeView() === 'widgets'
+							? 'w-full flex'
+							: 'hidden'
+					}
+				>
+					<WidgetProvider>
+						<Components.WidgetContainer />
+					</WidgetProvider>
 				</div>
-				<div class={activeView() === 'agenda' ? 'w-full flex' : 'hidden'}>
-					<AgendaContainer />
-				</div>
+				<Show when={FEATURES.tasks}>
+					<div
+						class={
+							homepageMode() === 'normal' && activeView() === 'agenda'
+								? 'w-full flex'
+								: 'hidden'
+						}
+					>
+						<AgendaContainer />
+					</div>
+				</Show>
 			</div>
 
 			<EditBookmarkModal
 				isOpen={showEditBookmark()}
 				onClose={() => setShowEditBookmark(false)}
 				bookmark={editingBookmark()}
-				onSaved={handleEditBookmarkSaved}
 			/>
-		</div>
+
+			<ModePill />
+			<SearchOverlay />
+		</main>
 	);
 };
 

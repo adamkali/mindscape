@@ -50,8 +50,17 @@ export function createAuthInterceptor(onLogout: () => void): Middleware {
 				);
 			}
 
-			if (response.status === 403) {
-				console.warn('Authorization failed. Logging out user.');
+			return response;
+		},
+
+		async onError(context) {
+			const { response } = context;
+
+			// Handle network errors that might indicate auth issues
+			if (response && (response.status === 401 || response.status === 403)) {
+				console.warn(
+					'Authentication error detected in network error handler. Logging out user.',
+				);
 				onLogout();
 				throw new ResponseError(response, 'Authorization failed');
 			}

@@ -1,6 +1,7 @@
 import { useNavigate } from '@solidjs/router';
 import { createEffect, createSignal, For, Show } from 'solid-js';
 import { ApiKeysApi, type ServicesApiKeyDTO } from '@/api';
+import { getAuthenticatedApiConfig } from '@/utils/apiConfig';
 import {
 	Button,
 	Card,
@@ -26,7 +27,7 @@ const ApiKeys = () => {
 const ApiKeysInner = () => {
 	const auth = useAuth();
 	const navigate = useNavigate();
-	const api = new ApiKeysApi();
+	const api = new ApiKeysApi(getAuthenticatedApiConfig());
 	const backgroundStyle = useBackgroundStyle();
 
 	const user = auth.user();
@@ -60,9 +61,7 @@ const ApiKeysInner = () => {
 	const fetchKeys = async () => {
 		if (!auth.token()) return;
 		try {
-			const response = await api.listApiKeys({
-				authorization: `Bearer ${auth.token()}`,
-			});
+			const response = await api.listApiKeys({});
 			if (response.success && response.data) {
 				setApiKeys(response.data);
 			}
@@ -86,7 +85,6 @@ const ApiKeysInner = () => {
 			};
 
 			const response = await api.createApiKey({
-				authorization: `Bearer ${auth.token()}`,
 				createApiKeyRequest: {
 					name: name(),
 					notBefore: toRFC3339(notBefore()),
@@ -125,7 +123,6 @@ const ApiKeysInner = () => {
 
 		try {
 			await api.deleteApiKey({
-				authorization: `Bearer ${auth.token()}`,
 				keyId,
 			});
 			setSuccess('API key deleted.');

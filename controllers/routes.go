@@ -24,44 +24,60 @@ func RegisterRoutes(e *echo.Echo, config *configuration.Configuration) {
 	}
 	// please add your controllers that implement IController after Build UserController(params)
 	// AttatchControllers(e, BuildUserController(params), BuildFooBarController(params))
-	AttatchControllers(e, config,
+	controllers := []IController{
 		BuildUserController(params),
 		BuildFolderController(params),
 		BuildBookmarkController(params),
 		BuildWidgetController(params),
-		BuildApiKeyController(params),
-	)
+		BuildHouseholdController(params),
+	}
+	if config.Features.ApiKeys {
+		controllers = append(controllers, BuildApiKeyController(params))
+	}
+	AttatchControllers(e, config, controllers...)
 
 	// Task controller registered separately (pre-existing pattern)
-	taskCtrlJwt := BuildTaskController(params)
-	taskCtrlJwt.Attatch(e, echojwt.WithConfig(configs.AuthMiddlewareConfig(config)))
+	if config.Features.Tasks {
+		taskCtrlJwt := BuildTaskController(params)
+		taskCtrlJwt.Attatch(e, echojwt.WithConfig(configs.AuthMiddlewareConfig(config)))
+	}
 
-	// API key authenticated routes
-	apiKeyMiddleware := middleware.KeyAuthWithConfig(configs.ApiKeyMiddlewareConfig(params.ApiKeyService))
-	keyGroup := e.Group("/api/key")
-	// Tasks
-	taskCtrl := BuildTaskController(params)
-	keyGroup.GET("/tasks", taskCtrl.Read, apiKeyMiddleware)
-	keyGroup.GET("/tasks/queue", taskCtrl.GetTasksByQueueType, apiKeyMiddleware)
-	keyGroup.GET("/tasks/status", taskCtrl.GetTasksByTaskType, apiKeyMiddleware)
-	keyGroup.GET("/tasks/:taskId", taskCtrl.ReadByID, apiKeyMiddleware)
-	keyGroup.POST("/tasks", taskCtrl.Create, apiKeyMiddleware)
-	keyGroup.PUT("/tasks", taskCtrl.Update, apiKeyMiddleware)
-	keyGroup.PUT("/tasks/status", taskCtrl.UpdateTaskStatus, apiKeyMiddleware)
-	keyGroup.DELETE("/tasks/:taskId", taskCtrl.Delete, apiKeyMiddleware)
-	// Folders
-	folderCtrl := BuildFolderController(params)
-	keyGroup.GET("/folders", folderCtrl.GetRootFolders, apiKeyMiddleware)
-	keyGroup.GET("/folders/:folder_id", folderCtrl.GetFolderByID, apiKeyMiddleware)
-	keyGroup.POST("/folders", folderCtrl.CreateFolder, apiKeyMiddleware)
-	keyGroup.PATCH("/folders", folderCtrl.MoveFolder, apiKeyMiddleware)
-	keyGroup.DELETE("/folders/:folder_id", folderCtrl.DeleteFolder, apiKeyMiddleware)
-	// Bookmarks
-	bmCtrl := BuildBookmarkController(params)
-	keyGroup.POST("/bookmarks", bmCtrl.Create, apiKeyMiddleware)
-	keyGroup.GET("/bookmarks/folder/:parent_id", bmCtrl.GetByFolder, apiKeyMiddleware)
-	keyGroup.PATCH("/bookmarks", bmCtrl.Move, apiKeyMiddleware)
-	keyGroup.DELETE("/bookmarks/folder/:bookmark_id", bmCtrl.Delete, apiKeyMiddleware)
+	// API key authenticated routes.
+	//
+	// NOTE: the whole /api/key group is gated on Features.ApiKeys, not just the
+	// apikey CRUD endpoints. Key auth is the only way to reach this group, so
+	// with apikeys off there is no way to authenticate to it — mounting
+	// /api/key/folders or /api/key/bookmarks would just be dead surface. A
+	// future dev re-enabling tasks alone should not expect these to work.
+	if config.Features.ApiKeys {
+		apiKeyMiddleware := middleware.KeyAuthWithConfig(configs.ApiKeyMiddlewareConfig(params.ApiKeyService))
+		keyGroup := e.Group("/api/key")
+		// Tasks
+		if config.Features.Tasks {
+			taskCtrl := BuildTaskController(params)
+			keyGroup.GET("/tasks", taskCtrl.Read, apiKeyMiddleware)
+			keyGroup.GET("/tasks/queue", taskCtrl.GetTasksByQueueType, apiKeyMiddleware)
+			keyGroup.GET("/tasks/status", taskCtrl.GetTasksByTaskType, apiKeyMiddleware)
+			keyGroup.GET("/tasks/:taskId", taskCtrl.ReadByID, apiKeyMiddleware)
+			keyGroup.POST("/tasks", taskCtrl.Create, apiKeyMiddleware)
+			keyGroup.PUT("/tasks", taskCtrl.Update, apiKeyMiddleware)
+			keyGroup.PUT("/tasks/status", taskCtrl.UpdateTaskStatus, apiKeyMiddleware)
+			keyGroup.DELETE("/tasks/:taskId", taskCtrl.Delete, apiKeyMiddleware)
+		}
+		// Folders
+		folderCtrl := BuildFolderController(params)
+		keyGroup.GET("/folders", folderCtrl.GetRootFolders, apiKeyMiddleware)
+		keyGroup.GET("/folders/:folder_id", folderCtrl.GetFolderByID, apiKeyMiddleware)
+		keyGroup.POST("/folders", folderCtrl.CreateFolder, apiKeyMiddleware)
+		keyGroup.PATCH("/folders", folderCtrl.MoveFolder, apiKeyMiddleware)
+		keyGroup.DELETE("/folders/:folder_id", folderCtrl.DeleteFolder, apiKeyMiddleware)
+		// Bookmarks
+		bmCtrl := BuildBookmarkController(params)
+		keyGroup.POST("/bookmarks", bmCtrl.Create, apiKeyMiddleware)
+		keyGroup.GET("/bookmarks/folder/:parent_id", bmCtrl.GetByFolder, apiKeyMiddleware)
+		keyGroup.PATCH("/bookmarks", bmCtrl.Move, apiKeyMiddleware)
+		keyGroup.DELETE("/bookmarks/folder/:bookmark_id", bmCtrl.Delete, apiKeyMiddleware)
+	}
 
 	// Static middleware disabled - using explicit static routes instead
 	e.Use(middleware.StaticWithConfig(configs.StaticMiddlewareConfig(config)))

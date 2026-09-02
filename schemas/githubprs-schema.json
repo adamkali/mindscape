@@ -1,0 +1,82 @@
+{
+  "id": "c3d4e5f6-a7b8-9012-cdef-012345678902",
+  "type": "githubprs",
+  "title": "GitHub PRs Widget Schema",
+  "description": "Configuration schema for GitHub pull request tracking (review-requested, authored, mentioned)",
+  "layout": {
+    "defaultSize": {
+      "width": 9,
+      "height": 9
+    },
+    "minSize": {
+      "width": 6,
+      "height": 6
+    },
+    "maxSize": {
+      "width": 12,
+      "height": 12
+    },
+    "resizable": true
+  },
+  "properties": {
+    "githubToken": {
+      "label": "GitHub Personal Access Token",
+      "value": "",
+      "type": "string",
+      "format": "password",
+      "description": "Classic PAT with 'repo' scope (read-only). Required for PR search and private repos.",
+      "enum": []
+    },
+    "repos": {
+      "label": "Repositories (optional)",
+      "value": [],
+      "type": "array",
+      "format": "string",
+      "description": "Limit results to specific repos in owner/name format (e.g. octocat/Hello-World). Leave empty to search all accessible repos.",
+      "enum": []
+    },
+    "filterReviewRequested": {
+      "label": "Show Review Requested",
+      "value": true,
+      "type": "boolean",
+      "format": "boolean",
+      "description": "Show PRs where your review is requested",
+      "enum": []
+    },
+    "filterAuthored": {
+      "label": "Show Authored PRs",
+      "value": true,
+      "type": "boolean",
+      "format": "boolean",
+      "description": "Show open PRs you authored",
+      "enum": []
+    },
+    "filterMentioned": {
+      "label": "Show Mentioned PRs",
+      "value": true,
+      "type": "boolean",
+      "format": "boolean",
+      "description": "Show PRs where you are mentioned",
+      "enum": []
+    },
+    "filterAssigned": {
+      "label": "Show Assigned PRs",
+      "value": false,
+      "type": "boolean",
+      "format": "boolean",
+      "description": "Show PRs assigned to you",
+      "enum": []
+    },
+    "refreshInterval": {
+      "label": "Refresh Interval (seconds)",
+      "value": 300,
+      "type": "number",
+      "format": "number",
+      "description": "How often to refresh PR data in seconds (default: 300 = 5 minutes)",
+      "enum": []
+    }
+  },
+  "required": [
+    "githubToken"
+  ]
+}

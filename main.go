@@ -19,6 +19,9 @@ import (
 // @Contact.url https://github.com/adamkali/mindscape
 // @License.name MIT
 // @BasePath /api
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	cmd.Execute()
 }

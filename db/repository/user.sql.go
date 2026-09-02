@@ -209,6 +209,44 @@ func (q *Queries) FindUsers(ctx context.Context) ([]User, error) {
 	return items, nil
 }
 
+const searchUsersByUsername = `-- name: SearchUsersByUsername :many
+SELECT id, username
+    FROM users
+    WHERE username ILIKE $1 AND id != $2
+    ORDER BY username ASC
+    LIMIT 10
+`
+
+type SearchUsersByUsernameParams struct {
+	Username string    `json:"username"`
+	ID       uuid.UUID `json:"id"`
+}
+
+type SearchUsersByUsernameRow struct {
+	ID       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
+}
+
+func (q *Queries) SearchUsersByUsername(ctx context.Context, arg SearchUsersByUsernameParams) ([]SearchUsersByUsernameRow, error) {
+	rows, err := q.db.Query(ctx, searchUsersByUsername, arg.Username, arg.ID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []SearchUsersByUsernameRow
+	for rows.Next() {
+		var i SearchUsersByUsernameRow
+		if err := rows.Scan(&i.ID, &i.Username); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateUserBacground = `-- name: UpdateUserBacground :one
 UPDATE users
 SET background = $1

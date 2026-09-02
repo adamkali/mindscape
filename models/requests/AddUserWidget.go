@@ -28,5 +28,6 @@ func (wr AddUserWidgetRequst) IntoRepositoryParams(userID uuid.UUID) *repository
 		Height:    wr.Height,
 		ZIndex:    wr.ZIndex,
 		IsVisible: wr.IsVisible,
+		SchemaTitle: &wr.SchemaTitle,
 	}
 }

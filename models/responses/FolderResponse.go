@@ -18,7 +18,6 @@ type FolderData struct {
 	UpdatedDatetime *time.Time            `json:"updated_datetime"`
 	Children        []repository.Folder   `json:"children"`
 	Bookmarks       []repository.Bookmark `json:"bookmarks"`
-	Notes           []repository.Note     `json:"notes"`
 }
 
 type FolderResponse struct {
@@ -58,7 +57,6 @@ func NewFolderData(entity repository.Folder) FolderData {
 		UpdatedDatetime: entity.UpdatedDatetime,
 		Children:        []repository.Folder{},
 		Bookmarks:       []repository.Bookmark{},
-		Notes:           []repository.Note{},
 	}
 }
 

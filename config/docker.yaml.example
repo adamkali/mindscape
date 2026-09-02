@@ -33,3 +33,11 @@ s3:
   secret: minio_secret_key
   secure: false
 
+households:
+  invite_ttl_hours: 168
+features:
+    # v1 launch build ships these OFF. Flip to true locally to work on them.
+    # Frontend equivalents are the VITE_FEATURE_* build-time env vars.
+    tasks: false
+    apikeys: false
+    coolify: true

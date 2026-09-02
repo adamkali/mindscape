@@ -8,6 +8,7 @@ type Registrar struct {
 	AuthService      IAuthService
 	BookmarkService  IBookmarkService
 	FolderService    IFolderService
+	HouseholdService IHouseholdService
 	MinioService     IMinioService
 	NoteService      INoteService
 	RedisService     IRedisService

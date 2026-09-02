@@ -1,0 +1,67 @@
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "type": "plex",
+  "title": "Plex Recently Added Widget Schema",
+  "description": "Configuration schema for Plex recently-added media widget",
+  "layout": {
+    "defaultSize": {
+      "width": 6,
+      "height": 6
+    },
+    "minSize": {
+      "width": 4,
+      "height": 4
+    },
+    "maxSize": {
+      "width": 12,
+      "height": 12
+    },
+    "resizable": true
+  },
+  "properties": {
+    "serverUrl": {
+      "label": "Plex Server URL",
+      "value": "",
+      "type": "string",
+      "format": "uri",
+      "description": "Base URL of your Plex Media Server (e.g. http://192.168.1.10:32400)",
+      "enum": []
+    },
+    "apiToken": {
+      "label": "Plex API Token",
+      "value": "",
+      "type": "string",
+      "format": "password",
+      "description": "Your Plex authentication token (X-Plex-Token)",
+      "enum": []
+    },
+    "libraries": {
+      "label": "Library Names (optional)",
+      "value": [],
+      "type": "array",
+      "format": "string",
+      "description": "Filter to specific library names; leave empty to show all",
+      "enum": []
+    },
+    "maxItems": {
+      "label": "Max Items",
+      "value": 10,
+      "type": "number",
+      "format": "number",
+      "description": "Maximum number of recently-added items to display",
+      "enum": []
+    },
+    "refreshInterval": {
+      "label": "Refresh Interval (seconds)",
+      "value": 3600,
+      "type": "number",
+      "format": "number",
+      "description": "How often to refresh the widget data in seconds (default: 3600 = 1 hour)",
+      "enum": []
+    }
+  },
+  "required": [
+    "serverUrl",
+    "apiToken"
+  ]
+}

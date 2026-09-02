@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/adamkali/mindscape/models/responses"
 	i "github.com/adamkali/mindscape/models/handlers"
 	h "github.com/adamkali/mindscape/models/handlers/folder_handlers"
+	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -51,7 +51,6 @@ func WithGetByIDInvalidFolderID() string {
 type GetByIDTestServices struct {
 	FolderService   services.IFolderService
 	BookmarkService services.IBookmarkService
-	NoteService     services.INoteService
 	AuthService     services.IAuthService
 }
 
@@ -59,14 +58,13 @@ type GetByIDTestServices struct {
 func CreateGetByIDTestServices() GetByIDTestServices {
 	folderService := services.CreateMockFolderService(nil, nil)
 	folderService.Reset()
-	
+
 	bookmarkService := services.CreateMockBookmarkService(nil, nil)
 	bookmarkService.Reset()
-	
+
 	return GetByIDTestServices{
 		FolderService:   folderService,
 		BookmarkService: bookmarkService,
-		NoteService:     services.NewMockNoteService(),
 		AuthService:     &services.MockAuthService{},
 	}
 }
@@ -82,11 +80,11 @@ func CreateGetByIDHTTPRequest(method, path string) *http.Request {
 func CreateGetByIDAuthenticatedContext(r *http.Request, folderID string) echo.Context {
 	e := echo.New()
 	ctx := e.NewContext(r, httptest.NewRecorder())
-	
+
 	// Set the folder_id parameter
 	ctx.SetParamNames("folder_id")
 	ctx.SetParamValues(folderID)
-	
+
 	// Create JWT token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &services.CustomJwt{
 		UserId:     getByIDTestUser.ID,
@@ -97,7 +95,7 @@ func CreateGetByIDAuthenticatedContext(r *http.Request, folderID string) echo.Co
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
 		},
 	})
-	
+
 	// Set token in context
 	ctx.Set("user", token)
 	return ctx
@@ -107,11 +105,11 @@ func CreateGetByIDAuthenticatedContext(r *http.Request, folderID string) echo.Co
 func CreateGetByIDDifferentUserContext(r *http.Request, folderID string) echo.Context {
 	e := echo.New()
 	ctx := e.NewContext(r, httptest.NewRecorder())
-	
+
 	// Set the folder_id parameter
 	ctx.SetParamNames("folder_id")
 	ctx.SetParamValues(folderID)
-	
+
 	// Create JWT token for different user
 	differentUserID := uuid.MustParse("77777777-7777-7777-7777-777777777777")
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &services.CustomJwt{
@@ -123,7 +121,7 @@ func CreateGetByIDDifferentUserContext(r *http.Request, folderID string) echo.Co
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
 		},
 	})
-	
+
 	// Set token in context
 	ctx.Set("user", token)
 	return ctx
@@ -131,7 +129,7 @@ func CreateGetByIDDifferentUserContext(r *http.Request, folderID string) echo.Co
 
 // NewGetByIDHandler creates GetFolderByIDHandler with services and context
 func NewGetByIDHandler(services GetByIDTestServices, ctx echo.Context) *h.GetFolderByIDHandler {
-	return h.NewGetById(ctx, services.FolderService, services.BookmarkService, services.NoteService, services.AuthService)
+	return h.NewGetById(ctx, services.FolderService, services.BookmarkService, services.AuthService)
 }
 
 // MockGetByIDAuthServiceWithFailure extends MockAuthService for failure testing
@@ -152,14 +150,14 @@ func Run_GetByIDHandler_ValidRequest(t *testing.T) {
 	testServices := CreateGetByIDTestServices()
 	req := CreateGetByIDHTTPRequest(http.MethodGet, "/api/folders/"+getByIDTestFolderID)
 	ctx := CreateGetByIDAuthenticatedContext(req, getByIDTestFolderID)
-	
+
 	handler := NewGetByIDHandler(testServices, ctx)
 	result := handler.Handle()
-	
+
 	assert.NoError(t, result.Error())
 	assert.Equal(t, http.StatusOK, result.Code())
 	assert.NotNil(t, result.Data())
-	
+
 	folderData := result.Data().(*responses.FolderData)
 	assert.NotNil(t, folderData.ID)
 	assert.NotEmpty(t, folderData.Name)
@@ -169,13 +167,13 @@ func Run_GetByIDHandler_ValidRequest(t *testing.T) {
 func Run_GetByIDHandler_AuthenticationFailure(t *testing.T) {
 	testServices := CreateGetByIDTestServices()
 	testServices.AuthService = &MockGetByIDAuthServiceWithFailure{ShouldFailCheckToken: true}
-	
+
 	req := CreateGetByIDHTTPRequest(http.MethodGet, "/api/folders/"+getByIDTestFolderID)
 	ctx := CreateGetByIDAuthenticatedContext(req, getByIDTestFolderID)
-	
+
 	handler := NewGetByIDHandler(testServices, ctx)
 	result := handler.Handle()
-	
+
 	assert.Error(t, result.Error())
 	assert.Equal(t, http.StatusUnauthorized, result.Code())
 }
@@ -186,10 +184,10 @@ func Run_GetByIDHandler_InvalidFolderID(t *testing.T) {
 	invalidID := WithGetByIDInvalidFolderID()
 	req := CreateGetByIDHTTPRequest(http.MethodGet, "/api/folders/"+invalidID)
 	ctx := CreateGetByIDAuthenticatedContext(req, invalidID)
-	
+
 	handler := NewGetByIDHandler(testServices, ctx)
 	result := handler.Handle()
-	
+
 	assert.Error(t, result.Error())
 	assert.Equal(t, http.StatusBadRequest, result.Code())
 }
@@ -199,10 +197,10 @@ func Run_GetByIDHandler_FolderNotFound(t *testing.T) {
 	testServices := CreateGetByIDTestServices()
 	req := CreateGetByIDHTTPRequest(http.MethodGet, "/api/folders/"+getByIDTestNonExistentFolderID)
 	ctx := CreateGetByIDAuthenticatedContext(req, getByIDTestNonExistentFolderID)
-	
+
 	handler := NewGetByIDHandler(testServices, ctx)
 	result := handler.Handle()
-	
+
 	assert.Error(t, result.Error())
 	assert.Equal(t, http.StatusNotFound, result.Code())
 }
@@ -213,10 +211,10 @@ func Run_GetByIDHandler_AuthorizationFailure(t *testing.T) {
 	// Use the different user's folder ID for authorization testing
 	req := CreateGetByIDHTTPRequest(http.MethodGet, "/api/folders/"+getByIDTestOtherUserFolderID)
 	ctx := CreateGetByIDAuthenticatedContext(req, getByIDTestOtherUserFolderID) // handleruser trying to access different user's folder
-	
+
 	handler := NewGetByIDHandler(testServices, ctx)
 	result := handler.Handle()
-	
+
 	assert.Error(t, result.Error())
 	assert.Equal(t, http.StatusForbidden, result.Code())
 	assert.Contains(t, result.Error().Error(), "unauthorized access to folder")
@@ -226,13 +224,13 @@ func Run_GetByIDHandler_AuthorizationFailure(t *testing.T) {
 func Run_GetByIDHandler_FolderServiceFailure(t *testing.T) {
 	testServices := CreateGetByIDTestServices()
 	// TODO: Add service failure testing once type access is resolved
-	
+
 	req := CreateGetByIDHTTPRequest(http.MethodGet, "/api/folders/"+getByIDTestFolderID)
 	ctx := CreateGetByIDAuthenticatedContext(req, getByIDTestFolderID)
-	
+
 	handler := NewGetByIDHandler(testServices, ctx)
 	result := handler.Handle()
-	
+
 	// For now, expect success since we can't force failure
 	assert.NoError(t, result.Error())
 	assert.Equal(t, http.StatusOK, result.Code())
@@ -242,47 +240,23 @@ func Run_GetByIDHandler_FolderServiceFailure(t *testing.T) {
 func Run_GetByIDHandler_BookmarkServiceFailure(t *testing.T) {
 	testServices := CreateGetByIDTestServices()
 	// TODO: Add bookmark service failure testing once type access is resolved
-	
+
 	req := CreateGetByIDHTTPRequest(http.MethodGet, "/api/folders/"+getByIDTestFolderID)
 	ctx := CreateGetByIDAuthenticatedContext(req, getByIDTestFolderID)
-	
+
 	handler := NewGetByIDHandler(testServices, ctx)
 	result := handler.Handle()
-	
+
 	// For now, expect success since we can't force failure
 	assert.NoError(t, result.Error())
 	assert.Equal(t, http.StatusOK, result.Code())
 }
 
-// Run_GetByIDHandler_NoteServiceFailure executes GetByIDHandler with NoteService failure
-func Run_GetByIDHandler_NoteServiceFailure(t *testing.T) {
-	testServices := CreateGetByIDTestServices()
-	noteService := &services.MockNoteService{
-		ShouldFailGetByFolder:   true,
-		GetByFolderErrorMessage: "Note service failure",
-	}
-	testServices.NoteService = noteService
-	
-	req := CreateGetByIDHTTPRequest(http.MethodGet, "/api/folders/"+getByIDTestFolderID)
-	ctx := CreateGetByIDAuthenticatedContext(req, getByIDTestFolderID)
-	
-	handler := NewGetByIDHandler(testServices, ctx)
-	result := handler.Handle()
-	
-	// Should fail when note service fails
-	assert.Error(t, result.Error())
-	assert.Equal(t, http.StatusInternalServerError, result.Code())
-}
-
-// <tests>
-// <evaluators>
-
-// EvaluateGetByIDSuccess validates successful get by ID handler execution
 func EvaluateGetByIDSuccess(t *testing.T, result i.IHandler) {
 	assert.NoError(t, result.Error())
 	assert.Equal(t, http.StatusOK, result.Code())
 	assert.NotNil(t, result.Data())
-	
+
 	folderData := result.Data().(*responses.FolderData)
 	assert.NotNil(t, folderData.ID)
 	assert.NotEmpty(t, folderData.Name)
@@ -298,14 +272,13 @@ func EvaluateGetByIDFailure(t *testing.T, result i.IHandler, expectedCode int) {
 
 // GetByIDHandlerTestMap defines all GetByIDHandler test cases
 var GetByIDHandlerTestMap = map[string]func(*testing.T){
-	"ValidRequest":            Run_GetByIDHandler_ValidRequest,
-	"AuthenticationFailure":   Run_GetByIDHandler_AuthenticationFailure,
-	"InvalidFolderID":         Run_GetByIDHandler_InvalidFolderID,
-	"FolderNotFound":          Run_GetByIDHandler_FolderNotFound,
-	"AuthorizationFailure":    Run_GetByIDHandler_AuthorizationFailure,
-	"FolderServiceFailure":    Run_GetByIDHandler_FolderServiceFailure,
-	"BookmarkServiceFailure":  Run_GetByIDHandler_BookmarkServiceFailure,
-	"NoteServiceFailure":      Run_GetByIDHandler_NoteServiceFailure,
+	"ValidRequest":           Run_GetByIDHandler_ValidRequest,
+	"AuthenticationFailure":  Run_GetByIDHandler_AuthenticationFailure,
+	"InvalidFolderID":        Run_GetByIDHandler_InvalidFolderID,
+	"FolderNotFound":         Run_GetByIDHandler_FolderNotFound,
+	"AuthorizationFailure":   Run_GetByIDHandler_AuthorizationFailure,
+	"FolderServiceFailure":   Run_GetByIDHandler_FolderServiceFailure,
+	"BookmarkServiceFailure": Run_GetByIDHandler_BookmarkServiceFailure,
 }
 
 // <hook/>

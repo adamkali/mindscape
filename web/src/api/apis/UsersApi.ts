@@ -25,6 +25,7 @@ import type {
   UpdateUserResponse,
   UserResponse,
   UsersResponse,
+  UsersSearchResponse,
 } from '../models/index';
 import {
     BackgroundResponseFromJSON,
@@ -47,40 +48,27 @@ import {
     UserResponseToJSON,
     UsersResponseFromJSON,
     UsersResponseToJSON,
+    UsersSearchResponseFromJSON,
+    UsersSearchResponseToJSON,
 } from '../models/index';
 
 export interface DeleteUserByUUIDRequest {
     userId: string;
-    authorization: string;
-}
-
-export interface GetCurrentLoggedInUserRequest {
-    authorization: string;
-}
-
-export interface GetProfilePictureRequest {
-    authorization: string;
 }
 
 export interface GetUserBackgroundRequest {
-    authorization: string;
     background: string;
-}
-
-export interface GetUserBackgroundChoicesRequest {
-    authorization: string;
-}
-
-export interface GetUsersRequest {
-    authorization: string;
 }
 
 export interface LoginOperationRequest {
     loginRequest: LoginRequest;
 }
 
+export interface SearchUsersRequest {
+    q: string;
+}
+
 export interface SetUserBackgroundRequest {
-    authorization: string;
     background: string;
 }
 
@@ -89,17 +77,14 @@ export interface SignupRequest {
 }
 
 export interface UpdateUserRequest {
-    authorization: string;
     updateCredentialsRequest: UpdateCredentialsRequest;
 }
 
 export interface UploadBackgroundRequest {
-    authorization: string;
     file: Blob;
 }
 
 export interface UploadProfilePictureRequest {
-    authorization: string;
     file: Blob;
 }
 
@@ -120,19 +105,12 @@ export class UsersApi extends runtime.BaseAPI {
             );
         }
 
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling deleteUserByUUID().'
-            );
-        }
-
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -158,20 +136,13 @@ export class UsersApi extends runtime.BaseAPI {
      * Get the Current User by the uuid storred in the Claims header
      * Get Current User
      */
-    async getCurrentLoggedInUserRaw(requestParameters: GetCurrentLoggedInUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling getCurrentLoggedInUser().'
-            );
-        }
-
+    async getCurrentLoggedInUserRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -188,8 +159,8 @@ export class UsersApi extends runtime.BaseAPI {
      * Get the Current User by the uuid storred in the Claims header
      * Get Current User
      */
-    async getCurrentLoggedInUser(requestParameters: GetCurrentLoggedInUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserResponse> {
-        const response = await this.getCurrentLoggedInUserRaw(requestParameters, initOverrides);
+    async getCurrentLoggedInUser(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserResponse> {
+        const response = await this.getCurrentLoggedInUserRaw(initOverrides);
         return await response.value();
     }
 
@@ -197,20 +168,13 @@ export class UsersApi extends runtime.BaseAPI {
      * Get User Profile by Authorization Header
      * Get User Profile by Authorization Header
      */
-    async getProfilePictureRaw(requestParameters: GetProfilePictureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StringResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling getProfilePicture().'
-            );
-        }
-
+    async getProfilePictureRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StringResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -227,8 +191,8 @@ export class UsersApi extends runtime.BaseAPI {
      * Get User Profile by Authorization Header
      * Get User Profile by Authorization Header
      */
-    async getProfilePicture(requestParameters: GetProfilePictureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StringResponse> {
-        const response = await this.getProfilePictureRaw(requestParameters, initOverrides);
+    async getProfilePicture(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StringResponse> {
+        const response = await this.getProfilePictureRaw(initOverrides);
         return await response.value();
     }
 
@@ -237,13 +201,6 @@ export class UsersApi extends runtime.BaseAPI {
      * Get User Background Choice
      */
     async getUserBackgroundRaw(requestParameters: GetUserBackgroundRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StringResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling getUserBackground().'
-            );
-        }
-
         if (requestParameters['background'] == null) {
             throw new runtime.RequiredError(
                 'background',
@@ -259,8 +216,8 @@ export class UsersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -286,20 +243,13 @@ export class UsersApi extends runtime.BaseAPI {
      * Get User Backgrounds Uploaded to the server
      * Get User Background Choices
      */
-    async getUserBackgroundChoicesRaw(requestParameters: GetUserBackgroundChoicesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BackgroundResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling getUserBackgroundChoices().'
-            );
-        }
-
+    async getUserBackgroundChoicesRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BackgroundResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -316,8 +266,8 @@ export class UsersApi extends runtime.BaseAPI {
      * Get User Backgrounds Uploaded to the server
      * Get User Background Choices
      */
-    async getUserBackgroundChoices(requestParameters: GetUserBackgroundChoicesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BackgroundResponse> {
-        const response = await this.getUserBackgroundChoicesRaw(requestParameters, initOverrides);
+    async getUserBackgroundChoices(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<BackgroundResponse> {
+        const response = await this.getUserBackgroundChoicesRaw(initOverrides);
         return await response.value();
     }
 
@@ -325,20 +275,13 @@ export class UsersApi extends runtime.BaseAPI {
      * Get All Users. Must be Admin using the new mediator pattern
      * Get All Users
      */
-    async getUsersRaw(requestParameters: GetUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UsersResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling getUsers().'
-            );
-        }
-
+    async getUsersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UsersResponse>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -355,8 +298,8 @@ export class UsersApi extends runtime.BaseAPI {
      * Get All Users. Must be Admin using the new mediator pattern
      * Get All Users
      */
-    async getUsers(requestParameters: GetUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UsersResponse> {
-        const response = await this.getUsersRaw(requestParameters, initOverrides);
+    async getUsers(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UsersResponse> {
+        const response = await this.getUsersRaw(initOverrides);
         return await response.value();
     }
 
@@ -399,17 +342,53 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
+     * Autocomplete usernames (max 10, excludes caller, no PII).
+     * Search Users by username
+     */
+    async searchUsersRaw(requestParameters: SearchUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UsersSearchResponse>> {
+        if (requestParameters['q'] == null) {
+            throw new runtime.RequiredError(
+                'q',
+                'Required parameter "q" was null or undefined when calling searchUsers().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['q'] != null) {
+            queryParameters['q'] = requestParameters['q'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
+        }
+
+        const response = await this.request({
+            path: `/users/search`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UsersSearchResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Autocomplete usernames (max 10, excludes caller, no PII).
+     * Search Users by username
+     */
+    async searchUsers(requestParameters: SearchUsersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UsersSearchResponse> {
+        const response = await this.searchUsersRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Set User Background Choice by background name by query param.
      * Set User Background
      */
     async setUserBackgroundRaw(requestParameters: SetUserBackgroundRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StringResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling setUserBackground().'
-            );
-        }
-
         if (requestParameters['background'] == null) {
             throw new runtime.RequiredError(
                 'background',
@@ -425,8 +404,8 @@ export class UsersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -491,13 +470,6 @@ export class UsersApi extends runtime.BaseAPI {
      * Update User Credentials
      */
     async updateUserRaw(requestParameters: UpdateUserRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UpdateUserResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling updateUser().'
-            );
-        }
-
         if (requestParameters['updateCredentialsRequest'] == null) {
             throw new runtime.RequiredError(
                 'updateCredentialsRequest',
@@ -511,8 +483,8 @@ export class UsersApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const response = await this.request({
@@ -540,13 +512,6 @@ export class UsersApi extends runtime.BaseAPI {
      * Upload Background
      */
     async uploadBackgroundRaw(requestParameters: UploadBackgroundRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StringResponse>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling uploadBackground().'
-            );
-        }
-
         if (requestParameters['file'] == null) {
             throw new runtime.RequiredError(
                 'file',
@@ -558,8 +523,8 @@ export class UsersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['Authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const consumes: runtime.Consume[] = [
@@ -607,13 +572,6 @@ export class UsersApi extends runtime.BaseAPI {
      * Upload file
      */
     async uploadProfilePictureRaw(requestParameters: UploadProfilePictureRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<string>> {
-        if (requestParameters['authorization'] == null) {
-            throw new runtime.RequiredError(
-                'authorization',
-                'Required parameter "authorization" was null or undefined when calling uploadProfilePicture().'
-            );
-        }
-
         if (requestParameters['file'] == null) {
             throw new runtime.RequiredError(
                 'file',
@@ -625,8 +583,8 @@ export class UsersApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.apiKey) {
+            headerParameters["Authorization"] = await this.configuration.apiKey("Authorization"); // BearerAuth authentication
         }
 
         const consumes: runtime.Consume[] = [

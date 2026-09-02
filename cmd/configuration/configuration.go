@@ -69,6 +69,17 @@ type Configuration struct {
 	ApiKey struct {
 		DefaultExpiration string `yaml:"default_expiration"`
 	} `yaml:"apikey"`
+	Households struct {
+		InviteTTLHours int `yaml:"invite_ttl_hours"`
+	} `yaml:"households"`
+	// Features gates optional surfaces off by default for the v1 launch build.
+	// The frontend reads the matching VITE_FEATURE_* build-time env vars; the
+	// two are deliberately separate because there is no env-override layer here.
+	Features struct {
+		Tasks   bool `yaml:"tasks"`
+		ApiKeys bool `yaml:"apikeys"`
+		Coolify bool `yaml:"coolify"`
+	} `yaml:"features"`
 }
 
 // AccessTokenDuration parses server.access_token_ttl, falling back to

@@ -82,7 +82,7 @@ func (wc WidgetController) GetSchemaByID(
 // @ID          GetUserWidgets
 // @Tags        Widgets
 // @Produce     json
-// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Success     200                 {object}     responses.UserWidgetsResponse
 // @Failure     401                 {object}     responses.UserWidgetsResponse
 // @Failure     403                 {object}     responses.UserWidgetsResponse
@@ -104,7 +104,7 @@ func (wc WidgetController) Read(ctx echo.Context) error {
 // @ID          GetUserWidget
 // @Tags        Widgets
 // @Produce     json
-// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
 // @Success     200                 {object}     responses.UserWidgetResponse
 // @Failure     401                 {object}     responses.UserWidgetResponse
@@ -128,7 +128,7 @@ func (wc WidgetController) ReadById(ctx echo.Context) error {
 // @ID          GetGithubWidgetData
 // @Tags        Widgets
 // @Produce     json
-// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
 // @Success     200                 {object}     GithubResponse
 // @Failure     401                 {object}     GithubResponse
@@ -158,7 +158,7 @@ func (wc WidgetController) GithubWidget(ctx echo.Context) error {
 // @ID          GetGithubProfileWidgetData
 // @Tags        Widgets
 // @Produce     json
-// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
 // @Success     200                 {object}     GithubProfileResponse
 // @Failure     401                 {object}     GithubProfileResponse
@@ -190,7 +190,7 @@ func (wc WidgetController) GithubProfileWidget(ctx echo.Context) error {
 // @ID          GetGithubCommitsWidgetData
 // @Tags        Widgets
 // @Produce     json
-// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
 // @Success     200                 {object}     GithubCommitsResponse
 // @Failure     401                 {object}     GithubCommitsResponse
@@ -214,6 +214,70 @@ func (wc WidgetController) GithubCommitsWidget(ctx echo.Context) error {
 	)
 }
 
+// @Summary Get GitHub PRs Widget Data
+// @Description Fetches open pull requests from GitHub (review-requested, authored, mentioned, assigned)
+// @Description using the GitHub Issues Search API with a server-side PAT proxy.
+// @Description The PAT requires 'repo' read scope for private repositories.
+//
+// @ID          GetGithubPRsWidgetData
+// @Tags        Widgets
+// @Produce     json
+// @Security BearerAuth
+// @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
+// @Success     200                 {object}     responses.GithubPRsWidgetResponse
+// @Failure     401                 {object}     responses.GithubPRsWidgetResponse
+// @Failure     403                 {object}     responses.GithubPRsWidgetResponse
+// @Failure     502                 {object}     responses.GithubPRsWidgetResponse
+// @Router      /widgets/{user_widget_id}/github/prs    [get]
+func (wc WidgetController) GithubPRsWidget(ctx echo.Context) error {
+	widget := handlers.NewReadUserWidgetHandler(
+		ctx,
+		wc.WidgetService,
+		wc.AuthService,
+	).Handle()
+
+	if widget.Error() != nil {
+		return widget.JSON()
+	}
+
+	return handlers.GithubPRsWidgetJsonHandler(
+		ctx,
+		widget.Data().(*repository.UserWidget),
+	)
+}
+
+// @Summary Get Plex Recently Added
+// @Description Fetches recently-added media items from the configured Plex server.
+// @Description The Plex API token is kept server-side; this is a server-side proxy endpoint.
+// @Description Poster art is returned as signed thumb URLs (serverUrl + thumb + X-Plex-Token query param).
+//
+// @ID          GetPlexRecentlyAdded
+// @Tags        Widgets
+// @Produce     json
+// @Security BearerAuth
+// @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
+// @Success     200                 {object}     responses.PlexRecentlyAddedResponse
+// @Failure     401                 {object}     responses.PlexRecentlyAddedResponse
+// @Failure     403                 {object}     responses.PlexRecentlyAddedResponse
+// @Failure     502                 {object}     responses.PlexRecentlyAddedResponse
+// @Router      /widgets/{user_widget_id}/plex/recently-added    [get]
+func (wc WidgetController) PlexRecentlyAdded(ctx echo.Context) error {
+	widget := handlers.NewReadUserWidgetHandler(
+		ctx,
+		wc.WidgetService,
+		wc.AuthService,
+	).Handle()
+
+	if widget.Error() != nil {
+		return widget.JSON()
+	}
+
+	return handlers.PlexWidgetJsonHandler(
+		ctx,
+		widget.Data().(*repository.UserWidget),
+	)
+}
+
 // @Summary Add a Users Widget
 // @Description Add a Users Widget by their auth token.
 // @Description The config is defined by the configuration parameters as defined by the user and the schema.
@@ -222,7 +286,7 @@ func (wc WidgetController) GithubCommitsWidget(ctx echo.Context) error {
 // @Tags        Widgets
 // @Produce     json
 // @Accept      json
-// @Param       Authorization       header       string                            true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       AddUserWidgetRequest body        requests.AddUserWidgetRequst      true "Add Widget Request"
 // @Success     200                 {object}     responses.UserWidgetResponse
 // @Failure     400                 {object}     responses.UserWidgetResponse
@@ -246,7 +310,7 @@ func (wc WidgetController) AddWidget(ctx echo.Context) error {
 // @ID          GetUserCoolifyApplications
 // @Tags        Widgets
 // @Produce     json
-// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
 // @Success     200                 {object}     CoolifyWidgetApplicationResponse
 // @Failure     401                 {object}     CoolifyWidgetApplicationResponse
@@ -275,7 +339,7 @@ func (wc WidgetController) CoolifyWidgetApplications(ctx echo.Context) error {
 // @ID          StartCoolifyApplication
 // @Tags        Widgets
 // @Produce     json
-// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
 // @Param       app_uuid            path         string                         true "Application UUID"
 // @Success     200                 {object}     CoolifyActionResponse
@@ -309,7 +373,7 @@ func (wc WidgetController) StartCoolifyApplication(ctx echo.Context) error {
 // @ID          StopCoolifyApplication
 // @Tags        Widgets
 // @Produce     json
-// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
 // @Param       app_uuid            path         string                         true "Application UUID"
 // @Success     200                 {object}     CoolifyActionResponse
@@ -343,7 +407,7 @@ func (wc WidgetController) StopCoolifyApplication(ctx echo.Context) error {
 // @ID          RestartCoolifyApplication
 // @Tags        Widgets
 // @Produce     json
-// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
 // @Param       app_uuid            path         string                         true "Application UUID"
 // @Success     200                 {object}     CoolifyActionResponse
@@ -377,7 +441,7 @@ func (wc WidgetController) RestartCoolifyApplication(ctx echo.Context) error {
 // @ID          GetUserCoolifyServices 
 // @Tags        Widgets
 // @Produce     json
-// @Param       Authorization       header       string                         true "auth header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
 // @Success     200                 {object}     CoolifyWidgetServiceResponse
 // @Failure     401                 {object}     CoolifyWidgetServiceResponse
@@ -400,6 +464,68 @@ func (wc WidgetController) CoolifyWidgetServices(ctx echo.Context) error {
 		widget.Data().(*repository.UserWidget),
 	)
 }
+
+// @Summary Get a Users Coolify Status
+// @Description Get the combined Coolify application and service status for a widget
+//
+// @ID          GetUserCoolifyStatus
+// @Tags        Widgets
+// @Produce     json
+// @Security BearerAuth
+// @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
+// @Success     200                 {object}     CoolifyWidgetResponse
+// @Failure     400                 {object}     CoolifyWidgetResponse
+// @Failure     401                 {object}     CoolifyWidgetResponse
+// @Failure     403                 {object}     CoolifyWidgetResponse
+// @Failure     500                 {object}     CoolifyWidgetResponse
+// @Router      /widgets/{user_widget_id}/coolify [get]
+func (wc WidgetController) CoolifyWidgetStatus(ctx echo.Context) error {
+	widget := handlers.NewReadUserWidgetHandler(
+		ctx,
+		wc.WidgetService,
+		wc.AuthService,
+	).Handle()
+
+	if widget.Error() != nil {
+		return widget.JSON()
+	}
+
+	return handlers.CoolifyWidgetJsonHandler(
+		ctx,
+		widget.Data().(*repository.UserWidget),
+	)
+}
+
+// @Summary Get Coolify Server Metrics
+// @Description Get CPU, memory and storage usage for the widget's Coolify server. CPU and memory come from the Sentinel agent; storage is read from the Mindscape host filesystem. Sources that fail are reported in data.warnings rather than failing the request.
+//
+// @ID          GetUserCoolifyMetrics
+// @Tags        Widgets
+// @Produce     json
+// @Security BearerAuth
+// @Param       user_widget_id      path         string                         true "Widget Id"       default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
+// @Success     200                 {object}     CoolifyWidgetMetricsResponse
+// @Failure     400                 {object}     CoolifyWidgetMetricsResponse
+// @Failure     401                 {object}     CoolifyWidgetMetricsResponse
+// @Failure     403                 {object}     CoolifyWidgetMetricsResponse
+// @Failure     500                 {object}     CoolifyWidgetMetricsResponse
+// @Router      /widgets/{user_widget_id}/coolify/metrics [get]
+func (wc WidgetController) CoolifyWidgetMetrics(ctx echo.Context) error {
+	widget := handlers.NewReadUserWidgetHandler(
+		ctx,
+		wc.WidgetService,
+		wc.AuthService,
+	).Handle()
+
+	if widget.Error() != nil {
+		return widget.JSON()
+	}
+
+	return handlers.CoolifyWidgetMetricsJsonHandler(
+		ctx,
+		widget.Data().(*repository.UserWidget),
+	)
+}
 //endregion
 
 
@@ -413,6 +539,10 @@ func (wc WidgetController) Attatch(e *echo.Echo, middlewares ...echo.MiddlewareF
 	api.GET("/github/:user_widget_id", wc.GithubWidget, middlewares...)
 	api.GET("/:user_widget_id/github/profile", wc.GithubProfileWidget, middlewares...)
 	api.GET("/:user_widget_id/github/commits", wc.GithubCommitsWidget, middlewares...)
+	api.GET("/:user_widget_id/github/prs", wc.GithubPRsWidget, middlewares...)
+	api.GET("/:user_widget_id/plex/recently-added", wc.PlexRecentlyAdded, middlewares...)
+	api.GET("/:user_widget_id/coolify", wc.CoolifyWidgetStatus, middlewares...)
+	api.GET("/:user_widget_id/coolify/metrics", wc.CoolifyWidgetMetrics, middlewares...)
 	api.GET("/:user_widget_id/coolify/applications", wc.CoolifyWidgetApplications, middlewares...)
 	api.GET("/:user_widget_id/coolify/services", wc.CoolifyWidgetServices, middlewares...)
 	api.POST("/:user_widget_id/coolify/applications/:app_uuid/start", wc.StartCoolifyApplication, middlewares...)

@@ -33,6 +33,32 @@ type Folder struct {
 	UpdatedDatetime *time.Time  `json:"updated_datetime"`
 }
 
+type Household struct {
+	ID        uuid.UUID  `json:"id"`
+	Name      string     `json:"name"`
+	OwnerID   uuid.UUID  `json:"owner_id"`
+	CreatedAt *time.Time `json:"created_at"`
+}
+
+type HouseholdInvite struct {
+	ID            uuid.UUID        `json:"id"`
+	HouseholdID   uuid.UUID        `json:"household_id"`
+	InvitedUserID uuid.UUID        `json:"invited_user_id"`
+	Code          string           `json:"code"`
+	ExpiresAt     *time.Time       `json:"expires_at"`
+	AcceptedAt    pgtype.Timestamp `json:"accepted_at"`
+	CreatedBy     uuid.UUID        `json:"created_by"`
+	CreatedAt     *time.Time       `json:"created_at"`
+}
+
+type HouseholdMember struct {
+	ID          uuid.UUID  `json:"id"`
+	HouseholdID uuid.UUID  `json:"household_id"`
+	UserID      uuid.UUID  `json:"user_id"`
+	Role        string     `json:"role"`
+	JoinedAt    *time.Time `json:"joined_at"`
+}
+
 type Note struct {
 	ID              uuid.UUID  `json:"id"`
 	UserID          uuid.UUID  `json:"user_id"`

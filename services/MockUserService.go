@@ -5,6 +5,7 @@ package services
 import (
 	"context"
 	"errors"
+	"strings"
 	"sync"
 	"time"
 
@@ -409,8 +410,29 @@ func (service *MockUserService) GetAll() ([]repository.User, error) {
 	for _, user := range service.users {
 		users = append(users, *user)
 	}
-	
+
 	return users, nil
+}
+
+// SearchByUsername returns slim (id + username) matches for the query, excluding
+// the requester, capped at 10.
+func (service *MockUserService) SearchByUsername(query string, requesterID uuid.UUID) ([]repository.SearchUsersByUsernameRow, error) {
+	service.mutex.RLock()
+	defer service.mutex.RUnlock()
+
+	results := make([]repository.SearchUsersByUsernameRow, 0)
+	for _, user := range service.users {
+		if user.ID == requesterID {
+			continue
+		}
+		if query == "" || strings.HasPrefix(strings.ToLower(user.Username), strings.ToLower(query)) {
+			results = append(results, repository.SearchUsersByUsernameRow{ID: user.ID, Username: user.Username})
+		}
+		if len(results) >= 10 {
+			break
+		}
+	}
+	return results, nil
 }
 
 // Update implements IUserService.Update

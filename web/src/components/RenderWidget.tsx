@@ -6,8 +6,11 @@ import {
 } from '@/api';
 import { useAuth } from '@/contexts/AuthContext';
 import CoolifyWidget from './atoms/widgets/CoolifyWidget';
+import GitHubPRsWidget from './atoms/widgets/GitHubPRsWidget';
 import GitHubProfileWidget from './atoms/widgets/GitHubProfileWidget';
-import SearchbarWidget from './atoms/widgets/SearchbarWidget';
+import PlexWidget from './atoms/widgets/PlexWidget';
+import SearXNGWidget from './atoms/widgets/SearXNGWidget';
+import WebSearchWidget from './atoms/widgets/WebSearchWidget';
 
 // NOTE: Best-case scenario sanitization function
 // TODO: Implement proper validation and sanitization based on widget schema
@@ -23,12 +26,19 @@ function sanitizeWidgetConfig(config: { [key: string]: object } | undefined): {
 	// - Sanitize string values (escape HTML, validate URLs)
 	// - Validate numeric ranges
 	// - Ensure required fields are present
-	console.log('config', config);
 	return config;
 }
 
 // Widget state machine - determines which widget component to render
-type WidgetType = 'none' | 'searchbar' | 'githubprofile' | 'coolify' | string;
+type WidgetType =
+	| 'none'
+	| 'searchbar'
+	| 'searxng'
+	| 'githubprofile'
+	| 'githubprs'
+	| 'coolify'
+	| 'plex'
+	| string;
 
 function resolveWidgetType(schemaType: string | undefined): WidgetType {
 	if (!schemaType) return 'none';
@@ -36,12 +46,22 @@ function resolveWidgetType(schemaType: string | undefined): WidgetType {
 	// Map schema types to widget types
 	const type = schemaType.toLowerCase();
 
-	// Handle searchbar types
+	// Generic web-search redirect (Google, Bing, DDG)
 	if (type === 'searchbar' || type === 'search') {
 		return 'searchbar';
 	}
 
-	// Handle github profile types (all variants map to same component)
+	// Dedicated SearXNG instance with inline results
+	if (type === 'searxng') {
+		return 'searxng';
+	}
+
+	// GitHub PRs (review-requested / authored / mentioned)
+	if (type === 'githubprs') {
+		return 'githubprs';
+	}
+
+	// GitHub profile card (legacy — kept for existing installed widgets)
 	if (type.startsWith('githubprofile')) {
 		return 'githubprofile';
 	}
@@ -49,6 +69,11 @@ function resolveWidgetType(schemaType: string | undefined): WidgetType {
 	// Handle coolify types (coolify-a, coolify-b, etc.)
 	if (type.startsWith('coolify')) {
 		return 'coolify';
+	}
+
+	// Plex recently-added widget
+	if (type === 'plex') {
+		return 'plex';
 	}
 
 	return 'none';
@@ -122,12 +147,44 @@ export default function RenderWidget({
 							'z-index': widget.zIndex ?? 1,
 						}}
 					>
-						<SearchbarWidget
+						<WebSearchWidget
 							url={
 								sanitizedConfig().serverUrl ||
 								'https://www.google.com/search?q=%s'
 							}
 							engine={sanitizedConfig().engine || 'Google'}
+						/>
+					</div>
+				</Match>
+
+				<Match when={widgetType() === 'searxng'}>
+					<div
+						style={{
+							padding: `${spacing}px`,
+							'z-index': widget.zIndex ?? 1,
+						}}
+						class="w-full"
+					>
+						<SearXNGWidget
+							serverUrl={sanitizedConfig().serverUrl as string}
+							defaultEngines={sanitizedConfig().defaultEngines as string[]}
+							categories={sanitizedConfig().categories as string[]}
+							safeSearch={sanitizedConfig().safeSearch as boolean}
+						/>
+					</div>
+				</Match>
+
+				<Match when={widgetType() === 'githubprs'}>
+					<div
+						style={{
+							padding: `${spacing}px`,
+							'z-index': widget.zIndex ?? 1,
+						}}
+						class="w-full"
+					>
+						<GitHubPRsWidget
+							widgetId={widget.id ?? ''}
+							refreshInterval={sanitizedConfig().refreshInterval as number}
 						/>
 					</div>
 				</Match>
@@ -159,6 +216,22 @@ export default function RenderWidget({
 							widgetId={widget.id ?? ''}
 							authToken={auth.token() ?? ''}
 							foldInitially={sanitizedConfig().foldInitially as boolean}
+						/>
+					</div>
+				</Match>
+
+				<Match when={widgetType() === 'plex'}>
+					<div
+						style={{
+							padding: `${spacing}px`,
+							'z-index': widget.zIndex ?? 1,
+						}}
+						class="w-full"
+					>
+						<PlexWidget
+							widgetId={widget.id ?? ''}
+							authToken={auth.token() ?? ''}
+							refreshInterval={sanitizedConfig().refreshInterval as number}
 						/>
 					</div>
 				</Match>

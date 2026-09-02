@@ -7,7 +7,9 @@ import (
 
 	"github.com/adamkali/mindscape/cmd/configuration"
 	handlers "github.com/adamkali/mindscape/models/handlers/user_handlers"
+	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
@@ -44,7 +46,7 @@ func BuildUserController(p *services.Registrar) UserController {
 // @Tags        Users
 // @Produce     json
 // @Param       user_id             path         string                         true "User Id"          default("e38e78a4-2ca3-4c59-a3ea-a2019866e593")
-// @Param       Authorization       header       string                         true "admin header"     default("Bearer token")
+// @Security BearerAuth
 // @Success     200                 {object}     responses.DeleteUserResponse
 // @Router      /users/{user_id}    [delete]
 func (UserController *UserController) DeleteUser(ctx echo.Context) error {
@@ -144,7 +146,7 @@ func (uc *UserController) Logout(ctx echo.Context) error {
 // @ID          GetCurrentLoggedInUser
 // @Tags        Users
 // @Produce     json
-// @Param       authorization   header       string                         true "admin header"     default(Bearer token)
+// @Security BearerAuth
 // @Success     200             {object}     responses.UserResponse
 // @Failure     400             {object}     responses.UserResponse
 // @Failure     401             {object}     responses.UserResponse
@@ -166,7 +168,7 @@ func (UserController *UserController) GetCurrent(ctx echo.Context) error {
 // @Accept			multipart/form-data
 // @Produce			json
 // @Param			file				formData	file			true	"this is a test file"
-// @Param           authorization		header      string          true	"admin header"        default(Bearer token)
+// @Security BearerAuth
 // @Success		    200					{string}	UserResponse
 // @Failure		    400					{object}	UserResponse
 // @Failure		    404					{object}	UserResponse
@@ -188,7 +190,7 @@ func (UserController *UserController) UploadProfilePicture(ctx echo.Context) err
 // @ID          GetProfilePicture
 // @Tags        Users
 // @Produce     json
-// @Param       Authorization       header       string                         true "admin header"     default(Bearer token)
+// @Security BearerAuth
 // @Success     200                 {object}     responses.StringResponse
 // @Failure     401                 {object}     responses.StringResponse
 // @Failure     403                 {object}     responses.StringResponse
@@ -211,7 +213,7 @@ func (uc *UserController) GetProfile(ctx echo.Context) error {
 // @ID          GetUsers
 // @Tags        Users
 // @Produce     json
-// @Param       Authorization       header       string                         true "admin header"     default(Bearer token)
+// @Security BearerAuth
 // @Success     200                 {object}     UsersResponse
 // @Failure     403                 {object}     UsersResponse
 // @Failure     404                 {object}     UsersResponse
@@ -234,7 +236,7 @@ func (uc *UserController) GetUsers(ctx echo.Context) error {
 // @Accept      json
 // @Produce     json
 // @Param       UpdateCredentialsRequest body         UpdateCredentialsRequest       true "Update User Credentials Request"
-// @Param       Authorization            header       string                         true "admin header"                    default(Bearer token)
+// @Security BearerAuth
 // @Success     200                      {object}     UpdateUserResponse
 // @Failure     400                      {object}     UpdateUserResponse
 // @Failure     401                      {object}     UpdateUserResponse
@@ -275,7 +277,7 @@ func (uc *UserController) GetDefaultBackground(ctx echo.Context) error {
 // @Tags        Users
 // @Accept      multipart/form-data
 // @Param       file                formData    file                            true "this is a test file"
-// @Param       Authorization       header       string                         true "admin header"     default(Bearer token)
+// @Security BearerAuth
 // @Produce     json
 // @Success     200                 {object}     responses.StringResponse
 // @Failure     404                 {object}     responses.StringResponse
@@ -318,7 +320,7 @@ func (uc *UserController) GetBackgroundChoices(ctx echo.Context) error {
 //
 // @ID          GetUserBackground
 // @Tags        Users
-// @Param       Authorization       header       string                         true "admin header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       background          query        string                         true "background"
 // @Produce     json
 // @Success     200                 {object}     responses.StringResponse
@@ -340,7 +342,7 @@ func (uc UserController) GetBackground(ctx echo.Context) error {
 //
 // @ID          GetUserBackgroundChoices
 // @Tags        Users
-// @Param       Authorization       header       string                         true "admin header"     default(Bearer token)
+// @Security BearerAuth
 // @Produce     json
 // @Success     200                 {object}     responses.BackgroundsResponse
 // @Failure     404                 {object}     responses.BackgroundsResponse
@@ -362,7 +364,7 @@ func (uc UserController) GetUserBackgroundChoices(ctx echo.Context) error {
 //
 // @ID          SetUserBackground
 // @Tags        Users
-// @Param       Authorization       header       string                         true "admin header"     default(Bearer token)
+// @Security BearerAuth
 // @Param       background          query        string                         true "background"
 // @Produce     json
 // @Success     200                 {object}     responses.StringResponse
@@ -376,6 +378,30 @@ func (uc UserController) SetBackground(ctx echo.Context) error {
 		uc.AuthService,
 		uc.MinioService,
 	).Handle().JSON()
+}
+
+// @Summary     Search Users by username
+// @Description Autocomplete usernames (max 10, excludes caller, no PII).
+// @ID          SearchUsers
+// @Tags        Users
+// @Produce     json
+// @Security    BearerAuth
+// @Param       q query string true "Username query"
+// @Success     200 {object} responses.UsersSearchResponse
+// @Failure     401 {object} responses.UsersSearchResponse
+// @Failure     500 {object} responses.UsersSearchResponse
+// @Router      /users/search [get]
+func (uc UserController) SearchUsers(ctx echo.Context) error {
+	token := ctx.Get("user").(*jwt.Token)
+	if err := uc.AuthService.CheckToken(token.Raw); err != nil {
+		return responses.NewUsersSearchResponse().Fail(ctx, 401, err)
+	}
+	claims := token.Claims.(*services.CustomJwt)
+	results, err := uc.UserService.SearchByUsername(ctx.QueryParam("q"), claims.UserId)
+	if err != nil {
+		return responses.NewUsersSearchResponse().Fail(ctx, 500, err)
+	}
+	return responses.NewUsersSearchResponse().Successful(ctx, results)
 }
 
 func (uc UserController) Attatch(e *echo.Echo, middlewares ...echo.MiddlewareFunc) {
@@ -393,6 +419,7 @@ func (uc UserController) Attatch(e *echo.Echo, middlewares ...echo.MiddlewareFun
 	api.POST("/refresh", uc.Refresh)
 	api.DELETE("/refresh", uc.Logout)
 	api.GET("/current", uc.GetCurrent, middlewares...)
+	api.GET("/search", uc.SearchUsers, middlewares...)
 	api.POST("/profile", uc.UploadProfilePicture, middlewares...)
 	api.POST("/creds", uc.UpdateUser, middlewares...)
 	api.GET("/profile", uc.GetProfile, middlewares...)

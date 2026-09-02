@@ -54,4 +54,7 @@ type IUserService interface {
 	// Update the user's BackgroundImage
 	UpdateUserBackgroundImage(params *repository.UpdateUserBacgroundParams) (*repository.User, error)
 
+	// Search users by username for autocomplete. Returns at most 10 slim
+	// records (id + username only — no PII), excluding the requester.
+	SearchByUsername(query string, requesterID uuid.UUID) ([]repository.SearchUsersByUsernameRow, error)
 }

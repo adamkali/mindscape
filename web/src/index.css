@@ -206,3 +206,29 @@
 .dark {
 	--datetime-indicator-filter: invert(1) brightness(0.9);
 }
+
+/* Markdown rendered output styling */
+.markdown-content h1 { font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; }
+.markdown-content h2 { font-size: 1.25rem; font-weight: bold; margin-bottom: 0.5rem; }
+.markdown-content h3 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.25rem; }
+.markdown-content h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; }
+.markdown-content p { margin-bottom: 0.75rem; line-height: 1.6; }
+.markdown-content ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 0.75rem; }
+.markdown-content ol { list-style-type: decimal; margin-left: 1.5rem; margin-bottom: 0.75rem; }
+.markdown-content li { margin-bottom: 0.25rem; }
+.markdown-content code { font-family: monospace; background: rgba(0,0,0,0.2); padding: 0.1rem 0.3rem; border-radius: 0.25rem; font-size: 0.875rem; }
+.dark .markdown-content code { background: rgba(255,255,255,0.1); }
+.markdown-content pre { background: rgba(0,0,0,0.25); padding: 1rem; border-radius: 0.5rem; overflow-x: auto; margin-bottom: 0.75rem; }
+.dark .markdown-content pre { background: rgba(0,0,0,0.5); }
+.markdown-content pre code { background: none; padding: 0; }
+.markdown-content a { color: var(--primary); text-decoration: underline; }
+.markdown-content blockquote { border-left: 3px solid rgba(255,255,255,0.3); padding-left: 1rem; margin-bottom: 0.75rem; opacity: 0.8; }
+.markdown-content strong { font-weight: bold; }
+.markdown-content em { font-style: italic; }
+.markdown-content hr { border-top: 1px solid rgba(255,255,255,0.2); margin: 1rem 0; }
+.markdown-content table { border-collapse: collapse; width: 100%; margin-bottom: 0.75rem; }
+.markdown-content th, .markdown-content td { border: 1px solid rgba(255,255,255,0.2); padding: 0.5rem; text-align: left; }
+
+/* CodeMirror editor sizing */
+.cm-editor { height: 100%; min-height: 16rem; }
+.cm-scroller { overflow: auto; }
