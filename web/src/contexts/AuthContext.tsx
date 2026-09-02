@@ -47,6 +47,12 @@ export const AuthProvider: ParentComponent = (props) => {
 		window.location.href = '/login';
 	};
 
+	// When the interceptor silently refreshes the access token, push the new
+	// token into the auth signal so localStorage and headers stay current.
+	setTokenRefreshedHandler((newToken) => {
+		setToken(newToken);
+	});
+
 	// Initialize global API configuration with auth interceptor
 	const apiConfig = initializeApiConfig(logout);
 	const api = new UsersApi(apiConfig);

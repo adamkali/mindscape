@@ -15,6 +15,10 @@ export function initializeApiConfig(logoutHandler: () => void): Configuration {
 			return token ? `Bearer ${token}` : '';
 		},
 		middleware: [createAuthInterceptor(logoutHandler)],
+		// Send cookies (the httpOnly refresh token) with API requests; the
+		// cookie is path-scoped to /api/users/refresh so it only actually
+		// travels on refresh/logout calls.
+		credentials: 'include',
 	});
 
 	return globalApiConfig;

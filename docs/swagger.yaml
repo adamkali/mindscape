@@ -658,19 +658,23 @@ definitions:
         type: boolean
     type: object
   repository.UpdateTaskContentParams:
-    properties:
-      description:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
     type: object
   requests.MoveFolderRequest:
     properties:
       folderId:
         type: string
       newParentId:
+        type: string
+      userId:
+        type: string
+    type: object
+  requests.UpdateFolderRequest:
+    properties:
+      description:
+        type: string
+      folderId:
+        type: string
+      name:
         type: string
       userId:
         type: string

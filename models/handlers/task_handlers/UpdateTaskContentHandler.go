@@ -9,6 +9,7 @@ import (
 	"github.com/adamkali/mindscape/models/responses"
 	"github.com/adamkali/mindscape/services"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 )
 
@@ -62,10 +63,15 @@ func (h *UpdateTaskContentHandler) Handle() handlers.IHandler {
 	if h.result.UserID != userID {
 		return handlers.Lock(h, 403, fmt.Errorf("forbidden: task does not belong to user"))
 	}
+	dueAt := pgtype.Timestamptz{}
+	if request.DueAt != nil {
+		dueAt = pgtype.Timestamptz{Time: *request.DueAt, Valid: true}
+	}
 	if h.result, err = h.services.TaskService.UpdateTaskContent(repository.UpdateTaskContentParams{
-		ID: request.ID,
-		Name: &request.Name,
+		ID:          request.ID,
+		Name:        &request.Name,
 		Description: &request.Description,
+		DueAt:       dueAt,
 	}); err != nil {
 		return handlers.Lock(h, 500, err)
 	}

@@ -53,10 +53,13 @@ func (h *UpdateUserHandler) Handle() handlers.IHandler {
 	if err != nil {
 		return handlers.Lock(h, 500, err)
 	}
-	h.Token, err = h.as.Update(*h.User)
+	// Re-mint the access token so the new claims (username, etc.) take
+	// effect immediately; the existing refresh session keeps working.
+	access, err := h.as.MintAccessToken(h.User)
 	if err != nil {
 		return handlers.Lock(h, 500, err)
 	}
+	h.Token = &access
 
 	return h
 }

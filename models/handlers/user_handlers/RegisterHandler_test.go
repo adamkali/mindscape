@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/adamkali/mindscape/cmd/configuration"
 	"github.com/adamkali/mindscape/db/repository"
 	i "github.com/adamkali/mindscape/models/handlers"
 	h "github.com/adamkali/mindscape/models/handlers/user_handlers"
@@ -138,17 +139,11 @@ func WithForceUserServiceCreateFailure(userService *services.MockUserService) *s
 	return userService
 }
 
-// WithForceAuthServiceCreateFailure modifies service to force AuthService.Create failure
-type MockAuthServiceWithCreateFailure struct {
-	services.MockAuthService
-	ShouldFailCreate bool
-}
-
-func (m *MockAuthServiceWithCreateFailure) Create(user *repository.User) (*string, error) {
-	if m.ShouldFailCreate {
-		return nil, fmt.Errorf("Auth service create failure")
-	}
-	return m.MockAuthService.Create(user)
+// WithForceAuthServiceCreateFailure modifies service to force AuthService.IssueSession failure
+func WithForceAuthServiceCreateFailure(authService *services.MockAuthService) *services.MockAuthService {
+	authService.ShouldFailIssueSession = true
+	authService.IssueSessionErrorMessage = "Auth service create failure"
+	return authService
 }
 
 // <runners/>
@@ -188,6 +183,7 @@ func NewRegisterEchoContext(r *http.Request) echo.Context {
 func NewRegisterHandler(r *http.Request, userService services.IUserService, authService services.IAuthService) *h.RegisterHandler {
 	return h.NewRegisterHandler(
 		NewRegisterEchoContext(r),
+		&configuration.Configuration{},
 		services.ValidatorService{},
 		userService,
 		authService,
@@ -467,7 +463,7 @@ func Run_RegisterHandler_UserServiceFailure(t *testing.T) {
 func Run_RegisterHandler_AuthServiceFailure(t *testing.T) {
 	userService := &services.MockUserService{}
 	userService.Reset()
-	authService := &MockAuthServiceWithCreateFailure{ShouldFailCreate: true}
+	authService := WithForceAuthServiceCreateFailure(&services.MockAuthService{})
 	
 	req := NewRegisterTestRequest(http.MethodPost, "/api/users/register", RegisterHandlerRequestParams())
 	handler := NewRegisterHandler(req, userService, authService)

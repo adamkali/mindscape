@@ -5,6 +5,7 @@ package user_handlers
 import (
 	"fmt"
 
+	"github.com/adamkali/mindscape/cmd/configuration"
 	"github.com/adamkali/mindscape/db/repository"
 	"github.com/adamkali/mindscape/models/handlers"
 	"github.com/adamkali/mindscape/models/requests"
@@ -19,6 +20,7 @@ type RegisterHandler struct {
 	ctx              echo.Context
 	err              error
 	code             int
+	Config           *configuration.Configuration
 	ValidatorService services.ValidatorService
 	UserService      services.IUserService
 	AuthService      services.IAuthService
@@ -26,6 +28,7 @@ type RegisterHandler struct {
 
 func NewRegisterHandler(
 	ctx echo.Context,
+	config *configuration.Configuration,
 	ValidatorService services.ValidatorService,
 	UserService services.IUserService,
 	AuthService services.IAuthService,
@@ -36,6 +39,7 @@ func NewRegisterHandler(
 		newUser:          nil,
 		token:            nil,
 		err:              nil,
+		Config:           config,
 		ValidatorService: ValidatorService,
 		UserService:      UserService,
 		AuthService:      AuthService,
@@ -59,9 +63,12 @@ func (h *RegisterHandler) Handle() handlers.IHandler{
 		return handlers.Lock(h, 500, err)
 	}
 	fmt.Println(h.newUser)
-	if h.token, err = h.AuthService.Create(h.newUser); err != nil {
+	access, refreshRaw, err := h.AuthService.IssueSession(h.newUser, h.ctx.Request().UserAgent())
+	if err != nil {
 		return handlers.Lock(h, 500, err)
 	}
+	h.token = &access
+	SetRefreshCookie(h.ctx, h.Config, refreshRaw)
 	return h
 }
 

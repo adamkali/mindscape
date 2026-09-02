@@ -11,6 +11,10 @@ server:
   frontend:
     dir: web/dist
     api: web/src/api
+  access_token_ttl: 15m
+  refresh_token_ttl: 720h
+  cookie:
+    secure: true
 database:
   url: postgres://mindscape:mindscape_secret_password@postgres:5432/mindscape?sslmode=disable
   sqlc:

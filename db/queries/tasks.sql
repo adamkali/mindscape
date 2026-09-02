@@ -54,8 +54,8 @@ ORDER BY updated_at DESC;
 
 -- InsertNewTask
 -- name: InsertNewTask :one
-INSERT INTO tasks (user_id, task_type_id, name, description)
-VALUES ($1, $2, $3, $4)
+INSERT INTO tasks (user_id, task_type_id, name, description, due_at)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- UpdateAsAmbiguous
@@ -154,7 +154,8 @@ WHERE id = $1;
 UPDATE tasks
 SET updated_at = now(),
     name = $2,
-    description = $3
+    description = $3,
+    due_at = $4
 WHERE id = $1
 RETURNING *;
 
