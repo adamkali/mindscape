@@ -35,7 +35,7 @@ type CoolifyWidgetMetricsHandler struct {
 	sentinelURL string
 	cpu         *clients.SentinelCPU
 	memory      *clients.SentinelMemory
-	storage     *clients.Disk
+	storage     []clients.Disk
 	warnings    []string
 }
 
@@ -114,20 +114,26 @@ func (h *CoolifyWidgetMetricsHandler) Handle() handlers.IHandler {
 	return h
 }
 
-// collectStorage reads the filesystem Mindscape itself runs on. The path is
-// configurable so a deployment can point at the volume that actually matters.
+// collectStorage reads each configured filesystem on the host Mindscape itself
+// runs on. Paths are configurable so a deployment can report the volumes that
+// actually matter rather than just the container root.
+//
+// Each path is independent: one bad path contributes a warning naming it and
+// the remaining tiles still render.
 func (h *CoolifyWidgetMetricsHandler) collectStorage(config CoolifyWidgetConfig) {
-	path := strings.TrimSpace(config.DiskPath)
-	if path == "" {
-		path = "/"
+	paths := config.DiskPaths.Clean()
+	if len(paths) == 0 {
+		paths = []string{"/"}
 	}
 
-	disk, err := clients.DiskUsage(path)
-	if err != nil {
-		h.warn("Storage unavailable: %v", err)
-		return
+	for _, path := range paths {
+		disk, err := clients.DiskUsage(path)
+		if err != nil {
+			h.warn("Storage unavailable for %q: %v", path, err)
+			continue
+		}
+		h.storage = append(h.storage, *disk)
 	}
-	h.storage = disk
 }
 
 // resolveSentinel finds the Sentinel address and token, preferring explicit

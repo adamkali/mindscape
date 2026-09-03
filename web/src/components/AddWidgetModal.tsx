@@ -13,9 +13,45 @@ export default function AddWidgetModal(props: AddWidgetModalProps) {
 	const [selectedSchemaId, setSelectedSchemaId] = createSignal<string>('');
 	const [widgetConfig, setWidgetConfig] = createSignal<Record<string, any>>({});
 	const [submitting, setSubmitting] = createSignal(false);
+	// Raw text the user typed into each `array` property's input. View-only state:
+	// widgetConfig holds the parsed array, this holds the in-progress text so the
+	// input does not fight the user mid-keystroke (e.g. while typing a separator).
+	const [arrayText, setArrayText] = createSignal<
+		Record<string, string | undefined>
+	>({});
 
 	const handleConfigChange = (key: string, value: any) => {
 		setWidgetConfig({ ...widgetConfig(), [key]: value });
+	};
+
+	// `array` properties are edited as a comma separated list (matching the
+	// "Comma separated list" schema copy) but MUST serialize to a real JSON array:
+	// the backend unmarshals these keys into Go `[]string`, so submitting a bare
+	// string fails with "cannot unmarshal string into []string" and the widget
+	// 400s. Empty input therefore yields `[]`, never `''` — and an empty array is
+	// the documented "show everything" value, so it stays a valid submission.
+	const parseArrayText = (text: string): string[] =>
+		text
+			.split(',')
+			.map((entry) => entry.trim())
+			.filter((entry) => entry.length > 0);
+
+	// Schemas disagree on the default for an array property: coolify ships `''`,
+	// searxng ships `[]`. Accept either (and anything else) without crashing.
+	const arrayValueToText = (value: unknown): string => {
+		if (Array.isArray(value)) {
+			return value.map((entry) => String(entry)).join(', ');
+		}
+		if (typeof value === 'string') return value;
+		return '';
+	};
+
+	const arrayTextFor = (key: string, schemaValue: unknown): string =>
+		arrayText()[key] ?? arrayValueToText(schemaValue);
+
+	const handleArrayChange = (key: string, text: string) => {
+		setArrayText({ ...arrayText(), [key]: text });
+		handleConfigChange(key, parseArrayText(text));
 	};
 
 	const handleSubmit = async (e: Event) => {
@@ -61,6 +97,7 @@ export default function AddWidgetModal(props: AddWidgetModalProps) {
 		if (ok) {
 			props.onClose();
 			setWidgetConfig({});
+			setArrayText({});
 			setSelectedSchemaId('');
 		} else {
 			alert('Failed to create widget');
@@ -278,6 +315,25 @@ export default function AddWidgetModal(props: AddWidgetModalProps) {
 																				handleConfigChange(
 																					key,
 																					parseFloat(e.currentTarget.value),
+																				)
+																			}
+																			placeholder={property.description}
+																		/>
+																	</Show>
+
+																	{/* Keyed off `type`, not `format`: the schemas
+																	    disagree on format for array properties (coolify
+																	    says "array", githubprs/searxng say "string"). */}
+																	<Show when={property.type === 'array'}>
+																		<input
+																			id={key}
+																			type="text"
+																			class="w-full px-3 py-2 text-sm rounded-lg bg-slate-600/40 text-foreground focus:outline-none"
+																			value={arrayTextFor(key, property.value)}
+																			onInput={(e) =>
+																				handleArrayChange(
+																					key,
+																					e.currentTarget.value,
 																				)
 																			}
 																			placeholder={property.description}

@@ -256,7 +256,7 @@ export default function CoolifyWidget(props: CoolifyWidgetProps) {
 		const clamped = known ? Math.max(0, Math.min(100, percent)) : 0;
 
 		return (
-			<div class="flex-1 min-w-0 p-2 bg-black/20 rounded">
+			<div class="flex-1 min-w-[7.5rem] p-2 bg-black/20 rounded">
 				<div class="flex items-baseline justify-between gap-2">
 					<span class="text-xs font-semibold uppercase tracking-wide text-gray-400">
 						{tile.label}
@@ -349,7 +349,9 @@ export default function CoolifyWidget(props: CoolifyWidgetProps) {
 											{data().serverName}
 										</div>
 									</Show>
-									<div class="flex gap-2">
+									{/* Wraps because storage is now one tile per configured
+									    path, so the row length is not fixed. */}
+									<div class="flex flex-wrap gap-2">
 										{UsageTile({
 											label: 'CPU',
 											percent: data().cpu?.percent,
@@ -364,16 +366,28 @@ export default function CoolifyWidget(props: CoolifyWidgetProps) {
 												? `${formatBytes(data().memory?.used)} / ${formatBytes(data().memory?.total)}`
 												: 'no Sentinel reading',
 										})}
-										{UsageTile({
-											label: 'Storage',
-											percent: data().storage?.usedPercent,
-											detail: data().storage
-												? `${formatBytes(data().storage?.used)} / ${formatBytes(data().storage?.total)}`
-												: 'unavailable',
-											note: data().storage
-												? `${data().storage?.path} on mindscape host`
-												: undefined,
-										})}
+										<Show
+											when={(data().storage?.length ?? 0) > 0}
+											fallback={UsageTile({
+												label: 'Storage',
+												percent: undefined,
+												detail: 'unavailable',
+											})}
+										>
+											<For each={data().storage}>
+												{(disk) =>
+													UsageTile({
+														// The path is the label once there is more than
+														// one, so the tiles stay distinguishable.
+														label:
+															disk.path === '/' ? 'Storage' : (disk.path ?? ''),
+														percent: disk.usedPercent,
+														detail: `${formatBytes(disk.used)} / ${formatBytes(disk.total)}`,
+														note: 'on mindscape host',
+													})
+												}
+											</For>
+										</Show>
 									</div>
 									<Show when={(data().warnings?.length ?? 0) > 0}>
 										<ul class="mt-2 space-y-1">

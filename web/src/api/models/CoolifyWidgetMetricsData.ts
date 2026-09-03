@@ -73,10 +73,10 @@ export interface CoolifyWidgetMetricsData {
     serverUuid?: string;
     /**
      * 
-     * @type {CoolifyStorageMetric}
+     * @type {Array<CoolifyStorageMetric>}
      * @memberof CoolifyWidgetMetricsData
      */
-    storage?: CoolifyStorageMetric;
+    storage?: Array<CoolifyStorageMetric>;
     /**
      * 
      * @type {Array<string>}
@@ -107,7 +107,7 @@ export function CoolifyWidgetMetricsDataFromJSONTyped(json: any, ignoreDiscrimin
         'sentinelUrl': json['sentinel_url'] == null ? undefined : json['sentinel_url'],
         'serverName': json['server_name'] == null ? undefined : json['server_name'],
         'serverUuid': json['server_uuid'] == null ? undefined : json['server_uuid'],
-        'storage': json['storage'] == null ? undefined : CoolifyStorageMetricFromJSON(json['storage']),
+        'storage': json['storage'] == null ? undefined : ((json['storage'] as Array<any>).map(CoolifyStorageMetricFromJSON)),
         'warnings': json['warnings'] == null ? undefined : json['warnings'],
     };
 }
@@ -128,7 +128,7 @@ export function CoolifyWidgetMetricsDataToJSONTyped(value?: CoolifyWidgetMetrics
         'sentinel_url': value['sentinelUrl'],
         'server_name': value['serverName'],
         'server_uuid': value['serverUuid'],
-        'storage': CoolifyStorageMetricToJSON(value['storage']),
+        'storage': value['storage'] == null ? undefined : ((value['storage'] as Array<any>).map(CoolifyStorageMetricToJSON)),
         'warnings': value['warnings'],
     };
 }

@@ -31,11 +31,12 @@ type CoolifyServer struct {
 //   - SentinelCustomURL is the Coolify address Sentinel *pushes metrics to*,
 //     not the address Sentinel listens on. It is useless for reaching Sentinel
 //     and equals the agent's own PUSH_ENDPOINT.
-//   - SentinelToken is whatever Coolify has on record, which drifts from the
-//     agent's real TOKEN if the container was not recreated after a rotation.
-//     A stale value fails every Sentinel call with 401.
+//   - SentinelToken is per server, and each server runs its own agent. Pairing
+//     one server's token with another server's agent fails with 401 — so the
+//     token is only usable against the Sentinel on that same host.
 //
-// Treat both as hints. Explicit widget config is the dependable path.
+// The token itself is reliable; the address is the hard part, since Sentinel
+// binds to the host's Docker bridge rather than a routable interface.
 type CoolifySentinelSettings struct {
 	IsSentinelEnabled bool   `json:"is_sentinel_enabled"`
 	IsMetricsEnabled  bool   `json:"is_metrics_enabled"`

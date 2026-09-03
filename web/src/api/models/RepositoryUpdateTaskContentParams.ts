@@ -20,25 +20,25 @@ import { mapValues } from '../runtime';
  */
 export interface RepositoryUpdateTaskContentParams {
     /**
-     *
+     * 
      * @type {string}
      * @memberof RepositoryUpdateTaskContentParams
      */
     description?: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof RepositoryUpdateTaskContentParams
      */
     dueAt?: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof RepositoryUpdateTaskContentParams
      */
     id?: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof RepositoryUpdateTaskContentParams
      */
