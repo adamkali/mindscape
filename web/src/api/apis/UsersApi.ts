@@ -342,6 +342,62 @@ export class UsersApi extends runtime.BaseAPI {
     }
 
     /**
+     * Revoke the session belonging to the refresh-token cookie and clear it. Other browsers/devices stay logged in.
+     * Logout this device
+     */
+    async logoutRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StringResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/refresh`,
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => StringResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Revoke the session belonging to the refresh-token cookie and clear it. Other browsers/devices stay logged in.
+     * Logout this device
+     */
+    async logout(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StringResponse> {
+        const response = await this.logoutRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Exchange the httpOnly refresh-token cookie for a new access JWT and a rotated refresh cookie. Unauthenticated by design: the refresh cookie is the credential.
+     * Refresh the access token
+     */
+    async refreshRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<LoginResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/users/refresh`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => LoginResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Exchange the httpOnly refresh-token cookie for a new access JWT and a rotated refresh cookie. Unauthenticated by design: the refresh cookie is the credential.
+     * Refresh the access token
+     */
+    async refresh(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<LoginResponse> {
+        const response = await this.refreshRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Autocomplete usernames (max 10, excludes caller, no PII).
      * Search Users by username
      */

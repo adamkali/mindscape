@@ -51,12 +51,14 @@ type CoolifyWidgetConfig struct {
 	// Metrics settings. SentinelUrl/SentinelToken address Coolify's Sentinel
 	// agent directly; leaving them blank makes the metrics handler try to
 	// discover them through the Coolify API instead. ServerUuid disambiguates
-	// when a token can see more than one server, and DiskPath selects the
-	// filesystem reported as storage (default "/").
-	SentinelUrl   string `json:"sentinelUrl"`
-	SentinelToken string `json:"sentinelToken"`
-	ServerUuid    string `json:"serverUuid"`
-	DiskPath      string `json:"diskPath"`
+	// when a token can see more than one server, and DiskPaths selects which
+	// filesystems are reported as storage (default "/"). DiskPaths accepts a
+	// single string as well as a list, so widgets configured before it became a
+	// list keep working.
+	SentinelUrl   string     `json:"sentinelUrl"`
+	SentinelToken string     `json:"sentinelToken"`
+	ServerUuid    string     `json:"serverUuid"`
+	DiskPaths     StringList `json:"diskPath"`
 }
 
 func (h *CoolifyWidgetHandler) SetCode(code int) handlers.IHandler   { h.code = code; return h }

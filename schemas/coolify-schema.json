@@ -84,11 +84,13 @@
       "enum": []
     },
     "diskPath": {
-      "label": "Storage Path",
-      "value": "/",
-      "type": "string",
+      "label": "Storage Paths",
+      "value": [
+        "/"
+      ],
+      "type": "array",
       "format": "string",
-      "description": "Filesystem to report as storage usage. Read from the host running Mindscape, since neither Coolify nor Sentinel exposes a disk metric.",
+      "description": "Comma separated list of filesystems to report as storage, one tile each (e.g. /, /home). Read from inside the Mindscape container, since neither Coolify nor Sentinel exposes a disk metric \u2014 a path must be visible there, so host directories need a bind mount. Leave empty for /.",
       "enum": []
     }
   },

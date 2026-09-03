@@ -30,18 +30,19 @@ type CoolifyStorageMetric struct {
 	Source string `json:"source"`
 } // @name CoolifyStorageMetric
 
-// CoolifyWidgetMetricsData carries whatever could be collected. Each metric is
-// nullable on purpose: Sentinel and the local filesystem are independent
-// sources, and one being unreachable should not blank the other two tiles.
-// Anything that failed is explained in Warnings.
+// CoolifyWidgetMetricsData carries whatever could be collected. CPU and Memory
+// are nullable and Storage may be empty on purpose: Sentinel and each
+// configured filesystem are independent sources, and one being unreachable
+// should not blank the remaining tiles. Anything that failed is explained in
+// Warnings.
 type CoolifyWidgetMetricsData struct {
-	ServerName  string                `json:"server_name"`
-	ServerUUID  string                `json:"server_uuid"`
-	SentinelURL string                `json:"sentinel_url"`
-	CPU         *CoolifyCPUMetric     `json:"cpu"`
-	Memory      *CoolifyMemoryMetric  `json:"memory"`
-	Storage     *CoolifyStorageMetric `json:"storage"`
-	Warnings    []string              `json:"warnings"`
+	ServerName  string                 `json:"server_name"`
+	ServerUUID  string                 `json:"server_uuid"`
+	SentinelURL string                 `json:"sentinel_url"`
+	CPU         *CoolifyCPUMetric      `json:"cpu"`
+	Memory      *CoolifyMemoryMetric   `json:"memory"`
+	Storage     []CoolifyStorageMetric `json:"storage"`
+	Warnings    []string               `json:"warnings"`
 } // @name CoolifyWidgetMetricsData
 
 type CoolifyWidgetMetricsResponse struct {
@@ -52,7 +53,10 @@ type CoolifyWidgetMetricsResponse struct {
 
 func NewCoolifyWidgetMetricsResponse() *CoolifyWidgetMetricsResponse {
 	return &CoolifyWidgetMetricsResponse{
-		Data:    &CoolifyWidgetMetricsData{Warnings: []string{}},
+		Data: &CoolifyWidgetMetricsData{
+			Storage:  []CoolifyStorageMetric{},
+			Warnings: []string{},
+		},
 		Success: false,
 		Message: "",
 	}
@@ -71,13 +75,14 @@ func (w *CoolifyWidgetMetricsResponse) Successful(
 	sentinelURL string,
 	cpu *clients.SentinelCPU,
 	memory *clients.SentinelMemory,
-	storage *clients.Disk,
+	storage []clients.Disk,
 	warnings []string,
 ) error {
 	data := &CoolifyWidgetMetricsData{
 		ServerName:  serverName,
 		ServerUUID:  serverUUID,
 		SentinelURL: sentinelURL,
+		Storage:     []CoolifyStorageMetric{},
 		Warnings:    warnings,
 	}
 	if data.Warnings == nil {
@@ -100,15 +105,15 @@ func (w *CoolifyWidgetMetricsResponse) Successful(
 			Time:        memory.Time,
 		}
 	}
-	if storage != nil {
-		data.Storage = &CoolifyStorageMetric{
-			Path:        storage.Path,
-			Total:       storage.Total,
-			Used:        storage.Used,
-			Available:   storage.Available,
-			UsedPercent: storage.UsedPercent,
+	for _, disk := range storage {
+		data.Storage = append(data.Storage, CoolifyStorageMetric{
+			Path:        disk.Path,
+			Total:       disk.Total,
+			Used:        disk.Used,
+			Available:   disk.Available,
+			UsedPercent: disk.UsedPercent,
 			Source:      "mindscape-host",
-		}
+		})
 	}
 
 	w.Success = true

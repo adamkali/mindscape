@@ -20,31 +20,31 @@ import { mapValues } from '../runtime';
  */
 export interface RepositoryInsertNewTaskParams {
     /**
-     *
+     * 
      * @type {string}
      * @memberof RepositoryInsertNewTaskParams
      */
     description?: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof RepositoryInsertNewTaskParams
      */
     dueAt?: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof RepositoryInsertNewTaskParams
      */
     name?: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof RepositoryInsertNewTaskParams
      */
     taskTypeId?: string;
     /**
-     *
+     * 
      * @type {string}
      * @memberof RepositoryInsertNewTaskParams
      */

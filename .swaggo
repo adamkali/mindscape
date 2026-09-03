@@ -1,0 +1,13 @@
+// swag type overrides.
+//
+// sqlc-generated params and models embed pgx driver types. With
+// --parseDependency swag resolves them structurally, which is wrong for the
+// wire format: these types implement MarshalJSON/UnmarshalJSON and travel as
+// plain JSON scalars. Verified against pgx v5 — a Timestamptz marshals to
+// "2026-09-02T12:00:00Z" and unmarshalling an object fails outright.
+//
+// Without these replacements the generated client types an ISO string field as
+// a struct, so the frontend cannot assign to it without breaking the request.
+replace github.com/jackc/pgx/v5/pgtype.Timestamptz string
+replace github.com/jackc/pgx/v5/pgtype.Timestamp string
+replace github.com/jackc/pgx/v5/pgtype.UUID string

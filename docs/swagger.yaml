@@ -168,7 +168,9 @@ definitions:
       server_uuid:
         type: string
       storage:
-        $ref: '#/definitions/CoolifyStorageMetric'
+        items:
+          $ref: '#/definitions/CoolifyStorageMetric'
+        type: array
       warnings:
         items:
           type: string
@@ -626,6 +628,8 @@ definitions:
     properties:
       description:
         type: string
+      due_at:
+        type: string
       name:
         type: string
       task_type_id:
@@ -658,23 +662,21 @@ definitions:
         type: boolean
     type: object
   repository.UpdateTaskContentParams:
+    properties:
+      description:
+        type: string
+      due_at:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
     type: object
   requests.MoveFolderRequest:
     properties:
       folderId:
         type: string
       newParentId:
-        type: string
-      userId:
-        type: string
-    type: object
-  requests.UpdateFolderRequest:
-    properties:
-      description:
-        type: string
-      folderId:
-        type: string
-      name:
         type: string
       userId:
         type: string
@@ -2541,6 +2543,46 @@ paths:
       security:
       - BearerAuth: []
       summary: Upload file
+      tags:
+      - Users
+  /users/refresh:
+    delete:
+      description: |-
+        Revoke the session belonging to the refresh-token cookie and
+        clear it. Other browsers/devices stay logged in.
+      operationId: Logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/StringResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/StringResponse'
+      summary: Logout this device
+      tags:
+      - Users
+    post:
+      description: |-
+        Exchange the httpOnly refresh-token cookie for a new access
+        JWT and a rotated refresh cookie. Unauthenticated by design:
+        the refresh cookie is the credential.
+      operationId: Refresh
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/LoginResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/LoginResponse'
+      summary: Refresh the access token
       tags:
       - Users
   /users/search:
