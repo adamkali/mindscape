@@ -426,12 +426,12 @@ func (s ValidatorService) CreateTaskRequestValidator(e echo.Context) (*requests.
 	if err := e.Bind(&validRequest); err != nil {
 		return nil, err
 	}
-	// TODO: add validation to description and name to make sure that they are sql safe, 
+	// TODO: add validation to description and name to make sure that they are sql safe,
 	// TODO: make sure that Name is not null or empty
 
 	fmt.Printf("[INFO] ValidatorService.CreateTaskRequestValidator{ validRequest: %v }\n", validRequest)
 
-    switch validRequest.TaskTypeID {
+	switch validRequest.TaskTypeID {
 	case uuid.MustParse("07bae843-7049-449c-a23e-ab78a571d7ca"): // Cancelled
 		return validRequest, nil
 	case uuid.MustParse("106e703a-4dd4-4737-b38b-e4a0000ff158"): // Urgent
@@ -478,6 +478,14 @@ func (s ValidatorService) CreateApiKeyRequestValidator(e echo.Context) (*request
 		if validRequest.NotBefore.After(*validRequest.Expiration) {
 			return nil, errors.New("not_before must be before expiration")
 		}
+	}
+	return validRequest, nil
+}
+
+func (s ValidatorService) ShareFolderWithHouseholdMemeberRequestValidator(e echo.Context) (*requests.ShareFolderWithHouseholdMemeberRequest, error) {
+	validRequest := new(requests.ShareFolderWithHouseholdMemeberRequest)
+	if err := e.Bind(&validRequest); err != nil {
+		return nil, err
 	}
 	return validRequest, nil
 }

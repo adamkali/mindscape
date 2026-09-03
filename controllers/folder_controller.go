@@ -10,11 +10,7 @@ import (
 type FolderController struct {
 	Name             string
 	Config           *configuration.Configuration
-	AuthService      services.IAuthService
-	UserService      services.IUserService
-	FolderService    services.IFolderService
-	BookmarkService  services.IBookmarkService
-	ValidatorService *services.ValidatorService
+	Services         *services.Registrar
 }
 
 func (uc FolderController) ControllerName() string {
@@ -25,11 +21,7 @@ func BuildFolderController(p *services.Registrar) FolderController {
 	return FolderController{
 		Name:             "/folders",
 		Config:           p.Config,
-		AuthService:      p.AuthService,
-		UserService:      p.UserService,
-		FolderService:    p.FolderService,
-		BookmarkService:  p.BookmarkService,
-		ValidatorService: p.ValidatorService,
+		Services:         p,
 	}
 }
 
@@ -50,9 +42,9 @@ func BuildFolderController(p *services.Registrar) FolderController {
 func (folderController FolderController) GetRootFolders(e echo.Context) error {
 	return folder_handlers.NewGetRootHandler(
 		e,
-		folderController.FolderService,
-		folderController.BookmarkService,
-		folderController.AuthService,
+		folderController.Services.FolderService,
+		folderController.Services.BookmarkService,
+		folderController.Services.AuthService,
 	).Handle().JSON()
 }
 
@@ -74,9 +66,9 @@ func (folderController FolderController) GetRootFolders(e echo.Context) error {
 func (folderController FolderController) GetFolderByID(e echo.Context) error {
 	return folder_handlers.NewGetById(
 		e,
-		folderController.FolderService,
-		folderController.BookmarkService,
-		folderController.AuthService,
+		folderController.Services.FolderService,
+		folderController.Services.BookmarkService,
+		folderController.Services.AuthService,
 	).Handle().JSON()
 }
 
@@ -97,9 +89,9 @@ func (folderController FolderController) GetFolderByID(e echo.Context) error {
 func (folderController FolderController) CreateFolder(e echo.Context) error {
 	return folder_handlers.NewCreateHandler(
 		e,
-		*folderController.ValidatorService,
-		folderController.FolderService,
-		folderController.AuthService,
+		*folderController.Services.ValidatorService,
+		folderController.Services.FolderService,
+		folderController.Services.AuthService,
 	).Handle().JSON()
 }
 
@@ -119,8 +111,8 @@ func (folderController FolderController) CreateFolder(e echo.Context) error {
 func (folderController FolderController) DeleteFolder(e echo.Context) error {
 	return folder_handlers.NewDeleteHandler(
 		e,
-		folderController.FolderService,
-		folderController.AuthService,
+		folderController.Services.FolderService,
+		folderController.Services.AuthService,
 	).Handle().JSON()
 }
 
@@ -142,9 +134,9 @@ func (folderController FolderController) DeleteFolder(e echo.Context) error {
 func (folderController FolderController) MoveFolder(e echo.Context) error {
 	return folder_handlers.NewMoveHandler(
 		e,
-		*folderController.ValidatorService,
-		folderController.FolderService,
-		folderController.AuthService,
+		*folderController.Services.ValidatorService,
+		folderController.Services.FolderService,
+		folderController.Services.AuthService,
 	).Handle().JSON()
 }
 
@@ -168,10 +160,14 @@ func (folderController FolderController) MoveFolder(e echo.Context) error {
 func (folderController FolderController) UpdateFolder(e echo.Context) error {
 	return folder_handlers.NewUpdateHandler(
 		e,
-		*folderController.ValidatorService,
-		folderController.FolderService,
-		folderController.AuthService,
+		*folderController.Services.ValidatorService,
+		folderController.Services.FolderService,
+		folderController.Services.AuthService,
 	).Handle().JSON()
+}
+
+func (folderController FolderController) ShareFolderWithHousehold(e echo.Context) error {
+	return folder_handlers.ShareFolderWithHouseHoldMemersHandlerJsonHandler(e, folderController.Services)
 }
 
 func (folderController FolderController) Attatch(e *echo.Echo, middlewares ...echo.MiddlewareFunc) {

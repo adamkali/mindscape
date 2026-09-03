@@ -220,3 +220,4 @@ func (folderService FolderService) Delete(id uuid.UUID) error {
 	tx.Commit(folderService.ctx)
 	return nil
 }
+
