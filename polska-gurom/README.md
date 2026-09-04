@@ -25,15 +25,30 @@ npm run preview  # serve the production build locally
 
 ## Deploy
 
-Deployment is automated by
-[`.github/workflows/deploy-polska-gurom.yml`](../.github/workflows/deploy-polska-gurom.yml):
-on a push to the default branch that touches `polska-gurom/**` (or via manual
-run), it builds the site and publishes it to GitHub Pages.
+Deployment uses a GitHub Actions workflow that, on a push to the default branch
+touching `polska-gurom/**` (or via manual run), builds the site and publishes it
+to GitHub Pages. It sets `BASE_PATH=/<repo-name>` so links resolve on a project
+Pages site (`https://<user>.github.io/<repo>/`).
 
-The workflow sets `BASE_PATH=/<repo-name>` so links resolve correctly on a
-project Pages site (`https://<user>.github.io/<repo>/`).
+The workflow file is provided here as
+[`deploy-workflow.yml`](deploy-workflow.yml) **but not installed automatically**:
+the automation account that pushed this branch does not have the GitHub
+`workflows` permission, so it cannot write into `.github/workflows/`. A repo
+admin adds it once:
 
-**One-time setup:** in the repository, go to **Settings → Pages → Build and
+```bash
+mkdir -p .github/workflows
+cp polska-gurom/deploy-workflow.yml .github/workflows/deploy-polska-gurom.yml
+git add .github/workflows/deploy-polska-gurom.yml
+git commit -m "Add Polska górą Pages deploy workflow"
+git push
+```
+
+(Or, in the GitHub UI: **Add file → Create new file**, path
+`.github/workflows/deploy-polska-gurom.yml`, and paste the contents of
+`deploy-workflow.yml`.)
+
+**Then, one time:** in the repository go to **Settings → Pages → Build and
 deployment → Source** and choose **GitHub Actions**.
 
 ## Editing content

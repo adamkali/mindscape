@@ -1,0 +1,65 @@
+name: Deploy Polska górą site
+
+# Builds the SvelteKit static site in polska-gurom/ and publishes it to
+# GitHub Pages. Scoped to that directory so it never runs for backend changes.
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'polska-gurom/**'
+      - '.github/workflows/deploy-polska-gurom.yml'
+  workflow_dispatch:
+
+# Allow this workflow to publish to GitHub Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one Pages deployment at a time; don't cancel an in-progress one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: polska-gurom
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        env:
+          # Serve from https://<user>.github.io/<repo>/
+          BASE_PATH: /${{ github.event.repository.name }}
+        run: npm run build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: polska-gurom/build
+
+  deploy:
+    name: Deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
